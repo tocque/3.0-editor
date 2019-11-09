@@ -4,7 +4,7 @@
  * 本配置项包括：道具、怪物、图块属性、楼层属性等内容。
  */
 
-var comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
+export var comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
 	"_type": "object",
 	"_data": {
 		// --------------------------- 【道具】相关的表格配置 --------------------------- //
@@ -404,7 +404,7 @@ var comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
 							"_type": "select",
 							"_name": "地面图块",
 							"_select": {
-								"values": Object.keys(editor.core.icons.icons.terrains)
+								"values": Object.keys(editor.game.core.icons.icons.terrains)
 							},
 							"_data": "默认地面的图块ID，此项修改后需要刷新才能看到效果。"
 						},
@@ -430,7 +430,7 @@ var comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
 							"_leaf": true,
 							"_type": "select",
 							"_select": {
-								"values": [null].concat(Object.keys(editor.core.material.bgms))
+								"values": [null].concat(Object.keys(editor.game.core.material.bgms))
 							},
 							"_name": "BGM",
 							"_data": "到达该层后默认播放的BGM。本项可忽略，或者为一个定义过的背景音乐如\"bgm.mp3\"。"

@@ -4,7 +4,7 @@
  * 本配置项包括：公共事件。
  */
 
-var events_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
+export var events_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
 	"_type": "object",
 	"_data": {
 		"commonEvent": {

@@ -4,7 +4,7 @@
  * 本配置项包括：全塔属性的配置项。
  */
 
-var data_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
+export var data_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
 	"_type": "object",
 	"_data": {
 		"main": {

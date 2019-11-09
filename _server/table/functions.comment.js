@@ -4,7 +4,7 @@
  * 本配置项包括：脚本编辑。
  */
 
-var functions_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
+export var functions_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
 	"_type": "object",
 	"_data": {
 		"events": {
