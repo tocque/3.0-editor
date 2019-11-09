@@ -1,4 +1,4 @@
-@c-font: #C7C7C7;
+@import "editor";
 
 #scriptLeft {
     color: @c-font;
@@ -7,7 +7,7 @@
     background-color: #2E2E2E;
     font-size: 14px;
     .container {
-        top: 40px;
+        top: 45px;
         width: 100%;
         bottom: 0;
     }
@@ -21,9 +21,6 @@
         &.chosen {
             background: #3E3E3E;
         }
-        // &[depth="1"] {
-        //     padding-left: 8px;
-        // }
         &[depth="2"] {
             padding-left: 24px;
         }
@@ -43,20 +40,21 @@
             margin-block-end: 0px;
             font-size: 14px;
         }
-        span.comment {
-            display: none;
-        }
     }
 }
 
-#mutli {
-    position: absolute;
-    top: 31px;
-    bottom: 27px;
+#scriptRight {
     left: 280px;
-    right: 0;
 }
 
-#monacoContainer {
-    height: 100%;
+#scriptToolbar {
+    height: 30px;
+    background-color: #333;
+}
+
+#scriptMulti {
+    position: absolute;
+    width: 100%;
+    top: 30px;
+    bottom: 0;
 }

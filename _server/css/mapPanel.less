@@ -1,6 +1,6 @@
-@c-font: #C7C7C7;
+@import "editor";
 
-#mapEditor {
+#mapPanel {
     .side {
         padding-block-start: 10px;
         box-shadow: 3px 0px 3px #222;
@@ -40,7 +40,7 @@
         bottom: 0px;
         position: absolute;
         display: none;
-        &.chosen {
+        &.active {
             display: block;
         }
     }
@@ -87,7 +87,7 @@
 #mapMid {
     left : 330px;
     right: 360px;
-    &.expand {
+    &.collapse {
         left: 50px;
     }
     transition: left 1s;
@@ -209,6 +209,7 @@
 #mapRight {
     background-color: #444;
     box-shadow: -3px 0px 3px #111;
+    width: 360px;
 }
 
 #iconLib {

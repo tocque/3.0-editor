@@ -2,6 +2,7 @@
 <head>
     <meta charset="utf-8">
     <link href="_server/css/editor.css" rel="stylesheet">
+    <link href="_server/css/editor_ui.css" rel="stylesheet">
     <link href="_server/css/editor_table.css" rel="stylesheet">
     <link href="_server/css/mapPanel.css" rel="stylesheet">
     <link href="_server/css/scriptEditor.css" rel="stylesheet">
@@ -20,22 +21,22 @@
     }
 </script>
 <div id="header">
-    <ul id="navlist">
-        <li>地图</li>
-        <li>数据</li>
-        <li>资源</li>
-        <li>公共事件</li>
-        <li>脚本</li>
-        <li>插件</li>
-        <li><a href="https://h5mota.com/games/template/_docs/" target="_blank">帮助</a></li>
+    <ul id="topnav">
+        <li data-tab="map">地图</li>
+        <li data-tab="data">数据</li>
+        <li data-tab="resource">资源</li>
+        <li data-tab="commonEvent">公共事件</li>
+        <li data-tab="script">脚本</li>
+        <li data-tab="plugin">插件</li>
+        <li data-tab="help"><a href="https://h5mota.com/games/template/_docs/" target="_blank">帮助</a></li>
     </ul>
-    <p id="projectName">title</p>
+    <p id="title">title</p>
 </div>
 <div id="main">
-    <div class="mainPanel" id="mapEditor">
+    <div class="mainPanel" id="mapPanel">
         <div class="side" id="mapSide">
             <ul id="mapSideList">
-                <li title="地图列表"><img src="_server/icon/mapList.svg"></li>
+                <li data-tab="mapExplorer" title="地图列表"><img src="_server/icon/mapList.svg"></li>
                 <li title="事件列表"><img src="_server/icon/eventList.svg"></li>
                 <li title="搜索事件"><img src="_server/icon/searchEvent.svg"></li>
                 <li title="新建地图"><img src="_server/icon/newMap.svg"></li>
@@ -47,19 +48,19 @@
                 <h3 class="header">地图列表</h3>
                 <div class="inputSet" id="mapExplorerSearch">
                     <input class="inputBar" type="name" placeholder="搜索地图">
-                    <div class="clearBtn staticIcon"><img src="_server/icon/close.svg"></div>
+                    <div class="clearBtn"><i class="codicon codicon-clear-all"></i></div>
                 </div>
-                <ul id="mapExplorerUL">
-                </ul>
+                <div class="container">
+                    <ul id="mapExplorerUL">
+                    </ul>
+                </div>
             </div>
             <div id="mapEvent">
                 <h3 class="header">地图选点&nbsp;&nbsp;<button onclick="editor.mode.onmode('save')">保存</button>&nbsp;&nbsp;<button onclick="editor_multi.editCommentJs('loc')">配置表格</button>
                 </h3>
-                <div class="container">
-                    <div class='etable'>
-                        <ul id='mapEventList'>
-                        </ul>
-                    </div>
+                <div class="container etable">
+                    <ul id='mapEventList'>
+                    </ul>
                 </div>
             </div>
             <div id="mapSearch">
@@ -150,39 +151,33 @@
             <button id="iconExpandBtn"></button>
         </div>
     </div>
-    <div class="mainPanel" id="dataEditor">
+    <div class="mainPanel" id="dataPanel">
         <div id="firstData" class="left">
             <h3 class="header">初始数据
             </h3>
             <div class="container">
-                <div class='etable'>
-                    <ul id='firstDataList'>
-                    </ul>
-                </div>
+                <ul id='firstDataList'>
+                </ul>
             </div>
         </div>
         <div id="globalValue" class="mid">
             <h3 class="header">全局变量
             </h3>
-            <div class="container">
-                <div class='etable'>
-                    <ul id='globalValueList'>
-                    </ul>
-                </div>
+            <div class="container etable">
+                <ul id='globalValueList'>
+                </ul>
             </div>
         </div>
         <div id="globalFlag" class="right">
             <h3 class="header">全局开关
             </h3>
-            <div class="container">
-                <div class='etable'>
-                    <ul id='globalFlagList'>
-                    </ul>
-                </div>
+            <div class="container etable">
+                <ul id='globalFlagList'>
+                </ul>
             </div>
         </div>
     </div>
-    <div class="mainPanel" id="resourceManager">
+    <div class="mainPanel" id="resourcePanel">
         <h3 class="leftTabHeader">追加素材</h3>
         <div class="leftTabContent">
             <p>
@@ -219,7 +214,7 @@
     <div class="mainPanel" id="commonEventEditor">
 
     </div>
-    <div class="mainPanel" id="scriptEditor">
+    <div class="mainPanel" id="scriptPanel">
         <div class="left" id="scriptLeft">
             <h3 class="header">脚本编写</h3>
             <div class="container">
@@ -229,11 +224,15 @@
                 </div>
             </div>
         </div>
-        <div class="mid" id="scriptMid">
-
+        <div class="right" id="scriptRight">
+            <div id="scriptToolbar">
+                <div>确认</div>
+                <div>取消</div>
+            </div>
+            <div id="scriptMulti"></div>
         </div>
     </div>
-    <div class="mainPanel" id="pluginManger">
+    <div class="mainPanel" id="pluginPanel">
         <div class="left" id="pluginLeft">
             <h3 class="header">插件管理</h3>
             <div class="inputSet" id="pluginMangerSearch">
@@ -264,113 +263,6 @@
         </ul>
     </div>
     <div id="nameless"></div>
-    <div id="mutli" style="z-index:-1;opacity: 0;"><!-- 多行文本编辑器 -->
-        <!-- <button>确认</button>
-        <button>取消</button> -->
-        <div id="monacoContainer"></div>
-    </div>
-</div>
-<!-- compatibility -->
-<div id="menuDiv">
-    <div id="midMenu" style="display:none">
-        <div id='addFloorEvent' class="menuitem" style="display:none"><div class="menuitem-content">添加上下楼事件</div></div>
-        <div id='chooseThis' class="menuitem"><div class="menuitem-content">选中此点</div></div>
-        <div id='chooseInRight' class="menuitem"><div class="menuitem-content">在素材区选中此图块</div></div>
-        <div id='copyLoc' class="menuitem"><div class="menuitem-content">复制此事件</div></div>
-        <div id='moveLoc' class="menuitem"><div class="menuitem-content">移动此事件</div></div>
-        <div id='clearEvent' class="menuitem"><div class="menuitem-content">仅清空此点事件</div></div>
-        <div id='clearLoc' class="menuitem"><div class="menuitem-content">清空此点及事件</div></div>
-    </div>
-</div>
-<div style="display: none;">
-    <div style="position: relative; height: 95%"><!-- eventsEditor -->
-        <h3>事件编辑器 &nbsp;&nbsp;
-            <select id="entryType" disabled="disabled" style="display: none">
-                <option value="event">event</option>
-                <option value="changeFloor">changeFloor</option>
-                <option value="level">level</option>
-                <option value="shop">shop</option>
-                <option value="afterBattle">afterBattle</option>
-                <option value="afterGetItem">afterGetItem</option>
-                <option value="afterOpenDoor">afterOpenDoor</option>
-                <option value="firstArrive">firstArrive</option>
-                <option value="eachArrive">eachArrive</option>
-                <option value="commonEvent">commonEvent</option>
-            </select>
-            <button onclick="editor_blockly.confirm()">确认</button>
-            <button onclick="editor_blockly.parse()">解析</button>
-            <button onclick="editor_blockly.cancel()">取消</button>
-            <div style="position: relative; display: inline-block; margin-left: 10px">
-                <div class="searchLogo"></div>
-                <input type="text" id="searchBlock" placeholder="搜索图块"/>
-                <button id = "colorSwitch" class="cpPanel" onclick="openColorFromButton()" style="margin-left:5px">颜色选择器</button>
-                <div id="colorPanel" class="cpPanel" style="display: none">
-                    <input class="color" id="colorPicker" value="255,215,0,1"/>
-                    <button onclick="confirmColor()">确定</button>
-                </div>
-                <button class="cpPanel" onclick="editor_blockly.selectPoint()" style="margin-left:5px">地图选点</button>
-            </div>
-            <xml id="toolbox" style="display:none">
-            </xml>
-        </h3>
-        <div style="position: relative;height: 100%">
-            <div id="blocklyArea">
-                <div id="blocklyDiv"></div>
-            </div>
-            <textarea id="codeArea" spellcheck="false"></textarea>
-        </div>
-    </div>
-    <div id='newIdIdnum'><!-- id and idnum -->
-        <input placeholder="新id（唯一标识符）"/>
-        <input placeholder="新idnum（10000以内数字）"/>
-        <button>save</button>
-        <br/>
-        <button style="margin-top: 10px">自动注册</button>
-    </div>
-    <div id='changeId'><!-- id and idnum -->
-        <input placeholder="修改图块id为"/>
-        <button>save</button>
-    </div>;
-</div>
-<!-- <script>/* -->
-<div id='inputDiv' style='display: none'>
-    <div id='inputDialog'>
-        <p id="inputMessage">请输入文字...</p>
-        <input id='inputBox' type="text"/>
-        <button id='inputYes'>确定</button>
-        <button id='inputNo'>取消</button>
-    </div>
-</div>
-<!-- UI预览 & 地图选点 -->
-<div id='uieventDiv' style='display: none'>
-    <div id='uieventDialog'>
-        <div id="uieventHead">
-            <span id="uieventTitle"></span>
-            <select id="uieventBackground" style="margin-left: 20px">
-                <option value="thumbnail" selected>缩略图</option>
-                <option value="#000000">黑色</option>
-                <option value="#FFFFFF">白色</option>
-            </select>
-            <select id="uieventUsedFlags" style="margin-left: 10px; display: none" onchange="editor.uievent.doSearchUsedFlags()"></select>
-            <button id="uieventNo">关闭</button>
-            <button id="uieventYes">确定</button>
-        </div>
-        <hr style="clear: both; margin-top: 0"/>
-        <div id='uieventBody'>
-            <canvas class='gameCanvas' id='uievent' width='416' height='416'></canvas>
-            <div id="selectPointBox"></div>
-            <div id="uieventUsedFlagList" style="display: none"></div>
-        </div>
-        <div id="selectPoint">
-            <select id="selectPointFloor"></select>
-            <div id="selectPointButtons">
-                <input type="button" value="←"/>
-                <input type="button" value="↑"/>
-                <input type="button" value="↓"/>
-                <input type="button" value="→"/>
-            </div>
-        </div>
-    </div>
 </div>
 
 <!-- */</script> -->
@@ -381,52 +273,26 @@
 <!-- <script src="https://cdn.bootcss.com/vue/2.5.13/vue.js"></script> -->
 <!-- <script src='_server/vendor/polyfill.min.js'></script> -->
 <script src='_server/fs.js'></script>
-<script src="_server/thirdparty/Sortable.min.js"></script>
-<script src='_server/editor_util.js'></script>
-<!-- <script src='_server/editor_game.js'></script> -->
+<script type="module" src='_server/editor_util.js'></script>
+<script src='_server/editor_game.js'></script>
 <script src='_server/editor_file.js'></script>
-<script src='_server/editor_file_unsorted.js'></script>
-<script src='_server/editor_list.js'></script>
-<!-- <script src='_server/editor_table.js'></script> -->
-<!-- <script src='_server/editor_mode.js'></script> -->
-<script src='_server/editor_map.js'></script>
-<!-- <script src='_server/editor_ui.js'></script> -->
-<script src='_server/editor_view.js'></script>
-<script src='_server/view_mapPanel.js'></script>
-<script src='_server/view_dataPanel.js'></script>
-<script src='_server/view_scriptPanel.js'></script>
-<script src='_server/view_pluginPanel.js'></script>
-<!-- <script src='_server/editor_mappanel.js'></script> -->
-<!-- <script src='_server/editor_datapanel.js'></script> -->
-<!-- <script src='_server/editor_materialpanel.js'></script> -->
-<!-- <script src='_server/editor_listen.js'></script> -->
-<!-- <script src='_server/editor_legacy.js'></script> -->
+<!-- ui组件 -->
+<script type="module" src='_server/editor_ui.js'></script>
+<script type="module" src='_server/ui_list.js'></script>
+<!-- <script src='_server/ui_multi.js'></script> -->
+<!-- <script src='_server/ui_blockly.js'></script> -->
+<!-- 视图层主体 -->
+<script type="module" src='_server/editor_view.js'></script>
+<script type="module" src='_server/view_mapPanel.js'></script>
+<script type="module" src='_server/view_dataPanel.js'></script>
+<!-- <script src='_server/view_scriptPanel.js'></script> -->
+<!-- <script src='_server/view_pluginPanel.js'></script> -->
 <script src='libs/thirdparty/pixi.min.js'></script>
 <script src='libs/thirdparty/lz-string.min.js'></script>
 <script src='libs/thirdparty/localforage.min.js'></script>
 <script src='_server/editor.js'></script>
 <script>editor.init()</script>
 
-<!-- hightlight textarea -->
-<script src='_server/editor_multi.js'></script>
-<!-- blockly -->
-<script src="_server/blockly/Converter.bundle.min.js"></script>
-<script src="_server/blockly/blockly_compressed.js"></script>
-<script src="_server/blockly/blocks_compressed.js"></script>
-<script src="_server/blockly/javascript_compressed.js"></script>
-<script src="_server/blockly/zh-hans.js"></script>
-<!-- <script src='_server/editor_blockly.js'></script> -->
-<!-- codemirror -->
-<script src='_server/vs/loader.js'></script>
-<!-- <script src="_server/CodeMirror/codeMirror.bundle.min.js"></script> -->
-<!-- <script src="_server/CodeMirror/jshint.min.js"></script> -->
-<!-- <script src="_server/CodeMirror/beautify.min.js"></script> -->
-<!-- <script src="_server/CodeMirror/codeMirror.plugin.min.js"></script> -->
-<!-- thirdparty -->
-<script src="_server/thirdparty/color.all.min.js"></script>
-<script src="_server/thirdparty/awesomplete.min.js"></script>
-<script src="_server/thirdparty/caret-position.js"></script>
-<script src="_server/thirdparty/jsColor.js"></script>
 
 </body>
 </html>

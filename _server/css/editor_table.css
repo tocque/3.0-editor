@@ -1,11 +1,18 @@
 .etable ul li {
+  color: #D7D7D7;
   display: flex;
   justify-content: start;
   align-items: center;
 }
+.etable ul li [_fold] {
+  display: none;
+}
+.etable ul .fold {
+  display: none;
+}
 .etable ul .comment {
+  word-break: keep-all;
   font-size: 14px;
-  width: 160px;
   color: #D7D7D7;
 }
 .etable ul .elistInputDiv {
@@ -33,6 +40,14 @@
   font-size: 14px;
   font-weight: bold;
   font-style: normal;
+}
+.etable ul .subcomment {
+  margin-inline-start: 3px;
+  font-size: 13px;
+  color: #888;
+}
+.etable ul .chosen {
+  background-color: #555;
 }
 .etable .editEntry {
   width: 20px;

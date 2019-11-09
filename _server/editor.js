@@ -1,6 +1,5 @@
 "use strict";
-
-var editor = class Editor {
+var editor = new class Editor {
     version = "3.0";
 
     data = {};
@@ -12,98 +11,22 @@ var editor = class Editor {
      * 激活表现层类，由表现层初始化对应的数据操作模块
      */
     init() {
-        let loadList = [
-            'loader', 'control', 'utils', 'items', 'icons','sprite', 'scenes', 'maps', 'enemys', 'events', 'actions', 'data', 'ui', 'core'
-        ];
-        let pureData = [ 
-            'data', 'enemys', 'icons', 'maps', 'items', 'functions', 'events', 'plugins', 'sprite',
-        ];
-        editor.loadJsByList('project', pureData, function() {
-            var mainData = data_a1e2fb4a_e986_4524_b0da_9b7ba7c0874d.main;
-            for(var ii in mainData) editor.data[ii] = mainData[ii];
-            
-            editor.loadJsByList('libs', loadList, function () {
-                editor.core = core;
-                for (let i = 0; i < loadList.length; i++) {
-                    let name = loadList[i];
-                    if (name === 'core') continue;
-                    editor.core[name] = new window[name]();
-                }
-                editor_util_wrapper(editor);
-                editor_file_wrapper(editor);
-                editor_list_wrapper(editor);
-                editor_multi_wrapper(editor);
+        Promise.all([
+            import('./editor_util.js'),
+            import('./editor_view.js'),
+            import('./view_mappanel.js'),
+        ])
+        .then(([editor_util, editor_view, view_mappanel]) => {
+            editor.util = editor_util;
+            editor.view = editor_view;
+            editor.mappanel = view_mappanel;
+            editor.game = editor_game_wrapper(editor, function() {
                 editor.fs = fs;
-                editor_file = editor_file(editor, function () {
-                    editor.file = editor_file;
-                    editor_view_wrapper(editor);
-                    editor_map_wrapper(editor, function() {
-                        view_mappanel_wrapper(editor);
-                    });
-                    view_datapanel_wrapper(editor);
-                    view_scriptpanel_wrapper(editor);
-                    view_pluginpanel_wrapper(editor);
+                editor_file_wrapper(editor, function () {
+
                 });
             });
         });
-
-        // editor.airwallImg = new Image();
-        // editor.airwallImg.src = './_server/img/airwall.png';
-
-        // var afterMainInit = function () {
-        //     navBar.initialize();
-        //     mapPanel.initialize();
-        //     mapExplorer.initialize();
-        //     editor.game.fixFunctionInGameData();
-        //     editor.main = main;
-        //     editor.core = core;
-        //     editor.fs = fs;
-        //     editor_file = editor_file(editor, function () {
-        //         editor.file = editor_file;
-        //         editor_mode = editor_mode(editor);
-        //         editor_unsorted_2_wrapper(editor_mode);
-        //         editor.mode = editor_mode;
-        //         core.resetGame(core.firstData.hero, null, core.firstData.floorId, core.clone(core.initStatus.maps));
-        //         core.changeFloor(core.status.floorId, null, core.firstData.hero.loc, null, function () {
-        //             afterCoreReset();
-        //         }, true);
-        //         core.events.setInitData(null);
-        //     });
-        // }
-
-        // var afterCoreReset = function () {
-            
-        //     editor.game.idsInit(core.maps, core.icons.icons); // 初始化图片素材信息
-        //     editor.drawInitData(core.icons.icons); // 初始化绘图
-
-        //     editor.game.fetchMapFromCore();
-        //     editor.updateMap();
-        //     editor.buildMark();
-        //     editor.drawEventBlock();
-            
-        //     editor.pos = {x: 0, y: 0};
-        //     editor.mode.loc();
-        //     editor.info = editor.ids[editor.indexs[201]];
-        //     //editor.mode.enemyitem();
-        //     editor.mode.floor();
-        //     //editor.mode.tower();
-        //     //editor.mode.functions();
-        //     //editor.mode.commonevent();
-        //     editor.mode.showMode('map');
-            
-        //     editor_multi = editor_multi();
-        //     editor_blockly = editor_blockly();
-
-        //     // --- 所有用到的flags
-        //     editor.used_flags = {};
-        //     for (var floorId in editor.main.floors) {
-        //         editor.addUsedFlags(JSON.stringify(editor.main.floors[floorId]));
-        //     }
-
-        //     if (editor.useCompress == null) editor.useCompress = useCompress;
-        //     if (Boolean(callback)) callback();
-
-        // }
     }
 
     ////// 批量加载JS文件 //////
@@ -171,5 +94,3 @@ var main = {
         }
     },
 };
-
-editor = new editor();

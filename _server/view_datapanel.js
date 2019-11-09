@@ -2,47 +2,22 @@
 /**
  * view_datapanel.js 数据编辑界面
  */
+import {utils} from "./editor_util.js";
+import * as ui from "./editor_ui.js";
+import {list} from "./ui_list.js";
+import * as view from "./editor_view.js";
 
-var view_datapanel_wrapper = function(editor) {
-
-class dataPanel {
+export var dataPanel = new class dataPanel extends view.panel {
 
     /**
      * 地图编辑面板
      */
     constructor() {
-        editor.infoBar.applyBlock("panel");
-        var data_obj = data_a1e2fb4a_e986_4524_b0da_9b7ba7c0874d;
+        super(document.getElementById("dataPanel"), "data");
+        // view.infobar.applyBlock("panel");
         // 初始化各个表
-        this.firstData = new editor.list(
-            document.getElementById("firstDataList"),
-            editor.file.dataComment._data.firstData,
-            function () {
-                var locObj = Object.assign({}, data_obj.firstData);
-                return locObj;
-            },
-        );
-        this.globalValues = new editor.list(
-            document.getElementById("globalValueList"),
-            editor.file.dataComment._data.values,
-            function () {
-                var locObj = Object.assign({}, data_obj.values);
-                return locObj;
-            },
-        );
-        this.globalFlags = new editor.list(
-            document.getElementById("globalFlagList"),
-            editor.file.dataComment._data.flags,
-            function () {
-                var locObj = Object.assign({}, data_obj.flags);
-                return locObj;
-            },
-        );
-        this.firstData.update();
-        this.globalValues.update();
-        this.globalFlags.update();
+        // this.firstData = new list(document.getElementById("firstDataList"));
+        // this.globalValues = new list(document.getElementById("globalValuesList"));
+        // this.globalFlags = new list(document.getElementById("globalFlagsList"));
     }
-}
-
-editor.dataPanel = new dataPanel();
 }

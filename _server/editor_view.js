@@ -1,106 +1,47 @@
-"use strict";
 /**
- * editor_view.js 控制编辑器主体外观显示
+ * editor_view.js 控制编辑器主体外观显示的类
+ * 大部分为单例
  */
+import * as ui from "./editor_ui.js";
 
-var editor_view_wrapper = function(editor) {
+export var topbar = new class topbar {
 
-// 顶部导航栏
-class topBar {
-
+    /**顶部导航栏 */
     constructor() {
-        let navContainer = document.getElementById("navlist");
-        this.nav = navContainer.getElementsByTagName("li");
-        this.panels = document.getElementsByClassName("mainPanel");
-        this.projectName = document.getElementById("projectName");
-        this.projectName.innerText = editor.core.data.firstData.title;
+        let nav = document.getElementById("topnav");
+        this.nav = new ui.navbar(nav, nav.getElementsByTagName("li"), "map");
 
-        for (let i = 0; i < this.nav.length-1; i++) {
-            this.nav[i].addEventListener("click", this.switchMainPanel.bind(this, i));
-        }
-    
-        this.chosen = null;
-        this.switchMainPanel(0);
+        this.title = document.getElementById("title");
     }
-    
-    switchMainPanel(id) {
-        if (id != this.chosen) {
-            this.chose(id);
-            if (this.chosen != null) {
-                this.unchose(this.chosen);
-            }
-            this.panels[id].classList.add("chosen");
-            this.chosen = id;
-        }
+
+    updateTitle(title) {
+        document.title = this.title.innerText = title + " - HTML5 魔塔";
     }
-    
-    chose(id) {
-        this.nav[id].classList.add("chosen");
-        this.panels[id].classList.add("chosen");
+};
+
+class infoBlock {
+    constructor(content) {
+        this.elm = document.createElement("li");
+        this.content = content;
     }
-    
-    unchose(id) {
-        this.nav[id].classList.remove("chosen");
-        this.panels[id].classList.remove("chosen");
+
+    show() {
+        this.elm.classList.add("active");
+    }
+
+    hide() {
+        this.elm.classList.remove("active");
+    }
+
+    update(...args) {
+        this.elm.innerHTML = this.content(...args);
     }
 }
 
-
-// 右键菜单控件
-function contextMenu(obj, items) {
-    this.initialize.apply(this, arguments);
-}
-
-contextMenu.prototype.current = null;
-/**
- * 菜单内容 格式为[{"text": 显示的项目名, "action": 点击时进行的操作}], 若为{}则增加分割线
- * @param items
- */
-contextMenu.prototype.initialize = function(obj, items) {
-    this.menuBase = document.createElement("div");
-    this.menuBase.setAttribute("class", "menu");
-    var menuFrame = document.createElement("ul");
-    for (var m in items) {
-        var item = items[m];
-        var menuItem = document.createElement("li");
-        if (item == {}) {
-            var hr = document.createElement("hr");
-            menuItem.appendChild(hr);
-        } else {
-            menuItem.text = items.text;
-            menuItem.addEventListener("click", items.action);
-        }
-        menuFrame.appendChild(menuItem);
-    }
-
-    document.body.appendChild(this.menuBase);
-    obj.oncontextmenu = this.oncontext;
-}
-
-contextMenu.prototype.oncontext = function(e) {
-    e.preventDefault();
-    contextMenu.prototype.open.bind(this, e);
-}
-
-contextMenu.prototype.open = function(e) {
-    console.log(e);
-    if (contextMenu.prototype.current != null) {
-        this.close.bind(contextMenu.prototype.current);
-    }
-    contextMenu.prototype.current = this;
-    this.menuBase.style.display = "block";
-    this.menuBase.style.left = e.clientX;
-    this.menuBase.style.height = e.target.clientY;
-}
-
-// 关闭当前的
-contextMenu.prototype.close = function() {
-    contextMenu.prototype.current = null;
-    this.menuBase.style.display = "none";
-}
-
-class infoBar {
-    // 左侧信息栏为系统信息，右侧信息栏为面板/编辑器级信息
+export var infobar = new class infobar {
+    /**
+     * 底部信息栏 左侧信息栏为系统信息，右侧信息栏为面板/编辑器级信息
+     */
     constructor() {
         this.body = document.getElementById("infoBar");
         this.left = document.getElementById("infoLeft");
@@ -108,6 +49,7 @@ class infoBar {
         this.left.append(this.tip.elm);
     
         let rights = document.getElementsByClassName("infoRight");
+        
         this.rights = {
             'system': rights[2],
             'panel': rights[1],
@@ -120,8 +62,8 @@ class infoBar {
         this.setWarning(warn);
     }
     
-    applyBlock(level, property) {
-        var block = new infoBlock(property);
+    applyBlock(level, content) {
+        var block = new infoBlock(content);
         this.rights[level].appendChild(block.elm);
         return block;
     }
@@ -132,34 +74,59 @@ class infoBar {
         }
         this.body.classList.remove("warning");
     }
-
 }
 
-class infoBlock {
-    constructor(property) {
-        this.elm = document.createElement("li");
-        this.elm.style.display = 'none';
-        this.span = document.createElement("span");
-        this.elm.appendChild(this.span);
-        if (!property) return;
-        if (property.HTML) {
-            this.elm.innerHTML += property.HTML;
-        }
+export class panel {
+    
+    name = "base";
+    /** 
+     * 面板的基类, 与infobar, topbar绑定
+     * @param {HTMLElement} body 面板主体
+     * @param {String} name 面板名称
+     */
+    constructor(body, name) {
+        this.body = body;
+        this.name = name;
+        topbar.nav.bind(this.name, this.active.bind(this), this.unactive.bind(this));
     }
 
-    show() {
-        this.elm.style.display = 'block';
+    active() {
+        this.body.classList.add("active");
+        // editor.view.infobar.changePanel(this);
     }
 
-    hide() {
-        this.elm.style.display = 'none';
-    }
-
-    setContent(content) {
-        this.span.textContent = content;
+    unactive() {
+        this.body.classList.remove("active");
+        // editor.view.infobar.changePanel(null);
     }
 }
 
-editor.topBar = new topBar();
-editor.infoBar = new infoBar();
+export class editor {
+
+    name = "base";
+    /** 
+     * 编辑器的基类
+     * @param {HTMLElement} body 编辑器主体
+     */
+    constructor(body) {
+        this.body = body;
+    }
+
+    /** 
+     * 绑定到导航/切换按钮上
+     * @param {ui.navbar} nav 导航类
+     */
+    bindTo(nav) {
+        nav.bind(this.name, this.active.bind(this), this.unactive.bind(this));
+    }
+
+    active() {
+        this.body.classList.add("active");
+        // editor.view.infobar.changeEditor(this);
+    }
+
+    unactive() {
+        this.body.classList.remove("active");
+        // editor.view.infobar.changeEditor(null);
+    }
 }

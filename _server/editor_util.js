@@ -1,6 +1,4 @@
-editor_util_wrapper = function (editor) {
-
-    editor_util = function () {
+    function editor_util () {
 
     }
 
@@ -168,6 +166,19 @@ editor_util_wrapper = function (editor) {
         }
     }
 
-    editor.constructor.prototype.util = new editor_util();
-}
+    editor_util.prototype.buildlocobj = function (locObj, src) {
+        for (let key in locObj) {
+            let obj = locObj[key];
+            if (typeof(obj) !== typeof('')) editor.util.buildlocobj(obj, src);
+            else obj = src[obj];
+        }
+    };
+
+    editor_util.prototype.parseDOM = function (html) {
+        let factory = document.createElement("div");
+        factory.innerHTML = html;
+        return factory.children;
+    }
+
+    export var utils = new editor_util();
 //editor_util_wrapper(editor);

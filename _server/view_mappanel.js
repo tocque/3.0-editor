@@ -1,135 +1,66 @@
-"use strict";
 /**
  * view_mappanel.js 地图编辑界面表现层
  */
+import {utils} from "./editor_util.js";
+import * as ui from "./editor_ui.js";
+import * as view from "./editor_view.js";
+import { listen } from "./editor_listen.js";
 
-var view_mappanel_wrapper = function(editor) {
+class sidebar extends ui.navbar {
 
-class mapPanel {
+    collapse = false; // 初始默认不折叠
 
-    /**
-     * 地图编辑面板
-     */
-    constructor() {
-
-        // 初始化面板本身的dom
-        this.side = document.getElementById("mapSide");
-        this.sideNav = this.side.getElementsByTagName("li");
-        for (let i = 0; i < this.sideNav.length; i++) {
-            this.sideNav[i].addEventListener("click", this.switchleftPanel.bind(this, i));
-        }
-
-        this.left = document.getElementById("mapLeft");
-        this.leftPanels = this.left.children;
-        this.leftPanel_now = 0;
-        this.choseLeft(this.leftPanel_now);
-        this.left_collapse = true;
-
-        this.mid = document.getElementById("mapMid");
-
-        this.toggleLeft(false);
-        
-        this.mapInfo = editor.infoBar.applyBlock('panel');
-        this.locInfo = editor.infoBar.applyBlock('panel');
-        // 初始化地图数据模块
-
-        // 初始化各个表现层模块
-        this.mapExplorer = new mapExplorer();
-        this.mapEvent = new editor.list(
-            document.getElementById("mapEventList"),
-            editor.file.comment._data.floors._data.loc,
-            function() {
-                return (function () {
-                    var locObj = {};
-                    Object.keys(editor.file.comment._data.floors._data.loc._data).forEach(function (v) {
-                        if (editor.util.isset(editor.map.currentFloorData[v][x + ',' + y]))
-                            locObj[v] = editor.map.currentFloorData[v][x + ',' + y];
-                        else
-                            locObj[v] = null;
-                    });
-                    return locObj;
-                })();
-            }
-        );
-        this.mapProperty = new editor.list(
-            document.getElementById("mapPropertyList"),
-            editor.file.comment._data.floors._data.floor,
-            function() {
-                return (function () {
-                    var locObj = Object.assign({}, editor.map.currentFloorData);
-                    Object.keys(editor.file.comment._data.floors._data.floor._data).forEach(function (v) {
-                        if (!editor.util.isset(editor.map.currentFloorData[v]))
-                            locObj[v] = null;
-                    });
-                    Object.keys(editor.file.comment._data.floors._data.loc._data).forEach(function (v) {
-                        delete(locObj[v]);
-                    });
-                    delete(locObj.map);
-                    delete(locObj.bgmap);
-                    delete(locObj.fgmap);
-                    console.log(locObj);
-                    return locObj;
-                })();
-            },
-        );
+    constructor(body, tabelms, slides, chosen) {
+        super(body, tabelms, chosen);
+        this.slides = slides;
+        // this.collapse = (chosen == ""); // 若chosen为空则初始折叠
     }
 
-    switchleftPanel(chose) {
-        if (chose == this.leftPanel_now) {
-            this.toggleLeft();
-        }
-        else {
-            this.choseLeft(chose);
-            if (editor.util.isset(this.leftPanel_now)) {
-                this.unchoseLeft(this.leftPanel_now);
-            }
-            this.leftPanel_now = chose;
-            this.toggleLeft(false);
-        } 
-    }
-
-    choseLeft(id) {
-        this.sideNav[id].classList.add("chosen");
-        this.leftPanels[id].classList.add("chosen");
-    }
-
-    unchoseLeft(id) {
-        this.sideNav[id].classList.remove("chosen");
-        this.leftPanels[id].classList.remove("chosen");
-    }
-
-    toggleLeft(code) {
-        if (editor.util.isset(code)) {
-            if (code == this.left_collapse) return;
-            if (code) {
-                this.left.classList.add("collapse");
-                this.mid.classList.add("expand");
-            } else {
-                this.left.classList.remove("collapse");
-                this.mid.classList.remove("expand");
-            }
-            this.left_collapse = code;
+    switch(elm) {
+        let tab = elm.dataset.tab;
+        if (tab == this.chosen) {
+            this.toggle();
         } else {
-            this.toggleLeft(!this.left_collapse);
+            if (this.chosen) {
+                this.unchose(this.chosen);
+            }
+            this.chose(tab);
+            this.toggle(false);
         }
     }
 
-    changeMap(mapId) {
-        editor.map.changeFloor(mapId);
-        this.mapInfo.setContent = editor.map.currentFloorData.title;
-        this.mapProperty.update();
+    toggle(code) {
+        if (utils.isset(code)) {
+            if (code == this.collapse) return;
+            if (code) {
+                for (let elm of this.slides) {
+                    elm.classList.add("collapse");
+                }
+            } else {
+                for (let elm of this.slides) {
+                    elm.classList.remove("collapse");
+                }
+            }
+            this.collapse = code;
+        } else {
+            this.toggle(!this.collapse);
+        }
     }
 }
 
-class mapExplorer {
+class mapExplorer extends view.editor {
 
-    constructor() {
-        this.body = document.getElementById("mapExplorerUL");
-        this.body.addEventListener("click", this.click.bind(this));
-        this.sortable = Sortable.create(this.body, {
-            animation: 150,
-            onEnd: this.dragend.bind(this),
-        });
+    name = "mapExplorer";
+
+    constructor(body) {
+        super(body);
+        
+        listen.proxyEvent(this.body, "click", (elm) => {
+            return elm instanceof HTMLLIElement;
+        }, this.click.bind(this));
+        // this.mapTree = new mapTree(this.body.getElementById("mapExplorerUL"), {
+        //      editorable: true,
+        // });
         // this.search = new inputBar(
         //     document.getElementById("mapExplorerUL"), 
         //     this.filter.bind(this), 
@@ -140,15 +71,12 @@ class mapExplorer {
         // });
         this.list = {};
         this.chosen = null;
-
-        this.initList();
     }
     
     filter(keyword) {
         keyword = keyword || "";
-        for (var m in this.list) {
-            var li = this.list[m];
-            var text = this.getText(li._value);
+        for (let li of this.list) {
+            let text = this.getText(li._value);
             if (text.indexOf(keyword) != -1) {
                 li.innerHTML = this.highlightKeyword(text, keyword);
                 this.showLi(li);
@@ -180,23 +108,14 @@ class mapExplorer {
             this.chosen.classList.remove("chosen");
         }
         li.classList.add("chosen");
+        editor.mapPanel.changeMap(li._value);
         this.chosen = li;
     }
     
-    click(e) {
-        for (let i = 0; i < e.path.length; i++) {
-            if (e.path[i] instanceof HTMLLIElement) {
-                this.chose(e.path[i]);
-                editor.mapPanel.changeMap(e.path[i]._value);
-                return;
-            }
-        }
+    click(elm, e) {
+        this.chose(elm);
     }
 
-    dragend(e) {
-        editor.map.setFloorList(e.oldIndex, e.newIndex);
-    }
-    
     initList() {
         for (let i = 0; i < editor.map.floorIds.length; i++) {
             this.insertFloor(editor.map.floorIds[i]);
@@ -222,6 +141,44 @@ class mapExplorer {
         return text.replace(keyword,"<span class=\"keyword\">"+keyword+"</span>")
     }
 
+}
+
+export var mapPanel = new class mapPanel extends view.panel {
+
+    /**
+     * 地图编辑面板
+     */
+    constructor() {
+        super(document.getElementById("mapPanel"), "map");
+        // 初始化面板本身的dom
+        let side = document.getElementById("mapSide");
+        this.sidebar = new sidebar(side, side.getElementsByTagName("li"), [
+            document.getElementById("mapLeft"), 
+            document.getElementById("mapMid"),
+        ], "mapExplorer");
+        
+        this.mapInfo = view.infobar.applyBlock('panel');
+        //this.locInfo = infobar.applyBlock('panel');
+        // 初始化地图数据模块
+
+        // 初始化各个表现层模块
+        const mapLeft = {
+            "mapExplorer": new mapExplorer(document.getElementById("mapExplorer")),
+        }
+        for (let i in mapLeft) {
+            this[i] = mapLeft[i];
+            mapLeft[i].bindTo(this.sidebar);
+        }
+        
+        // this.mapEvent = new list(document.getElementById("mapEventList"));
+        // this.mapProperty = new list(document.getElementById("mapPropertyList"));
+    }
+
+    changeMap(mapId) {
+        editor.map.changeFloor(mapId);
+        this.mapInfo.setContent = editor.map.currentFloorData.title;
+        this.mapProperty.update();
+    }
 }
 
 class tileEditor {
@@ -294,7 +251,4 @@ class tileEditor {
         
     }
 
-}
-
-editor.mapPanel = new mapPanel();
 }
