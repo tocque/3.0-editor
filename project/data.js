@@ -10,10 +10,21 @@ var data_a1e2fb4a_e986_4524_b0da_9b7ba7c0874d =
 		],
 		"images": [
 			"bg.jpg",
-			"winskin.png"
+			"ground.png",
+			"winskin.png",
+			"keyboard.png"
 		],
 		"tilesets": [
 			"magictower.png"
+		],
+		"autotiles": [
+			"001-G_Water01",
+			"006-G_Road02",
+			"007-G_Undulation01",
+			"037-Tree02"
+		],
+		"sprites": [
+			"hero"
 		],
 		"animates": [
 			"hand",

@@ -53,18 +53,27 @@ function textSprite(config){
 ///// ----- 资源管理 -----
 sprite.prototype._init = function(){
     // example:
-    this.sprite = sprite_90f36752_8815_4be8_b32b_d7fad1d0542e;
     this.tilesetStartOffset = 10000;
     
     // 兼容原来的部分图片并减少图片大小 如果是以下尺寸的精灵 将会附着到原有图片上 而非sprite上
     // todo: 如果允许可以让作者自定义类型
-    this.oldType = {
-        '32,32,1':'terrains',
-        '128,32,4':'animates',
-        '64,32,2':'npcs',
-        '128,48,4':'npc48',
-        '?,?,?':'hero',
-        '?,96,?':'autotile',
+    this.types = {
+        'terrains': {},
+        'animates': { frame: 4 },
+        'items': {},
+        'npcs': { frame: 2 },
+        'npc48': { frame: 4, height: 48 },
+        'enemys': { frame: 2 },
+        'enemy48': { frame: 4 },
+        'autotiles': { frame: function(image) {
+            return image.orig.width == 96 ? 1 : 4;
+        }, single: true },
+        'sprites': { frame: 4, line: 4, single: true },
+        // '32,32,1':'terrains',
+        // '128,32,4':'animates',
+        // '64,32,2':'npcs',
+        // '128,48,4':'npc48',
+        // '?,96,?':'autotile',
     }
     // 资源x重定位 —— 如果出现比当前宽的sprite 则将其x定位为上一次的宽
     // 所以尽量先导入比较大的图，然后再导小图 减少空白
@@ -87,42 +96,58 @@ sprite.prototype._load = function(){
 sprite.prototype._generateTextures = function() {
     this.textures = this.textures || {}; // 存储各个动画对应的textrues数组
     var baseTextures = this.baseTextures || {};
-    for(var i in this.oldType){
-        var type = this.oldType[i];
-        baseTextures[type] = Texture.from(core.material.images[type]);
-    }
-    baseTextures['sprite'] = Texture.from(core.material.images.sprite);
     this.baseTextures = baseTextures;
-    for(var id in this.sprite){
-        var it = this.sprite[id];
-        var type = it.oldType || 'sprite';
-        var nf = it.frame||1;
-        var nl= it.line||1;
-        var tmp = [];
-        var width = it.width || 32;
-        var height = it.height || 32;
-
-        var org = new Rectangle(it.x||0, it.y||0, width * (it.frame || 1), height * (it.line || 1));
-        for(var i = 0; i<nl; i++){
-            var line = [];
-            for(var j = 0; j<nf; j++){
-                try {
-                    line.push(
-                        new Texture(baseTextures[type],
-                            new Rectangle(org.x+j*width,org.y+i*height,width,height)
-                        )
-                    );
-                }
-                catch(e){
-                    debugger;
-                }
+    for (var dir in this.types) {
+        var type = this.types[dir];
+        if (type.single) {
+            for (var i = 0; i < core[dir].length; i++) {
+                var img = core[dir][i];
+                baseTextures[img] = Texture.from(core.material.images[dir][img]);
+                this._generateTypedTexture(img, baseTextures[img], type);
             }
-            tmp.push(line);
+        } else {
+            baseTextures[dir] = Texture.from(core.material.images[dir]);
+            for (var i in core.material.icons[dir]) {
+                type.y = core.material.icons[dir][i] * (type.height || 32);
+                this._generateTypedTexture(i, baseTextures[dir], type);
+            }
         }
-        this.textures[id] = tmp;
     }
 }
 
+/**
+ * 生成纹理
+ */
+sprite.prototype._generateTypedTexture = function(id, texture, it) {
+    var nf = it.frame||1;
+    if (nf instanceof Function) nf = nf(texture);
+    var nl = it.line||1;
+    var tmp = [], width, height;
+    if (it.single) {
+        width = texture.orig.width / nf;
+        height = texture.orig.height / nl;
+    } else {
+        width = it.width || 32;
+        height = it.height || 32;
+    }
+
+    var org = new Rectangle(it.x||0, it.y||0, width * (it.frame || 1), height * (it.line || 1));
+    for(var i = 0; i<nl; i++){
+        var line = [];
+        for(var j = 0; j<nf; j++){
+            try {
+                line.push(
+                    new Texture(texture, new Rectangle(org.x+j*width,org.y+i*height,width,height))
+                );
+            }
+            catch(e){
+                debugger;
+            }
+        }
+        tmp.push(line);
+    }
+    this.textures[id] = tmp;
+}
 
 ////// 绘制Autotile //////
 sprite.prototype.getAutotileSprite = function(name,sx,sy,sw,sh){
@@ -503,19 +528,18 @@ sprite.prototype.drawSpriteToCanvas = function(obj, ctx, bias){
     bias = bias || {}
     var x =(bias.x || 0);
     var y =(bias.y || 0);
+    var line = bias.line || 0, frame = bias.frame || 0;
     /// var info = this.sprite[obj.info]; /// todo: 通用spriteInfo 减少内存开销
-    if(this.sprite [obj]){
-        var info = this.sprite [obj];
-        var img = info.oldType || 'sprite';
-        if(core.material.images[img]){
-            ctx.drawImage(core.material.images[img],
-                info.x, info.y,
-                info.width, info.height,
-                x, y,
-                bias.width || info.width,
-                bias.height || info.height
-            );
-        }
+    if(this.textures [obj]){
+        var texture = this.textures [obj][line][frame];
+        var orig = texture.orig;
+        ctx.drawImage(texture.baseTexture.resource.source,
+            orig.x, orig.y,
+            orig.width, orig.height,
+            x, y,
+            bias.width || orig.width,
+            bias.height || orig.height
+        );
     }
     return;
 

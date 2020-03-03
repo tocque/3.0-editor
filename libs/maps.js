@@ -1167,7 +1167,7 @@ maps.prototype._drawAutotileAnimate = function (block, animate) {
 
 ////// 为autotile判定边界 ////// 
 maps.prototype._makeAutotileEdges = function () {
-    var autotileIds = Object.keys(core.material.icons.autotile);
+    var autotileIds = core.autotiles;
     core.material.autotileEdges = {};
 
     var canvas = document.createElement("canvas"), ctx = canvas.getContext('2d');
@@ -1182,8 +1182,7 @@ maps.prototype._makeAutotileEdges = function () {
         core.material.autotileEdges[n] = [n];
 
         ctx.clearRect(0, 0, 32, 32);
-        if(!core.sprite.sprite[t])return;
-        ctx.drawImage(core.material.images.autotile, core.sprite.sprite[t].x, 0, 32, 32, 0, 0, 32, 32);
+        ctx.drawImage(core.material.images.autotiles[t], 0, 0, 32, 32, 0, 0, 32, 32);
         var data = canvas.toDataURL("image/png");
 
         autotileIds.forEach(function (t2) {
@@ -1191,7 +1190,7 @@ maps.prototype._makeAutotileEdges = function () {
             var n2 = core.maps.getNumberById(t2);
 
             ctx.clearRect(0, 0, 32, 32);
-            ctx.drawImage(core.material.images.autotile, core.sprite.sprite[t].x, 0, 32, 32, 0, 0, 32, 32);
+            ctx.drawImage(core.material.images.autotiles[t2], 32, 0, 32, 32, 0, 0, 32, 32);
             if (data == canvas.toDataURL("image/png")) {
                 core.material.autotileEdges[n].push(n2);
             }
@@ -1420,7 +1419,7 @@ maps.prototype.getBlockInfo = function (block) {
         image = core.material.images.tilesets[offset.image];
     }
     else if (cls == 'autotile') {
-        image = core.material.images.autotile[id];
+        image = core.material.images.autotiles[id];
     }
     else {
         image = core.material.images[cls];
@@ -2232,7 +2231,7 @@ maps.prototype._animateBlock_drawList = function (list, opacity) {
 maps.prototype.addGlobalAnimate = function (block) {
     if (!block.event || block.event.animate == null) return;
     if (block.event.cls == 'autotile') {
-        var id = block.event.id, img = core.material.images.autotile[id];
+        var id = block.event.id, img = core.material.images.autotiles[id];
         //if (!img|| img.width == 96) return;
         // core.status.autotileAnimateObjs.blocks.push(block);
     }

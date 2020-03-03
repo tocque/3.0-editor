@@ -262,10 +262,4 @@ var icons_4665ee12_3a1f_44a4_bea3_0fccba634dc1 =
 		"skill1": 30,
 		"wand": 10
 	},
-	"autotile": {
-		"autotile0": 0,
-		"autotile1": 0,
-		"autotile2": 0,
-		"autotile3": 0
-	}
 }

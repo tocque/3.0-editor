@@ -23,22 +23,23 @@ loader.prototype._setStartLoadTipText = function (text) {
 }
 
 loader.prototype._load = function (callback) {
-    this._loadIcons();
     this._loadAnimates();
     this._loadMusic();
 
     core.loader._loadMaterialImages(function () {
         core.loader._loadExtraImages(function () {
             core.loader._loadAutotiles(function () {
-                core.loader._loadTilesets(callback);
+                core.loader._loadSprites(function () {
+                    core.loader._loadTilesets(callback);
+                })
             })
         })
     });
 }
 
-loader.prototype._loadIcons = function () {
-    this.loadImage("icons.png", function (id, image) {
-        var images = core.splitImage(image);
+loader.prototype._loadMaterialImages = function (callback) {
+    this.loadImages("materials", core.materials, core.material.images, function() {
+        var images = core.splitImage(core.material.images.icons);
         for (var key in core.statusBar.icons) {
             if (typeof core.statusBar.icons[key] == 'number') {
                 core.statusBar.icons[key] = images[core.statusBar.icons[key]];
@@ -46,31 +47,26 @@ loader.prototype._loadIcons = function () {
                     core.statusBar.image[key].src = core.statusBar.icons[key].src;
             }
         }
+        core.animateFrame.weather.fog = core.material.images.fog;
+        callback();
     });
-}
-
-loader.prototype._loadMaterialImages = function (callback) {
-    this.loadImages(core.materials, core.material.images, callback);
 }
 
 loader.prototype._loadExtraImages = function (callback) {
     core.material.images.images = {};
 
     var images = core.clone(core.images);
-    if (images.indexOf("hero.png") < 0)
-        images.push("hero.png");
 
-    this.loadImages(images, core.material.images.images, callback);
+    this.loadImages("images", images, core.material.images.images, callback);
 }
 
 loader.prototype._loadAutotiles = function (callback) {
-    core.material.images.autotile = {};
-    var keys = ['autotile'];//Object.keys(core.material.icons.autotile);
-    //var keys = Object.keys(core.material.icons.autotile);
+    core.material.images.autotiles = {};
+    //Object.keys(core.material.icons.autotile);
     var autotiles = {};
-    this.loadImages(keys, autotiles, function () {
-        keys.forEach(function (v) {
-            core.material.images.autotile = autotiles[v];
+    this.loadImages("autotiles", core.autotiles, autotiles, function () {
+        core.autotiles.forEach(function (v) {
+            core.material.images.autotiles[v] = autotiles[v];
         });
 
         setTimeout(function () {
@@ -81,10 +77,16 @@ loader.prototype._loadAutotiles = function (callback) {
     });
 }
 
+loader.prototype._loadSprites = function (callback) {
+    core.material.images.sprites = {};
+    //Object.keys(core.material.icons.autotile);
+    this.loadImages("sprites", core.sprites, core.material.images.sprites, callback);
+}
+
 loader.prototype._loadTilesets = function (callback) {
     core.material.images.tilesets = {};
     core.tilesets = core.tilesets || [];
-    core.loader.loadImages(core.clone(core.tilesets), core.material.images.tilesets, function () {
+    core.loader.loadImages('tilesets', core.clone(core.tilesets), core.material.images.tilesets, function () {
         // 检查宽高是32倍数，如果出错在控制台报错
         for (var imgName in core.material.images.tilesets) {
             var img = core.material.images.tilesets[imgName];
@@ -99,14 +101,14 @@ loader.prototype._loadTilesets = function (callback) {
     });
 }
 
-loader.prototype.loadImages = function (names, toSave, callback) {
+loader.prototype.loadImages = function (dir, names, toSave, callback) {
     if (!names || names.length == 0) {
         if (callback) callback();
         return;
     }
     var items = 0;
     for (var i = 0; i < names.length; i++) {
-        this.loadImage(names[i], function (id, image) {
+        this.loadImage(dir, names[i], function (id, image) {
             core.loader._setStartLoadTipText('正在加载图片 ' + id + "...");
             toSave[id] = image;
             items++;
@@ -118,7 +120,7 @@ loader.prototype.loadImages = function (names, toSave, callback) {
     }
 }
 
-loader.prototype.loadImage = function (imgName, callback) {
+loader.prototype.loadImage = function (dir, imgName, callback) {
     try {
         var name = imgName;
         if (name.indexOf(".") < 0)
@@ -127,7 +129,7 @@ loader.prototype.loadImage = function (imgName, callback) {
         image.onload = function () {
             callback(imgName, image);
         }
-        image.src = 'project/images/' + name + "?v=" + main.version;
+        image.src = 'project/'+ dir + '/' + name + "?v=" + main.version;
     }
     catch (e) {
         main.log(e);
@@ -206,7 +208,7 @@ loader.prototype.loadOneMusic = function (name) {
     var music = new Audio();
     music.preload = 'none';
     if (main.bgmRemote) music.src = main.bgmRemoteRoot + core.firstData.name + '/' + name;
-    else music.src = 'project/sounds/' + name;
+    else music.src = 'project/bgms/' + name;
     music.loop = 'loop';
     core.material.bgms[name] = music;
 }

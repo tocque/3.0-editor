@@ -26,7 +26,7 @@ core.material.bgms    （背景音乐）
 core.material.enemys    （怪物信息，来自于 project/enemys.js）
 core.material.icons    （图标信息，来自于 project/icons.js）
 core.material.images    （图片素材，存放了各项素材图片如items.png等）
-    core.material.images.autotile    （所有的自动元件图片）
+    core.material.images.autotiles    （所有的自动元件图片）
     core.material.images.tilesets    （所有的额外素材图片）
     core.material.images.images    （用户引入的其他图片）
 core.material.items    （道具信息）

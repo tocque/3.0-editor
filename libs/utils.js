@@ -1314,7 +1314,7 @@ utils.prototype.convertOldTypes = function () {
     // 自动元件 16x16
     var tx = 0;
     for(var it in _icon.autotile){
-        var w = core.material.images.autotile[it].width;
+        var w = core.material.images.autotiles[it].width;
         _sprite[it] = {
             x: tx,
             y: 0,

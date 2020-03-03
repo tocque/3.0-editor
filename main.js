@@ -18,6 +18,25 @@ function main() {
 
     //------------------------ 用户修改内容 END ------------------------//
 
+    this.mode = 'play';
+    this.loadList = [
+        'loader', 'control', 'utils', 'items', 'icons','sprite', 'scenes', 'maps', 'enemys', 'events', 'actions', 'data', 'ui', 'extensions', 'core'
+    ];
+    this.pureData = [ 
+        'data', 'enemys', 'icons', 'maps', 'items', 'functions', 'events', 'plugins',
+    ];
+    this.materials = [
+        'animates', 'enemys', 'items', 'npcs', 'terrains', 'enemy48', 'npc48', 'icons', 'fog', 
+    ];
+
+    this.floors = {}
+    this.canvas = {};
+
+    this.__VERSION__ = "2.6.4";
+    this.__VERSION_CODE__ = 78;
+}
+
+main.prototype.bindDOM = function () {
     this.dom = {
         'body': document.body,
         'gameGroup': document.getElementById('gameGroup'),
@@ -77,49 +96,22 @@ function main() {
         'inputNo': document.getElementById('inputNo'),
         'next': document.getElementById('next')
     };
-    this.mode = 'play';
-    this.loadList = [
-        'loader', 'control', 'utils', 'items', 'icons','sprite', 'scenes', 'maps', 'enemys', 'events', 'actions', 'data', 'ui', 'extensions', 'core'
-    ];
-    this.pureData = [ 
-        'data', 'enemys', 'icons', 'maps', 'items', 'functions', 'events', 'plugins', 'sprite',
-    ];
-    this.materials = [
-        'animates', 'enemys', 'hero', 'items', 'npcs', 'terrains', 'enemy48', 'npc48', 'sprite'
-    ];
+
+    var icons = [
+        'floor', 'name', 'lv', 'hpmax', 'hp', 'mana', 
+        'atk', 'def', 'mdef', 'money', 'experience', 'up', 'skill', 
+        'book', 'fly', 'toolbox', 'keyboard', 'shop', 'save', 'load', 'settings',
+        'btn1', 'btn2', 'btn3', 'btn4', 'btn5', 'btn6', 'btn7', 'btn8',
+    ]
 
     this.statusBar = {
-        'image': {
-            'floor': document.getElementById('img-floor'),
-            'name': document.getElementById('img-name'),
-            'lv': document.getElementById('img-lv'),
-            'hpmax': document.getElementById('img-hpmax'),
-            'hp': document.getElementById("img-hp"),
-            'mana': document.getElementById("img-mana"),
-            'atk': document.getElementById("img-atk"),
-            'def': document.getElementById("img-def"),
-            'mdef': document.getElementById("img-mdef"),
-            'money': document.getElementById("img-money"),
-            'experience': document.getElementById("img-experience"),
-            'up': document.getElementById("img-up"),
-            'skill': document.getElementById('img-skill'),
-            'book': document.getElementById("img-book"),
-            'fly': document.getElementById("img-fly"),
-            'toolbox': document.getElementById("img-toolbox"),
-            'keyboard': document.getElementById("img-keyboard"),
-            'shop': document.getElementById('img-shop'),
-            'save': document.getElementById("img-save"),
-            'load': document.getElementById("img-load"),
-            'settings': document.getElementById("img-settings"),
-            'btn1': document.getElementById("img-btn1"),
-            'btn2': document.getElementById("img-btn2"),
-            'btn3': document.getElementById("img-btn3"),
-            'btn4': document.getElementById("img-btn4"),
-            'btn5': document.getElementById("img-btn5"),
-            'btn6': document.getElementById("img-btn6"),
-            'btn7': document.getElementById("img-btn7"),
-            'btn8': document.getElementById("img-btn8"),
-        },
+        'image': function(icons) {
+            var doms = {};
+            for (var i = 0; i < icons.length; i++) {
+                doms[icons[i]] = document.getElementById("img-"+icons[i]);
+            }
+            return doms;
+        }(icons),
         'icons': {
             'floor': 0,
             'name': null,
@@ -186,14 +178,10 @@ function main() {
         'fly': document.getElementById('fly'),
         'hard': document.getElementById("hard")
     }
-    this.floors = {}
-    this.canvas = {};
-
-    this.__VERSION__ = "2.6.4";
-    this.__VERSION_CODE__ = 78;
 }
 
 main.prototype.init = function (mode, callback) {
+    this.bindDOM();
     for (var i = 0; i < main.dom.gameCanvas.length; i++) {
         main.canvas[main.dom.gameCanvas[i].id] = main.dom.gameCanvas[i].getContext('2d');
     }
@@ -230,7 +218,7 @@ main.prototype.init = function (mode, callback) {
 
             main.loadFloors(function() {
                 var coreData = {};
-                ["dom", "statusBar", "canvas", "images", "tilesets", "materials",
+                ["dom", "statusBar", "canvas", "images", "tilesets", "materials", "autotiles",
                     "animates", "bgms", "sounds", "floorIds", "floors"].forEach(function (t) {
                     coreData[t] = main[t];
                 })

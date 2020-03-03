@@ -245,7 +245,7 @@ core.prototype._init_flags = function () {
     core.dom.versionLabel.innerText = core.firstData.version;
     core.dom.logoLabel.innerText = core.firstData.title;
     document.title = core.firstData.title + " - HTML5魔塔";
-    document.getElementById("startLogo").innerText = core.firstData.title;
+    startLogo.innerText = core.firstData.title;
     (core.firstData.shops||[]).forEach(function (t) { core.initStatus.shops[t.id] = t; });
     // 初始化自动事件
     for (var floorId in core.floors) {
@@ -370,8 +370,6 @@ core.prototype._init_others = function () {
     core.material.groundCanvas.canvas.width = core.material.groundCanvas.canvas.height = 32;
     core.material.groundPattern = core.material.groundCanvas.createPattern(core.material.groundCanvas.canvas, 'repeat');
     core.bigmap.tempCanvas = document.createElement('canvas').getContext('2d');
-    core.loadImage('fog', function (name, img) { core.animateFrame.weather.fog = img; });
-    core.loadImage('keyboard', function (name, img) {core.material.images.keyboard = img; });
     // 记录存档编号
     core.saves.saveIndex = core.getLocalStorage('saveIndex', 1);
     core.control.getSaveIndexes(function (indexes) { core.saves.ids = indexes; });

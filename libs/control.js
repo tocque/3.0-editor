@@ -1102,7 +1102,7 @@ control.prototype.heroSpritePositionTransForm = function(obj, x, y, direction, s
 control.prototype._addHeroSprite = function(data){
     core.becomeSubject(data);
     data.addObserver(
-        core.sprite.getSpriteObj(data.name || core.getFlag('heroIcon', core.status.hero.loc.name || 'hero')));
+        core.sprite.getSpriteObj(data.name || core.getFlag('heroIcon', 'hero')));
     core.status.heroSprite.objs.push(data);
 }
 
@@ -2161,8 +2161,8 @@ control.prototype._syncSave_http = function (type, saves) {
     formData.append('name', core.firstData.name);
     formData.append('data', JSON.stringify(saves));
 
-    core.http("POST", "/games/sync.php", formData, function (data) {
-        var response = JSON.parse(data);
+    core.axios.post("/games/sync.php", formData).then(function (res) {
+        var response = JSON.parse(res.data);
         if (response.code<0) {
             core.drawText("出错啦！\n无法同步存档到服务器。\n错误原因："+response.msg);
         }
@@ -2171,7 +2171,7 @@ control.prototype._syncSave_http = function (type, saves) {
                 +response.code+"\n您的存档密码： "+response.msg
                 +"\n\n请牢记以上两个信息（如截图等），在从服务器\n同步存档时使用。\n\r[yellow]另外请注意，存档同步只会保存一个月的时间。\r")
         }
-    }, function (e) {
+    }).catch(function (e) {
         core.drawText("出错啦！\n无法同步存档到服务器。\n错误原因："+e);
     })
 }

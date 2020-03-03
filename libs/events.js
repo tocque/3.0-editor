@@ -2661,7 +2661,6 @@ events.prototype.canUseQuickShop = function (shopId) {
 events.prototype.setHeroIcon = function (name, noDraw) {
     var idx = name.indexOf('.png');
     if(idx>0)name = name.substr(0, idx);
-    core.status.hero.loc.name = name;
     core.setFlag("heroIcon", name);
     if(!noDraw){
         core.status.hero.loc.notify("change", {name:name, line:core.utils.line[core.getHeroLoc('direction')]})
