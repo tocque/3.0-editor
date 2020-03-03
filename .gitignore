@@ -54,4 +54,6 @@ crashlytics-build.properties
 fabric.properties
 
 
-
+# vue dev edition
+_server/thirdparty/vue.js
+_server/thirdparty/vuex.js
