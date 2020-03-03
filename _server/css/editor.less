@@ -1,8 +1,4 @@
-@c-info: #007ACC;
-@c-ichose: #1F8AD2;
-@c-chosen: white;
-@c-unchosen: darkgrey;
-@c-font: #C7C7C7;
+@import "./editor_skin.less";
 
 html, body {
     margin: 0;
@@ -13,6 +9,13 @@ html, body {
     overflow: hidden;
 }
 
+#window {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
 ul {
     user-select:none;
     list-style-type: none;
@@ -20,12 +23,12 @@ ul {
     padding: 0;
 }
 
-#header {
+header {
     height: 31px;
     width: 100%;
     cursor: default;
-    background-color: #444;
-    box-shadow: 0px 3px 3px #222; 
+    background-color: @c-top;
+    box-shadow: 0px 3px 3px; 
     overflow: hidden;
     position: absolute;
     z-index: 10;
@@ -36,17 +39,17 @@ ul {
             padding: 5px 12px;
             height: 21px;
             margin-inline-start: -5px;
-            color: darkGray;
+            color: @c-text;
             display: inline-block;
             &:hover { 
-                background-color:#3E3E3E;
+                background-color:#4E4E4E;
             }
-            &.chosen {
-                color: white;
-                background-color: #333;
+            &.active {
+                color: @c-text-hl;
+                background-color: #535353;
             }
             a {
-                color: darkGray;
+                color: @c-text;
                 text-decoration: none;
             }
         }
@@ -56,8 +59,54 @@ ul {
         margin-inline-start: 10%;
         width:30%;
         display: inline-block;
-        color: @c-font;
+        color: @c-text;
         text-align: center;
+        white-space: nowrap;
+    }
+}
+
+#statusBar {
+    display: flex;
+    justify-content: space-between;
+    width: 98%;
+    height: 27px;
+    bottom: 0px;
+    padding: 0 1%;
+    background-color: @c-status;
+    position: absolute;
+    z-index: 10;
+    color: aliceblue;
+    font-size: 14px;
+    .warning {
+        background-color: firebrick;
+    }
+    ul {
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+    #infoLeft {
+        flex: 1;
+    }
+    #infoRight {
+        margin-left: auto;
+    }
+    li {
+        padding: 0 6px;
+        height: 100%;
+        margin-inline-start: 3px;
+        margin-inline-end: 3px;
+        line-height: 27px;
+        // display: none;
+        &:hover {
+            background-color: @c-status-hl;
+        }
+        &.active {
+            display: inline-block;
+        }
+        span {
+            line-height: 26px;
+        }
     }
 }
 
@@ -66,32 +115,20 @@ ul {
     top: 31px;
     bottom: 27px;
     margin: 0 auto;
-    display: none;
+    display: block;
     position: absolute;
-    &.active {
-        display: block;
-    }
+    // &.active {
+    //     display: block;
+    // }
 }
 
-.side, .left, .mid, .right {
+.left, .mid, .right {
     top: 0px;
     bottom: 0px;
     position: absolute;
 }
 
-.side {
-    z-index: 8;
-    width: 50px;
-}
-
 .left {
-    .header {
-        font-weight: inherit;
-        font-size: 14px;
-        color: #bbb;
-        margin: 8px 10px;
-        line-height: 36px;
-    }
     z-index: 6;
 }
 
@@ -121,40 +158,17 @@ ul {
     }
 }
 
-#dataPanel {
+.main-side-layout {
     .left {
-        left: 0;
-        width: 33%;
+        left: 0px;
+        width: 330px;
     }
     .mid {
-        left: 33%;
-        width: 33%;
-        // border-left: solid 1px #999;
-        // border-right: solid 1px #999;
+        left: 330px;
+        right: 0px;
     }
-    .right {
-        right: 0;
-        width: 34%;
-        // border-left: solid 1px #999;
-    }
-    .left, .mid, .right {
-        .header {
-            font-weight: inherit;
-            font-size: 14px;
-            color: #bbb;
-            margin: 8px 10px;
-            line-height: 36px;
-        }
-        .container {
-            background-color: #222;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            top: 45px;
-            li {
-                padding: 2px 18px;
-            }
-        }
-        background-color: #333;
-    }
+}
+
+.code-editor, .multi-container {
+    height: 100%;
 }
