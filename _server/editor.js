@@ -1,58 +1,45 @@
-"use strict";
-var editor = new class Editor {
-    version = "3.0";
+import * as ui from "./editor_ui.js"
+import * as util from "./editor_util.js"
+import * as file from "./editor_file.js"
+import game from "./editor_game.js"
+import listen from "./editor_listen.js"
+import service from "./editor_service.js"
 
-    data = {};
+const libs = {
+    util, game, ui, listen, service, file
+};
 
-    /////////// 数据相关 ///////////
+class editor {
+    version = "2.0";
 
-    /**
-     * 编辑器的初始化函数
-     * 激活表现层类，由表现层初始化对应的数据操作模块
-     */
-    init() {
-        Promise.all([
-            import('./editor_util.js'),
-            import('./editor_view.js'),
-            import('./view_mappanel.js'),
-        ])
-        .then(([editor_util, editor_view, view_mappanel]) => {
-            editor.util = editor_util;
-            editor.view = editor_view;
-            editor.mappanel = view_mappanel;
-            editor.game = editor_game_wrapper(editor, function() {
-                editor.fs = fs;
-                editor_file_wrapper(editor, function () {
+    proJectName = ''; // vue监听
 
-                });
-            });
-        });
+    constructor() {
+        this.fs = fs;
+        this.afterload = this.load();
     }
 
-    ////// 批量加载JS文件 //////
-    loadJsByList(dir, loadList, callback) {
-        // 加载js
-        var instanceNum = 0;
-        for (let i = 0; i < loadList.length; i++) {
-            this.loadJs(dir, loadList[i], function () {
-                instanceNum++;
-                if (instanceNum === loadList.length) {
-                    callback();
-                }
-            });
+    /** 加载编辑器所需的各个模块 */
+    async load() {
+        console.log(libs);
+        for (let lib in libs) { // 仍然提供通过editor访问的方式, 但是原则上内部不使用
+            if (libs.hasOwnProperty(lib)) {
+              this[lib] = libs[lib];
+            }
         }
-    }
 
-    ////// 加载单个JS文件 //////
-    loadJs(dir, modName, callback) {
-        var script = document.createElement('script');
-        var name = modName;
-        script.src = dir + '/' + modName + '.js';
-        document.body.appendChild(script);
-        script.onload = function () {
-            callback(name);
-        }
-    }
+        this.userdata = await new file.config("./_server/config.json");
+        [this.towerInfo, this.window] = await Promise.all([
+            new file.config("./work.h5mota"),
+            import('./editor_window.js'),
+            game.hooks.floorsLoad
+        ]);
+
+        game.buildMapTree(this.towerInfo.get("mapStruct"));
+
+        this.window = this.window.default();
+        return this;
+    };
 }
 
 window.onerror = function (msg, url, lineNo, columnNo, error) {
@@ -81,7 +68,7 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
 };
 
 // 兼容
-var main = {
+window.main = {
     floors: {},
     log: function (e) {
         if (e) {

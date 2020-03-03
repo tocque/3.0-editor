@@ -1,298 +1,62 @@
-<!DOCTYPE html>
+<!doctype html>
+<html>
 <head>
     <meta charset="utf-8">
     <link href="_server/css/editor.css" rel="stylesheet">
-    <link href="_server/css/editor_ui.css" rel="stylesheet">
-    <link href="_server/css/editor_table.css" rel="stylesheet">
-    <link href="_server/css/mapPanel.css" rel="stylesheet">
-    <link href="_server/css/scriptEditor.css" rel="stylesheet">
-    <link href="_server/css/pluginPanel.css" rel="stylesheet">
     <link href="_server/css/codicon.css" rel="stylesheet">
-    <link href="_server/css/codicon-animations.css" rel="stylesheet">
+    <link href="_server/mt-ui/mt-ui.css" rel="stylesheet">
+    <link href="_server/thirdparty/awesomplete.css" rel="stylesheet">
 </head>
 <body>
-<body>
 <script>
-    if(innerWidth<innerHeight){ //pic:1242*2208 | chrome info:1340*2380
-        confirm('高大于宽的设备请使用移动版本的editor, 点击确定跳转')?(window.location='./editor-mobile.html'):'';
-    }
-    if (location.protocol.indexOf("http")!=0) {
+    if (!location.protocol.startsWith("http")) {
         alert("请在启动服务中打开本编辑器！不然包括编辑在内的绝大多数功能都无法使用。");
-    }
+        window.isOnline = false;
+    } else window.isOnline = true;
 </script>
-<div id="header">
-    <ul id="topnav">
-        <li data-tab="map">地图</li>
-        <li data-tab="data">数据</li>
-        <li data-tab="resource">资源</li>
-        <li data-tab="commonEvent">公共事件</li>
-        <li data-tab="script">脚本</li>
-        <li data-tab="plugin">插件</li>
-        <li data-tab="help"><a href="https://h5mota.com/games/template/_docs/" target="_blank">帮助</a></li>
-    </ul>
-    <p id="title">title</p>
-</div>
-<div id="main">
-    <div class="mainPanel" id="mapPanel">
-        <div class="side" id="mapSide">
-            <ul id="mapSideList">
-                <li data-tab="mapExplorer" title="地图列表"><img src="_server/icon/mapList.svg"></li>
-                <li title="事件列表"><img src="_server/icon/eventList.svg"></li>
-                <li title="搜索事件"><img src="_server/icon/searchEvent.svg"></li>
-                <li title="新建地图"><img src="_server/icon/newMap.svg"></li>
-                <li title="地图属性"><img src="_server/icon/mapProperty.svg"></li>
-            </ul>
-        </div>
-        <div class="left" id="mapLeft">
-            <div id="mapExplorer">
-                <h3 class="header">地图列表</h3>
-                <div class="inputSet" id="mapExplorerSearch">
-                    <input class="inputBar" type="name" placeholder="搜索地图">
-                    <div class="clearBtn"><i class="codicon codicon-clear-all"></i></div>
-                </div>
-                <div class="container">
-                    <ul id="mapExplorerUL">
-                    </ul>
-                </div>
-            </div>
-            <div id="mapEvent">
-                <h3 class="header">地图选点&nbsp;&nbsp;<button onclick="editor.mode.onmode('save')">保存</button>&nbsp;&nbsp;<button onclick="editor_multi.editCommentJs('loc')">配置表格</button>
-                </h3>
-                <div class="container etable">
-                    <ul id='mapEventList'>
-                    </ul>
-                </div>
-            </div>
-            <div id="mapSearch">
-                <h3 class="header">搜索事件</h3>
-
-            </div>
-            <div id="mapBuilding">
-                <h3 class="header">新建地图</h3>
-                <div id="buildingPara">
-                    <span>批量创建<i class="icon-i"></i></span>
-                    <input id='newFileName' placeholder="新楼层id" style="width: 70px"/>
-                    <div id='newFloors' style='display:none'>
-                        <span style="vertical-align: bottom">楼层ID格式: </span>
-                        <input id='newFloorIds' style="width: 70px" value='MT${i}'/>
-                        <span style="vertical-align: bottom">地图中文名格式: </span>
-                        <input id='newFloorTitles' style="width: 100px" value='主塔 ${i} 层'/>
-                        <br/>
-                        <span style="vertical-align: bottom">状态栏名称: </span>
-                        <input id='newFloorNames' style="width: 70px" value='${i}'/>
-                    </div>
-                    <br/>
-                    <span style="vertical-align: bottom">从 i=</span>
-                    <input id='newMapsFrom' value="1" style="width: 20px"/>
-                    <span style="vertical-align: bottom">到</span>
-                    <input id='newMapsTo' value="5" style="width: 20px"/>
-                    <span style="vertical-align: bottom">宽</span>
-                    <input id='newMapWidth' value="13" style="width: 20px"/>
-                    <span style="vertical-align: bottom">高</span>
-                    <input id='newMapHeight' value="13" style="width: 20px"/>
-                    <input type="checkbox" id='newMapStatus' checked='checked' style='vertical-align: bottom'/>
-                    <span style='vertical-align: bottom; margin-left: -4px'>保留楼层属性</span>
-                </div>
-                <input type="button" value="确认创建" id='createNewMap'/>
-            </div>
-            <div id="mapProperty">
-                <h3 class="header">地图属性
-                    <button onclick="editor.mode.onmode('save')">保存</button>
-                    <button onclick="editor.mode.changeDoubleClickModeByButton('add')">添加</button>
-                    <button onclick="editor.mode.changeDoubleClickModeByButton('delete')">删除</button>
-                    <button onclick="editor_multi.editCommentJs('floor')">配置表格</button>
-                </h3>
-                <div class="container">
-                    <div class='etable'>
-                        <ul id='mapPropertyList'>
-                        </ul>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-        <div class="mid" id="mapMid">
-            <div id="canvasManager">
-                <ul id="canvasTabList">
-                    <li><img src="_server/icon/tiled.ico">背景层</li>
-                    <li><img src="_server/icon/tiled.ico">事件层</li>
-                    <li><img src="_server/icon/tiled.ico">前景层</li>
-                </ul>
-            </div>
-            <div id="mapToolbar">
-                <ul id="paintToolbar">
-                    <li value="line">线</li>
-                    <li value="rectangle">矩形</li>
-                    <li value="tileset">tileset</li>
-                </ul>
-            </div>
-            <div id="mapViewPort">
-                <div class="markContainer col">
-                    <table class="col" id='mapColMark'></table>
-                </div>
-                <div class="markContainer row">
-                    <table class="row" id='mapRowMark'></table>
-                </div>
-                <div class="map" id="mapEdit">
-                    
-                    <canvas class='gameCanvas' id='efg' width='416' height='416'></canvas>
-                    <canvas class='gameCanvas' id='eui' width='416' height='416' style='z-index:100'></canvas>
-                </div>
-                <canvas id="tileMap">浏览器不支持，请使用chrome打开编辑器</canvas>
-            </div>
-        </div>
-        <div class="right" id="mapRight">
-            <div id="iconLib">
-                <div id="iconImages"></div>
-                <div id="selectBox">
-                    <div id='dataSelection' style="display:none"></div>
-                </div>
-            </div>
-            <button id="iconExpandBtn"></button>
-        </div>
-    </div>
-    <div class="mainPanel" id="dataPanel">
-        <div id="firstData" class="left">
-            <h3 class="header">初始数据
-            </h3>
-            <div class="container">
-                <ul id='firstDataList'>
-                </ul>
-            </div>
-        </div>
-        <div id="globalValue" class="mid">
-            <h3 class="header">全局变量
-            </h3>
-            <div class="container etable">
-                <ul id='globalValueList'>
-                </ul>
-            </div>
-        </div>
-        <div id="globalFlag" class="right">
-            <h3 class="header">全局开关
-            </h3>
-            <div class="container etable">
-                <ul id='globalFlagList'>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <div class="mainPanel" id="resourcePanel">
-        <h3 class="leftTabHeader">追加素材</h3>
-        <div class="leftTabContent">
-            <p>
-                <input id="selectFileBtn" type="button" value="导入文件到画板"/>
-                <select id="selectAppend"></select>
-                <!-- ["terrains", "animates", "enemys", "enemy48", "items", "npcs", "npc48"] -->
-                <input id="appendConfirm" type="button" value="追加"/>
-                <input id="quickAppendConfirm" type="button" value="快速追加"/>
-            </p>
-            <p>
-                色相:<input id='changeColorInput' type="range" min="0" max="12" step="1" value="0" list="huelists" style="width: 60%;margin-left: 3%;vertical-align: middle">
-                <datalist id="huelists" style="display: none">
-                    <option value="0"/><option value="1"/><option value="2"/>
-                    <option value="3"/><option value="4"/><option value="5"/>
-                    <option value="6"/><option value="7"/><option value="8"/>
-                    <option value="9"/><option value="10"/><option value="11"/><option value="12"/>
-                </datalist>
-            </p>
-            <div id="appendPicCanvas" style="position:relative;overflow: auto;height:470px;">
-                <canvas style="position:absolute"></canvas><!-- 用于画出灰白相间背景 -->
-                <canvas style="position:absolute"></canvas><!-- 用于画出选中文件 -->
-                <canvas style="position:absolute;z-index:100"></canvas><!-- 用于响应鼠标点击 -->
-                <canvas style="position:absolute;display:none;"></canvas><!-- 画出追加后的sprite用于储存 -->
-                <div id="appendPicSelection">
-                    <div class="appendSelection"><span style="top: 0; left: 2px;">1</span></div>
-                    <div class="appendSelection"><span style="top: 0; left: 14px;">2</span></div>
-                    <div class="appendSelection"><span style="top: 12px; left: 2px;">3</span></div>
-                    <div class="appendSelection"><span style="top: 12px; left: 14px;">4</span></div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-    <div class="mainPanel" id="commonEventEditor">
-
-    </div>
-    <div class="mainPanel" id="scriptPanel">
-        <div class="left" id="scriptLeft">
-            <h3 class="header">脚本编写</h3>
-            <div class="container">
-                <div class="etable">
-                    <ul id="scriptList">
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="right" id="scriptRight">
-            <div id="scriptToolbar">
-                <div>确认</div>
-                <div>取消</div>
-            </div>
-            <div id="scriptMulti"></div>
-        </div>
-    </div>
-    <div class="mainPanel" id="pluginPanel">
-        <div class="left" id="pluginLeft">
-            <h3 class="header">插件管理</h3>
-            <div class="inputSet" id="pluginMangerSearch">
-                <input class="inputBar" type="name" placeholder="搜索插件">
-                <div class="clearBtn staticIcon"><img src="_server/icon/close.svg"></div>
-            </div>
-            <div class="container">
-                <ul id="pluginLib">
-    
-                </ul>
-                <ul id="pluginList">
-    
-                </ul>
-            </div>
-        </div>
-        <div class="mid" id="pluginMid">
-
-        </div>
-    </div>
-    <div id="infoBar">
-        <ul id="infoLeft">
+<div id="window">
+    <header>
+        <mt-tabs id="topnav" :tabs="mainPanels" init="mapPanel" @switch="switchMainPanel">
+            <li><a href="https://h5mota.com/games/template/_docs/" target="_blank">帮助</a></li>
+        </mt-tabs>
+        <p id="title">{{ projectName }} - HTML5 魔塔编辑器</p>
+    </header>
+    <keep-alive>
+        <components class="mainPanel" :is="mainPanelActive" ref="panelNow"></components>
+    </keep-alive>
+    <footer id="statusBar">
+        <ul ref="left" id="statusLeft">
+            <status-item left>{{ message }}</status-item>
         </ul>
-        <ul class="infoRight">
-        </ul>
-        <ul class="infoRight">
-        </ul>
-        <ul class="infoRight">
-        </ul>
-    </div>
-    <div id="nameless"></div>
+        <ul ref="right" id="statusRight"></ul>
+    </footer>
+    <blockly-editor ref="blockly"></blockly-editor>
 </div>
 
-<!-- */</script> -->
+<!-- <script>/* -->
 
 <!-- =========================================================== -->
 
-<!-- <script src='_server/vendor/vue.min.js'></script> -->
-<!-- <script src="https://cdn.bootcss.com/vue/2.5.13/vue.js"></script> -->
-<!-- <script src='_server/vendor/polyfill.min.js'></script> -->
+<script src='_server/thirdparty/vue.js'></script>
+<script src='_server/thirdparty/vuex.js'></script>
+
 <script src='_server/fs.js'></script>
-<script type="module" src='_server/editor_util.js'></script>
-<script src='_server/editor_game.js'></script>
-<script src='_server/editor_file.js'></script>
-<!-- ui组件 -->
-<script type="module" src='_server/editor_ui.js'></script>
-<script type="module" src='_server/ui_list.js'></script>
-<!-- <script src='_server/ui_multi.js'></script> -->
-<!-- <script src='_server/ui_blockly.js'></script> -->
-<!-- 视图层主体 -->
-<script type="module" src='_server/editor_view.js'></script>
-<script type="module" src='_server/view_mapPanel.js'></script>
-<script type="module" src='_server/view_dataPanel.js'></script>
-<!-- <script src='_server/view_scriptPanel.js'></script> -->
-<!-- <script src='_server/view_pluginPanel.js'></script> -->
-<script src='libs/thirdparty/pixi.min.js'></script>
-<script src='libs/thirdparty/lz-string.min.js'></script>
-<script src='libs/thirdparty/localforage.min.js'></script>
-<script src='_server/editor.js'></script>
-<script>editor.init()</script>
+<script src='_server/editor_ui.js'type="module"></script>
+<script src='_server/editor_util.js'type="module"></script>
+<script src='_server/editor_game.js'type="module"></script>
+<script src='_server/editor_file.js'type="module"></script>
+<script src='_server/editor_listen.js'type="module"></script>
+<script src='_server/editor_service.js'type="module"></script>
+<script src='_server/editor.js'type="module"></script>
+<script src='libs/thirdparty/pixi.min.js' type="module"></script>
+<script src="_server/thirdparty/awesomplete.min.js"></script>
 
-
+<!-- monaco -->
+<script src='_server/vs/loader.js' type="module"></script>
+<!-- blockly -->
+<script src="_server/blockly/blockly_compressed.js"></script>
+<script src="_server/blockly/blocks_compressed.js"></script>
+<script src="_server/blockly/javascript_compressed.js"></script>
+<script id="blocklyLang" src="_server/blockly/zh-hans.js"></script>
 </body>
 </html>
