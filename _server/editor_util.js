@@ -1,21 +1,18 @@
-    function editor_util () {
 
-    }
-
-    editor_util.prototype.guid = function () {
+    export const createGuid = function () {
         return 'id_' + 'xxxxxxxx_xxxx_4xxx_yxxx_xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
     }
 
-    editor_util.prototype.HTMLescape = function (str_) {
+    export const HTMLescape = function (str_) {
         return String(str_).split('').map(function (v) {
             return '&#' + v.charCodeAt(0) + ';'
         }).join('');
     }
 
-    editor_util.prototype.getPixel = function (imgData, x, y) {
+    export const getPixel = function (imgData, x, y) {
         var offset = (x + y * imgData.width) * 4;
         var r = imgData.data[offset + 0];
         var g = imgData.data[offset + 1];
@@ -24,7 +21,7 @@
         return [r, g, b, a];
     }
 
-    editor_util.prototype.setPixel = function (imgData, x, y, rgba) {
+    export const setPixel = function (imgData, x, y, rgba) {
         var offset = (x + y * imgData.width) * 4;
         imgData.data[offset + 0] = rgba[0];
         imgData.data[offset + 1] = rgba[1];
@@ -58,7 +55,7 @@
     //--------------------------------------------
     // https://github.com/carloscabo/colz/blob/master/public/js/colz.class.js
     var round = Math.round;
-    var rgbToHsl = function (rgba) {
+    export const rgbToHsl = function (rgba) {
         var arg, r, g, b, h, s, l, d, max, min;
 
         arg = rgba;
@@ -104,7 +101,7 @@
         return [h, s, l];
     }
     //
-    var hue2rgb = function (p, q, t) {
+    export const hue2rgb = function (p, q, t) {
         if (t < 0) { t += 1; }
         if (t > 1) { t -= 1; }
         if (t < 1 / 6) { return p + (q - p) * 6 * t; }
@@ -112,7 +109,7 @@
         if (t < 2 / 3) { return p + (q - p) * (2 / 3 - t) * 6; }
         return p;
     }
-    var hslToRgb = function (hsl) {
+    export const hslToRgb = function (hsl) {
         var arg, r, g, b, h, s, l, q, p;
 
         arg = hsl;
@@ -139,46 +136,125 @@
         }
         return [round(r * 255), round(g * 255), round(b * 255)];
     }
-    editor_util.prototype.rgbToHsl = rgbToHsl
-    editor_util.prototype.hue2rgb = hue2rgb
-    editor_util.prototype.hslToRgb = hslToRgb
 
-    editor_util.prototype.encode64 = function (str) {
+    export const encode64 = function (str) {
         return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
             return String.fromCharCode(parseInt(p1, 16))
         }))
     }
 
-    editor_util.prototype.decode64 = function (str) {
+    export const decode64 = function (str) {
         return decodeURIComponent(atob(str.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, '')).split('').map(function (c) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
         }).join(''))
     }
 
-    editor_util.prototype.isset = function (val) {
+    /** 判断某对象是否不为null也不为NaN */
+    export const isset = function (val) {
         return val != null && !(typeof val == 'number' && isNaN(val));
     }
 
-    editor_util.prototype.checkCallback = function (callback) {
-        if (!editor.util.isset(callback)) {
-            editor.printe('未设置callback');
-            throw ('未设置callback')
-        }
+    export const exec = function (func, ...args) {
+        if (func instanceof Function) return func(...args);
     }
 
-    editor_util.prototype.buildlocobj = function (locObj, src) {
-        for (let key in locObj) {
-            let obj = locObj[key];
-            if (typeof(obj) !== typeof('')) editor.util.buildlocobj(obj, src);
-            else obj = src[obj];
+    
+    /** 深拷贝一个对象 */
+    export const clone = function (data) {
+        if (!isset(data)) return null;
+        // date
+        if (data instanceof Date) {
+            return new Date(data);
         }
-    };
-
-    editor_util.prototype.parseDOM = function (html) {
-        let factory = document.createElement("div");
-        factory.innerHTML = html;
-        return factory.children;
+        // array
+        if (Array.isArray(data)) {
+            const copy = new Array(data.length);
+            for (let i = 0; i < data.length; i++) {
+                copy[i] = clone(data[i]);
+            }
+            return copy;
+        }
+        // 函数
+        if (data instanceof Function) {
+            return data;
+        }
+        // object
+        if (data instanceof Object) {
+            let copy = {};
+            for (let i in data) {
+                if (data.hasOwnProperty(i))
+                    copy[i] = clone(data[i]);
+            }
+            return copy;
+        }
+        return data;
     }
 
-    export var utils = new editor_util();
-//editor_util_wrapper(editor);
+    /**
+     * 检查字符串数组中是否有重复字符串
+     * @param {Array<String>} thiseval 
+     */
+    export const checkUnique = function (thiseval) {
+        if (!(thiseval instanceof Array)) return false;
+        const map = {};
+        for (var i = 0; i < thiseval.length; ++i) {
+            if (map[thiseval[i]]) {
+                return false;
+            }
+            map[thiseval[i]] = true;
+        }
+        return true;
+    }
+
+    const keyCodeDict = {
+        "backspace": 8,
+        "tab": 9,
+        "enter": 13,
+        "shift": 16,
+        "ctrl": 17,
+        "alt": 18,
+        "esc": 27,
+        "spcae": 32,
+        "pageup": 33,
+        "pagedown": 34,
+        "left": 37,
+        "up": 38,
+        "right": 39,
+        "down": 40,
+        "delete": 46,
+    }
+
+    /** 翻译键盘码 */
+    export const translateKeyCode = function(keyCode) {
+        if (keyCodeDict[keyCode]) return keyCodeDict[keyCode];
+        if (keyCode.length > 1) {
+            if (keyCode[0] == 'f')  { // 功能键
+                const fcode = keyCode.charCodeAt(1) - 48;
+                if (fcode >= 1 && fcode <= 12) return 111 + fcode;
+            }
+            else if (keyCode[0] == 'k')  { // 键盘码, 为与数字区分前面需要加k
+                return parseInt(keyCode.slice(1));
+            }
+        } else {
+            const charcode = keyCode.charCodeAt(0);
+            if (charcode >= 48 && charcode <= 57) return charcode; // 数字
+            if (charcode >= 97 && charcode <= 122) return charcode-32; // 字母
+        }
+        throw new Error(keyCode+"不是合法的键盘码");
+    }
+
+    /** 向一个对象的所有键值对混入一个对象 */
+    export const batchMixin = function(obj, m) {
+        const newObj = {};
+        for (let e in newObj) {
+            newObj[e] = Object.assign({}, m, obj[e]);
+        }
+        return newObj;
+    }
+
+    export const mountJs = function(text) {
+        const script = document.createElement('script');
+        script.innerHTML = text;
+        document.body.appendChild(script);
+    }
+
