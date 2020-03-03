@@ -1,0 +1,78 @@
+@import "../../css/editor_skin.less";
+
+#scriptPanel {
+    .mid {
+        &.expend {
+            left: 50px;
+        }
+        .empty {
+            width: 100%;
+            height: 100%;
+            background-color: @c-main;
+        }
+    }
+    /* 优化展开时monaco的layout */
+    .monaco-editor {
+        width: 100% !important;
+        .overflow-guard {
+            width: 100% !important;
+        }
+        .monaco-scrollable-element.editor-scrollable {
+            right: 0;
+            width: auto !important;
+        }
+        .minimap.slider-mouseover {
+            left: auto !important;
+            right: 14px;
+            /* transition: width 1s; */
+        }
+    }
+}
+
+.pluginLib {
+    .container {
+        top: 100px;
+        bottom: 0;
+    }
+    li {
+        cursor: pointer;
+        padding: 8px 15px;
+        &:hover {
+            background: #363636;
+        }
+        &.chosen {
+            background: #3E3E3E;
+        }
+        h5 {
+            font-size: 14px;
+            margin-block-start: 0px;
+            margin-block-end: 0px;
+            font-weight: bold;
+            .ver {
+                color: lightgray;
+                font-size: 10px;
+            }
+        }
+        p {
+            word-break: break-all;
+            margin-block-start: 0px;
+            margin-block-end: 0px;
+            font-size: 14px;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+        }
+        span {
+            font-size: 12px;
+        }
+    }
+}
+
+.plugin-detail {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: @c-main;
+    color: @c-text;
+}
