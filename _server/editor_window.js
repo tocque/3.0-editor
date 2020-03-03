@@ -1,132 +1,97 @@
 /**
- * editor_view.js 控制编辑器主体外观显示的类
- * 大部分为单例
+ * editor_window.js 编辑器视图入口
+ * 
+ * vue template可以使用 Comment tagged templates 语法高亮
+ * https://marketplace.visualstudio.com/items?itemName=bierner.comment-tagged-templates
  */
-import * as ui from "./editor_ui.js";
+import game from "./editor_game.js"
+import "./thirdparty/elementUI/elementui.umd.min.js"
 
-export var topbar = new class topbar {
+import "./mt-ui/index.js"
 
-    /**顶部导航栏 */
-    constructor() {
-        let nav = document.getElementById("topnav");
-        this.nav = new ui.navbar(nav, nav.getElementsByTagName("li"), "map");
+import blocklyEditor from "./editor_blockly.js"
+import "./editor_multi.js"
 
-        this.title = document.getElementById("title");
+let mainPanels = {
+    
+}
+
+Vue.component("status-item", {
+    template: /* html */`<li><slot></slot></li>`,
+    props: ["left", "priority"],
+    mounted() {
+        this.$el.priority = this.priority || 0;
+        this.$injectStatusItem(this.left !== undefined ? "left" : "right", this);
     }
+});
 
-    updateTitle(title) {
-        document.title = this.title.innerText = title + " - HTML5 魔塔";
+let window = {
+    el: "#window",
+    data: {
+        mainPanelActive: "",
+        mainPanels: [],
+        projectName: editor.projectName, // 与标题相绑定
+        statusLeft: [],
+        messageType: 'normal',
+        message: '',
+        statusRight: [],
+    },
+    provide() {
+        return {
+            openBlockly: this.openBlockly,
+        }
+    },
+    created() {
+        Vue.prototype.$print = this.print.bind(this);
+        Vue.prototype.$clear = this.clear.bind(this);
+        Vue.prototype.$injectStatusItem = this.injectStatusItem.bind(this);
+
+        this.projectName = game.getProjectName();
+        this.mainPanels = this.mainPanels.concat(Object.entries(mainPanels)
+            .map(e => ({ id: e[0], label: e[1].label })));
+    },
+    methods: {
+        print(str, type) {
+            this.message = str;
+            if (!type) type = "normal";
+            this.messageType = type;
+        },
+        clear(value) {
+            var tips = [
+                '表格的文本域可以双击进行编辑',
+                '双击地图可以选中素材，右键可以弹出菜单',
+                '双击事件编辑器的图块可以进行长文本编辑/脚本编辑/地图选点/UI绘制预览等操作',
+                'ESC或点击空白处可以自动保存当前修改',
+                'H键可以打开操作帮助哦',
+                'tileset贴图模式可以在地图上拖动来一次绘制一个区域；右键额外素材也可以绑定宽高',
+                '可以拖动地图上的图块和事件，或按Ctrl+C, Ctrl+X和Ctrl+V进行复制，剪切和粘贴，Delete删除',
+                'Alt+数字键保存图块，数字键读取保存的图块',
+            ];
+            if (value == null) value = Math.floor(Math.random() * tips.length);
+            this.print('tips: ' + tips[value])
+        },
+        switchMainPanel(panel) {
+            this.mainPanelActive = panel.id;
+            //this.$refs[panel.pane].active();
+        },
+        injectStatusItem(align, item) {
+            editor.ui.insertSortElm(this.$refs[align], item.$el);
+        },
+        openBlockly(node, type) {
+            return this.$refs.blockly.import(node, type);
+        }
+    },
+    components: {
+        ...mainPanels, blocklyEditor
+    },
+    watch: {
+        projectName(value) {
+            document.title = value + " - HTML5 魔塔编辑器";
+        }
     }
 };
 
-class infoBlock {
-    constructor(content) {
-        this.elm = document.createElement("li");
-        this.content = content;
-    }
-
-    show() {
-        this.elm.classList.add("active");
-    }
-
-    hide() {
-        this.elm.classList.remove("active");
-    }
-
-    update(...args) {
-        this.elm.innerHTML = this.content(...args);
-    }
+export default function init() {
+    return new Vue(window);
 }
-
-export var infobar = new class infobar {
-    /**
-     * 底部信息栏 左侧信息栏为系统信息，右侧信息栏为面板/编辑器级信息
-     */
-    constructor() {
-        this.body = document.getElementById("infoBar");
-        this.left = document.getElementById("infoLeft");
-        this.tip = new infoBlock;
-        this.left.append(this.tip.elm);
-    
-        let rights = document.getElementsByClassName("infoRight");
-        
-        this.rights = {
-            'system': rights[2],
-            'panel': rights[1],
-            'editor': rights[0],
-        }
-    }
-    
-    showTip(tip, warn) {
-        if (tip) this.tip.setContent(tip);
-        this.setWarning(warn);
-    }
-    
-    applyBlock(level, content) {
-        var block = new infoBlock(content);
-        this.rights[level].appendChild(block.elm);
-        return block;
-    }
-    
-    warning() {
-        if (code == 'warn') {
-            this.body.classList.add("warning");
-        }
-        this.body.classList.remove("warning");
-    }
-}
-
-export class panel {
-    
-    name = "base";
-    /** 
-     * 面板的基类, 与infobar, topbar绑定
-     * @param {HTMLElement} body 面板主体
-     * @param {String} name 面板名称
-     */
-    constructor(body, name) {
-        this.body = body;
-        this.name = name;
-        topbar.nav.bind(this.name, this.active.bind(this), this.unactive.bind(this));
-    }
-
-    active() {
-        this.body.classList.add("active");
-        // editor.view.infobar.changePanel(this);
-    }
-
-    unactive() {
-        this.body.classList.remove("active");
-        // editor.view.infobar.changePanel(null);
-    }
-}
-
-export class editor {
-
-    name = "base";
-    /** 
-     * 编辑器的基类
-     * @param {HTMLElement} body 编辑器主体
-     */
-    constructor(body) {
-        this.body = body;
-    }
-
-    /** 
-     * 绑定到导航/切换按钮上
-     * @param {ui.navbar} nav 导航类
-     */
-    bindTo(nav) {
-        nav.bind(this.name, this.active.bind(this), this.unactive.bind(this));
-    }
-
-    active() {
-        this.body.classList.add("active");
-        // editor.view.infobar.changeEditor(this);
-    }
-
-    unactive() {
-        this.body.classList.remove("active");
-        // editor.view.infobar.changeEditor(null);
-    }
-}
+//editor_mode = editor_mode(editor);
