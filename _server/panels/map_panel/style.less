@@ -1,96 +1,34 @@
-@import "editor";
+@import "../../css/editor_skin.less";
 
 #mapPanel {
-    .side {
-        padding-block-start: 10px;
-        box-shadow: 3px 0px 3px #222;
-        background-color: #444;
-        li {
-            cursor: pointer;
-            margin: -2px 0px;
-            width: 30px;
-            height: 30px;
-            padding: 10px;
-            filter: drop-shadow(50px 0 0 darkGray);
+    .left {
+        width: 330px;
+        #mapExplorer li {
             &:hover {
-                filter: drop-shadow(50px 0 0 white);
+                background-color: #3E3E3E;
+            }
+            &.chosen {
+                background-color: #444;
             }
         }
-        img {
-            transform: translate(-50px);
+        .container {
+            left: 5px;
+            right: 2px;
+            bottom: 0;
+            top: 45px;
         }
-        .chosen {
-            filter: drop-shadow(50px 0 0 white);
-        }
-    }
-}
-
-#mapLeft {
-    left: 50px;
-    width: 280px;
-    &.collapse {
-        left: -230px
-    }
-    background-color: #333;
-    transition: left 1s;
-    &>div {
-        left: 0px;
-        right: 0px;
-        top: 0px;
-        bottom: 0px;
-        position: absolute;
-        display: none;
-        &.active {
-            display: block;
+        #buildingPara {
+            color: @c-text;
         }
     }
-    ul {
-        margin: 15px 0px;
-    }
-    li {
-        padding: 4px 2px 4px 15px;
-        color: @c-font;
-        // &.group {
-        //     font-weight: bold;
-        //     background-color: #444;
-        //     li {
-        //         padding: 4px 2px 4px 35px;
-        //     }
-        // }
-    }
-    #mapExplorer li {
-        &:hover {
-            background-color: #3E3E3E;
+    .mid {
+        left : 330px;
+        right: 0;
+        &.expend {
+            left: 50px;
         }
-        &.chosen {
-            background-color: #444;
-        }
+        transition: left 1s;
     }
-    .container {
-        left: 5px;
-        right: 2px;
-        bottom: 0;
-        top: 45px;
-    }
-    #buildingPara {
-        color: @c-font;
-    }
-    // button {
-    //     border-color: transparent;
-    //     margin-left: 150px;
-    //     outline:none;
-    //     color: darkgray;
-    //     background-color: transparent;
-    // }
-}
-
-#mapMid {
-    left : 330px;
-    right: 360px;
-    &.collapse {
-        left: 50px;
-    }
-    transition: left 1s;
 }
 
 #canvasManager {
@@ -119,7 +57,7 @@
             background-color: #555;
         }
         &.chosen {
-            color: @c-font;
+            color: @c-text;
             font-weight: bold;
             background-color: #555;
         }
