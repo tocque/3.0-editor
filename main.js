@@ -191,8 +191,6 @@ main.prototype.init = function (mode, callback) {
         var mainData = data_a1e2fb4a_e986_4524_b0da_9b7ba7c0874d.main;
         for(var ii in mainData)main[ii]=mainData[ii];
         
-        main.dom.startBackground.src="project/images/"+main.startBackground;
-        main.dom.startLogo.style=main.startLogoStyle;
         main.dom.startButtonGroup.style = main.startButtonsStyle;
         main.levelChoose.forEach(function(value){
             var span = document.createElement('span');
@@ -218,7 +216,7 @@ main.prototype.init = function (mode, callback) {
 
             main.loadFloors(function() {
                 var coreData = {};
-                ["dom", "statusBar", "canvas", "images", "tilesets", "materials", "autotiles",
+                ["dom", "statusBar", "canvas", "images", "tilesets", "materials", "autotiles", "sprites",
                     "animates", "bgms", "sounds", "floorIds", "floors"].forEach(function (t) {
                     coreData[t] = main[t];
                 })

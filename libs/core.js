@@ -245,7 +245,10 @@ core.prototype._init_flags = function () {
     core.dom.versionLabel.innerText = core.firstData.version;
     core.dom.logoLabel.innerText = core.firstData.title;
     document.title = core.firstData.title + " - HTML5魔塔";
-    startLogo.innerText = core.firstData.title;
+    core.dom.startLogo.innerText = core.firstData.title;
+    
+    core.dom.startBackground.src="project/images/"+main.startBackground;
+    core.dom.startLogo.style=main.startLogoStyle;
     (core.firstData.shops||[]).forEach(function (t) { core.initStatus.shops[t.id] = t; });
     // 初始化自动事件
     for (var floorId in core.floors) {
