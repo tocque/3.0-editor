@@ -1,6 +1,7 @@
 // This file was automatically generated.  Do not modify.
 
 'use strict';
+Blockly.__ready__ = true;
 
 goog.provide('Blockly.Msg.zh.hans');
 
