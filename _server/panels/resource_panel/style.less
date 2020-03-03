@@ -1,0 +1,74 @@
+@import "../../css/editor_skin.less";
+
+#resourcePanel {
+    .left {
+        width: 180px;
+        padding-top: 20px;
+        background-color: @c-side;
+    }
+    .mid {
+        left: 180px;
+        width: 260px;
+        background-color: @c-left;
+    }
+    .right {
+        left: 440px;
+        background-color: @c-main;
+    }
+    .__list {
+        color: @c-text;
+        .__item {
+            display: flex;
+            align-items: center;
+            padding: 5px 10px;
+            &.chosen, &:hover {
+                color: @c-text-hl;
+            }
+            &.chosen {
+                background-color: @c-left;
+                font-weight: bold;
+            }
+            span {
+                margin-left: 3px;
+            }
+        }
+        .mark {
+            margin-left: auto;
+        }
+    }
+    .__delete {
+        background-color: #882233;
+    }
+    .__add {
+        display: none;
+    }
+    .__item {
+        height: 24px;
+        span {
+            white-space: nowrap;
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        button {
+            margin-left: auto;
+        }
+    }
+    .__item:hover {
+        .__add {
+            display: block;
+        }
+    }
+    .toolbar {
+        background: #2E2E2E;
+        padding: 10px 10px 5px;
+        height: 24px;
+        &>div {
+            padding-left: 100px;
+        }
+        .disabled button{
+            background: #444;
+            color: #888;
+        }
+    }
+}
