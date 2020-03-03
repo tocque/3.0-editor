@@ -1,5 +1,5 @@
 /**
- * map_panel.js 地图编辑界面
+ * @file map_panel/index.js 地图编辑界面入口
  */
 import game from "../../editor_game.js";
 
