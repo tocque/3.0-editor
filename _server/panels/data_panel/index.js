@@ -1,5 +1,5 @@
 /**
- * event_panel.js 事件编辑界面
+ * data_panel.js 数据编辑界面
  */
 
 import commoneventTree from "./commonevent_tree.js";
@@ -9,9 +9,9 @@ let components = {
 }
 
 export default {
-    label: "公共事件",
+    label: "数据",
     template: /* HTML */`
-    <div class="main-side-layout" id="commoneventPanel">
+    <div class="main-side-layout" id="dataPanel">
         <mt-side class="left" @toggle="e => leftCollapsed = e">
             <commonevent-tree active ref="commoneventTree" @openTab="openTab"></commonevent-tree>
         </mt-side>
