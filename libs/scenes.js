@@ -63,11 +63,7 @@ baseScene.prototype._init = function(name){
             this.view.style.width = core.domStyle.scale * this.view.width + 'px';
             this.view.style.height = core.domStyle.scale * this.view.height + 'px';
             if(main.mode=='editor'){
-                if(name=='map') { // 只有地图才添加
-                    this.view.style.zIndex = 10;
-                    this.view.className = "gameCanvas";
-                    document.getElementById('mapEdit').appendChild(this.view);
-                }
+                window.parent.editor.game.views[name] = this.view;
             }
             else {
                 if(name=='map')core.dom.gameDraw.appendChild(this.view);
