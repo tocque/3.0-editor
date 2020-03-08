@@ -3,3 +3,56 @@
     box-shadow: -3px 0px 3px #111;
     width: 360px;
 }
+
+.markedContainer {
+    .colMark, .rowMark {
+        position: absolute;
+        display: flex;
+        font-size: 14px;
+        color: #999999;
+        font-family: Consolas, "Courier New", monospace;
+        font-feature-settings: "liga" 0, "calt" 0;
+        li {       
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            &.active {
+                color: #FFFFFF;
+            }
+        }
+    }
+
+    .colMark {
+        top: 5px;
+        left: 20px;
+        flex-direction: row;
+        li {
+            width: 31px;
+            height: 10px;
+            border-left: 1px #BBBBBB solid;
+            &:last-child {
+                border-right: 1px #BBBBBB solid;
+            }
+        }
+    }
+
+    .rowMark {
+        top: 20px;
+        left: 5px;
+        flex-direction: column;
+        li {
+            width: 10px;
+            height: 31px;
+            border-top: 1px #BBBBBB solid;
+            &:last-child {
+                border-bottom: 1px #BBBBBB solid;
+            }
+        }
+    }
+
+    .__inner {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+    }
+}
