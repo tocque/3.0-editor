@@ -39,9 +39,9 @@ export default {
             <select id="selectFloor"></select>
             <input type="button" value="保存地图" @click="saveFloor"/>
         </div>
-        <marked-container class="mapEdit">
+        <marked-container :size="mapSize" class="mapEdit">
             <canvas 
-                class='gameCanvas' ref="brench" 
+                class='gameCanvas' ref="eui" 
                 width='416' height='416' 
                 style='z-index:100'
                 @mousemove="mousemove"
@@ -67,30 +67,32 @@ export default {
             ctx: {
                 width: 416, 
                 height: 416,
-            }
+            },
+            mapSize: [0, 0],
         }
     },
-    mounted: function() {
+    created() {
+        const _this = this;
+        this.ready = new Promise((res, rej) => {
+            _this.__resolver__ = () => res(_this);
+        })
+    },
+    async mounted() {
         editor.tiledEditor = this;
-        game.fetchCanvas("map").then((e) => {
-            this.gameCanvas = $(e);
-            this.$refs.brench.parent.insertBefore(e,this.$refs.brench);
-        });
+        this.app = await game.fetchScene("map");
+        this.gameCanvas = this.app.view;
+        this.$refs.eui.parentElement.insertBefore(this.app.view, this.$refs.eui);
         this.dom = {
             mid: this.$el,
         }
         this.$refs.contextmenu.inject([
             {
                 text: (e, h) => `编辑此点(${h.eToPos(e).format(",")})`,
-                action: function (e, h) {
+                action(e, h) {
                     h.$changeMode("editEvent");
-                    h.drawPosSelection(h.eToPos(e));
-
-                    editor_mode.onmode('nextChange');
-                    editor_mode.onmode('loc');
-                    //editor_mode.loc();
-                    //tip.whichShow(1);
-                    if (editor.isMobile) editor.showdataarea(false);
+                    const pos = h.eToPos(e);
+                    h.drawPosSelection(pos);
+                    h.$emit("editEvent", pos);
                 },
             },
             {
@@ -110,15 +112,16 @@ export default {
             name: "事件编辑",
         });
         this.$work("tiledEditor", "event");
+        this.__resolver__();
     },
     methods: {
         //////////// 接口函数 ////////////
         openMap(floorId) {
-            this.resize(
-                game.maps[floorId].access("width"),
-                game.maps[floorId].access("height")
-            )
-            game.changeFloor(core.status.floorId);
+            const width = game.maps[floorId].access("width");
+            const height = game.maps[floorId].access("height");
+            this.resize(width, height);
+            this.mapSize = [width, height];
+            game.changeFloor(floorId);
         },
         //////////// 工具函数 ////////////
 
@@ -204,7 +207,10 @@ export default {
         },
 
         resize(width, height) {
-            this.dom.gameCanvas.resize(width*32, height*32, true);
+            width *= 32, height *= 32;
+            this.app.renderer.resize(width, height);
+            this.app.view.style.width = width + "px";
+            this.app.view.style.height = height + "px";
         },
 
         /**
