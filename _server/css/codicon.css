@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-@font-face {
+ @font-face {
 	font-family: "codicon";
 	src: url("../icon/codicon.ttf?ef02cfeb1bd632108a31e60b27eeeaac") format("truetype");
 }
@@ -383,3 +383,9 @@
 .codicon-word-wrap:before { content: "\f1eb" }
 .codicon-zoom-in:before { content: "\f1ec" }
 .codicon-zoom-out:before { content: "\f1ed" }
+
+/* 项目中引入的补充图标 */
+.codicon-javascript:before { color: #CDCD41; content: "\ea01" }
+.codicon-pen:before { content: "\ea02" }
+.codicon-rectangle:before { content: "\ea03" }
+.codicon-paint-bucket:before { content: "\ea04" }
