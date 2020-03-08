@@ -56,7 +56,7 @@
                 callback(null, data);
             }
         }, function (e) {
-            main.log(e);
+            console.log(e);
             callback(e+"：请检查启动服务是否处于正常运行状态。");
         }, "text/plain; charset=x-user-defined");
     }
@@ -141,5 +141,71 @@
             callback(err, data);
         });
         return;
+    }
+
+    /** 读取文本文件 */
+    fs.fetch = function(src) {
+        if (typeof(src) !== typeof('')) throw 'Type Error in fs.readFile';
+        const data = 'type=base64&name=' + src;
+        return new Promise((res, rej) => {
+            postsomething(data, '/readFile', (err, data) => {
+                if (err) rej(err)
+                else res(editor.util.decode64(data));
+            })
+        });
+    }
+
+    /** 读取二进制文件 */
+    fs.fetchBinary = function(src) {
+        if (typeof(src) !== typeof('')) throw 'Type Error in fs.readFile';
+        const data = 'type=base64&name=' + src;
+        return new Promise((res, rej) => {
+            postsomething(data, '/readFile', (err, data) => {
+                if (err) rej(err)
+                else res(data);
+            })
+        });
+    }
+
+    const fileInput = document.createElement("input");
+    fileInput.style.opacity = 0;
+    fileInput.type = 'file';
+    fileInput.onchange = function () {
+        const files = fileInput.files;
+        if (files.length == 0) {
+            if (errorCallback)
+                errorCallback();
+            return;
+        }
+        if (!readType) fileReader.readAsText(files[0]);
+        else fileReader.readAsDataURL(files[0]);
+        fileInput.value = '';
+    }
+
+    fs.selectFile = function (success, error, accept, readType) {
+    
+        if (window.jsinterface) {
+            window.jsinterface.readFile();
+            return;
+        }
+    
+        // step 0: 不为http/https，直接不支持
+        if (!window.isOnline) {
+            alert("离线状态下不支持文件读取！");
+            if (error) error();
+            return;
+        }
+    
+        // Step 1: 如果不支持FileReader，直接不支持
+        if (fileReader == null) {
+            alert("当前浏览器不支持FileReader！");
+            if (error) error();
+            return;
+        }
+
+        fileInput.accept = accept || "";
+        readType = readType;
+    
+        fileInput.click();
     }
 })();
