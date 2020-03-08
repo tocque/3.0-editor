@@ -2,11 +2,13 @@
 
 class ctxrd {
 
+    fix = false;
+
     constructor(ctx, option) {
         /**@type {CanvasRenderingContext2D} */
         this.ctx = ctx;
         this.canvas = this.ctx.canvas;
-        this.setting(option);
+        if (option) this.setting(option);
     }
 
     /** 
@@ -18,11 +20,30 @@ class ctxrd {
         if (typeof options == "string") {
             switch (options) {
                 case "width": break;
+                case "fix": if (value != this.fix) {
+                    this.fix = value;
+                    this.ctx.mozImageSmoothingEnabled = value;
+                    this.ctx.webkitImageSmoothingEnabled = value;
+                    this.ctx.msImageSmoothingEnabled = value;
+                    this.ctx.imageSmoothingEnabled = value;
+                } break;
+                case "style": 
+                for (let k in value) {
+                    const v = value[k];
+                    console.log(v);
+                    if (["width", "height"].includes(v) && typeof v == 'number') {
+                        v = v + "px";
+                    }
+                    this.canvas.style[k] = v;
+                }
+                break;
             }
         } else {
             // 特判以优化性能
             if (options.width && options.height) {
-                delete options.width
+                this.resize(options.width, options.height);
+                delete options.width;
+                delete options.height;
             }
             for (let option in options) {
                 this.setting(option, options[option]);
@@ -51,6 +72,16 @@ class ctxrd {
     toImage() {
         return $.loadImage(this.canvas.toDataURL());
     }
+
+    /**
+     * 
+     * @param {Number} width 宽度
+     * @param {Number} height 高度
+     */
+    resize(width, height) {
+        this.canvas.width = width;
+        this.canvas.height = height;
+    }
 }
 
 /** @returns {ctxrd} */
@@ -67,6 +98,8 @@ export function $(source, option) {
                 ctx.drawImage(image, 0);
             } else if (source instanceof CanvasRenderingContext2D) {
                 ctx = source;
+            } else if (source instanceof HTMLCanvasElement) {
+                ctx = source.getContext("2d");
             } else {
                 option = source;
                 ctx = document.createElement('canvas').getContext('2d');
