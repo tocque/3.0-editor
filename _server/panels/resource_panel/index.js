@@ -43,13 +43,13 @@ export default {
                 >
                     <mt-icon icon="item.icon"></mt-icon>
                     <span>{{ item.name }}</span>
-                    <mt-btn v-if="dir.opt=='append'" class="mt-btn" mini
+                    <mt-btn v-if="dir.opt=='append'" mini
                         @click="addin(item)"
                     >追加</mt-btn>
-                    <mt-btn v-else-if="!dir.opt && item.added" class="mt-btn __delete" mini
+                    <mt-btn v-else-if="!dir.opt && item.added" class="__delete" mini
                         @click="unaddFile(item)"
                     >移除</mt-btn>
-                    <mt-btn v-else-if="!dir.opt" class="mt-btn __add" mini
+                    <mt-btn v-else-if="!dir.opt" class="__add" mini
                         @click="addFile(item)"
                     >添加</mt-btn>
                 </li>

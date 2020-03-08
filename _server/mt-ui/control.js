@@ -2,9 +2,7 @@ export const MtBtn = {
     name: "mt-btn",
     functional: true,
     render(h, ctx) {
-        if (!ctx.class) ctx.class = [];
-        if (!(ctx.class instanceof Array)) ctx.class = [ctx.class];
-        ctx.class.push("mt-btn");
+        ctx.class = [ctx.data.staticClass, "mt-btn"];
         if (ctx.props.mini != null) ctx.class.push("__mini");
         ctx.on = ctx.listeners;
         return h('button', ctx, ctx.children);
