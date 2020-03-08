@@ -12,23 +12,6 @@
         }).join('');
     }
 
-    export const getPixel = function (imgData, x, y) {
-        var offset = (x + y * imgData.width) * 4;
-        var r = imgData.data[offset + 0];
-        var g = imgData.data[offset + 1];
-        var b = imgData.data[offset + 2];
-        var a = imgData.data[offset + 3];
-        return [r, g, b, a];
-    }
-
-    export const setPixel = function (imgData, x, y, rgba) {
-        var offset = (x + y * imgData.width) * 4;
-        imgData.data[offset + 0] = rgba[0];
-        imgData.data[offset + 1] = rgba[1];
-        imgData.data[offset + 2] = rgba[2];
-        imgData.data[offset + 3] = rgba[3];
-    }
-
     // rgbToHsl hue2rgb hslToRgb from https://github.com/carloscabo/colz.git
     //--------------------------------------------
     // The MIT License (MIT)
@@ -206,7 +189,7 @@
         return true;
     }
 
-    const keyCodeDict = {
+    export const keyCodeDict = {
         "backspace": 8,
         "tab": 9,
         "enter": 13,
@@ -245,16 +228,48 @@
 
     /** 向一个对象的所有键值对混入一个对象 */
     export const batchMixin = function(obj, m) {
-        const newObj = {};
+        let newObj = {};
         for (let e in newObj) {
             newObj[e] = Object.assign({}, m, obj[e]);
         }
         return newObj;
     }
 
+    export const pos = class pos {
+        constructor(x, y) {
+            if (typeof x == typeof('')) {
+                x = x.split(y);
+                this.x = x[0], this.y = x[1];
+            }
+            else if (x instanceof pos) this.x = x.x, this.y = x.y;
+            else this.x = x || 0, this.y = y || 0;
+        }
+
+        gridding(xsize, ysize) {
+            if (!isset(ysize)) ysize = xsize;
+            return new pos(parseInt(this.x/xsize), parseInt(this.y/ysize));
+        }
+
+        add(x, y) {
+            if (!isset(y)) y = x;
+            return new pos(this.x + x, this.y + y);
+        }
+
+        format(separator) {
+            return this.x + separator + this.y;
+        }
+
+        copy() {
+            return new pos(this.x, this.y);
+        }
+
+        equal(p) {
+            return this.x === p.x && this.y === p.y;
+        }
+    }
+
     export const mountJs = function(text) {
-        const script = document.createElement('script');
+        let script = document.createElement('script');
         script.innerHTML = text;
         document.body.appendChild(script);
     }
-
