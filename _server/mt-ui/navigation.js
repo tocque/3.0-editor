@@ -74,15 +74,15 @@ export const MtSide = {
             }, panels)
         ])
     },
+    props: ["tucked"],
     data: function() {
         return {
             chosen: null,
             panels: [],
-            tucked: false,
         }
     },
     mounted() {
-        let panes = this.$slots.default;
+        const panes = this.$slots.default;
         this.$nextTick(function() {
             for (let pane of panes) {
                 if (!pane.elm.getAttribute) continue;
@@ -112,7 +112,7 @@ export const MtSide = {
         toggle(code) {
             if (!isset(code)) code = !this.tucked;
             this.tucked = code;
-            this.$emit("toggle", code);
+            this.$emit("update:tucked", code);
         }
     }
 };

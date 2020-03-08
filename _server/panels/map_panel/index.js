@@ -2,6 +2,9 @@
  * @file map_panel/index.js 地图编辑界面入口
  */
 import game from "../../editor_game.js";
+import listen from "../../editor_listen.js";
+
+import tiledEditor from "../../tiled/tiled_editor.js"
 
 import mapExplorer from "./map_explorer.js";
 import posData from "./pos_data.js";
@@ -9,7 +12,7 @@ import blockData from "./block_data.js";
 import mapData from "./map_data.js";
 
 let components = {
-    mapExplorer, posData, blockData, mapData,
+    mapExplorer, posData, blockData, mapData, tiledEditor,
 }
 
 import { mapStore } from "./service.js";
@@ -18,7 +21,7 @@ export default {
     label: "地图",
     template: /* HTML */`
     <div id="mapPanel">
-        <mt-side class="left transition" @toggle="(e) => leftCollapsed = e">
+        <mt-side class="left transition" :tucked.sync="leftCollapsed">
             <map-explorer active></map-explorer>
             <map-data></map-data>
         </mt-side>
@@ -48,6 +51,11 @@ export default {
     created() {
         this.mapList = game.getMapList();
         this.maps = game.getMaps();
+        const _this = this;
+        listen.regShortcut("b.ctrl", {
+            action() { _this.leftCollapsed = !_this.leftCollapsed },
+            condition() { return _this.active; }
+        })
     },
     mounted() {
         const mapid = editor.towerInfo.get("lastEditFloorId", null)
