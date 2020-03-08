@@ -1,10 +1,13 @@
 {
-    "blockly": [
-        
+    "mainEditor": [
+        "tiledEditor"
     ],
-    "mainPanel": [
-        "map_panel"
-    ],
+    "mainPanel": {
+        "map_panel": "地图",
+        "resource_panel": "资源",
+        "event_panel": "事件",
+        "script_panel": "脚本"
+    },
     "extensions": [
 
     ]

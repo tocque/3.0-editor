@@ -1,0 +1,16 @@
+{
+    "mapStruct": [
+        "sample0",
+        "sample1",
+        "sample2",
+        ["MT0"],
+        "sample3"
+    ],
+    "lastEditMap": "sample0",
+    "lastUsed": [
+        {
+            "images": "terrains",
+            "y": 0
+        }
+    ],
+}
