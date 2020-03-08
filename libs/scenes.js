@@ -63,7 +63,7 @@ baseScene.prototype._init = function(name){
             this.view.style.width = core.domStyle.scale * this.view.width + 'px';
             this.view.style.height = core.domStyle.scale * this.view.height + 'px';
             if(main.mode=='editor'){
-                window.parent.editor.game.views[name] = this.view;
+                window.parent.editor.game.scenes[name] = this;
             }
             else {
                 if(name=='map')core.dom.gameDraw.appendChild(this.view);

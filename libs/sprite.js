@@ -64,7 +64,7 @@ sprite.prototype._init = function(){
         'npcs': { frame: 2 },
         'npc48': { frame: 4, height: 48 },
         'enemys': { frame: 2 },
-        'enemy48': { frame: 4 },
+        'enemy48': { frame: 4, height: 48 },
         'autotiles': { frame: function(image) {
             return image.orig.width == 96 ? 1 : 4;
         }, single: true },
