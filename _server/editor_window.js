@@ -5,6 +5,7 @@
  * https://marketplace.visualstudio.com/items?itemName=bierner.comment-tagged-templates
  */
 import game from "./editor_game.js"
+import { importCSS } from "./editor_ui.js"
 import "./thirdparty/elementUI/elementui.umd.min.js"
 
 import "./mt-ui/index.js"
@@ -12,8 +13,15 @@ import "./mt-ui/index.js"
 import blocklyEditor from "./editor_blockly.js"
 import "./editor_multi.js"
 
-let mainPanels = {
-    
+const mainPanelInfo = editor.extensions.get("mainPanel");
+const mainPanels = {};
+
+for (let m in mainPanelInfo) {
+    const panelName = m.replace(/_(\w)/, (e, b) => b.toUpperCase());
+    const factory = () => import("./panels/"+ m +"/index.js").then(m => m.default);
+    factory.label = mainPanelInfo[m];
+    mainPanels[panelName] = factory;
+    importCSS("./_server/panels/" + m + "/style.css");
 }
 
 Vue.component("status-item", {
@@ -25,7 +33,7 @@ Vue.component("status-item", {
     }
 });
 
-let window = {
+const window = {
     el: "#window",
     data: {
         mainPanelActive: "",
