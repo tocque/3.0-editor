@@ -1,59 +1,46 @@
 /*
  * 表格配置项。
  * 在这里可以对表格中的各项显示进行配置，包括表格项、提示内容等内容。具体写法照葫芦画瓢即可。
- * 本配置项包括：全塔属性的配置项。
+ * 本配置项为全塔属性。
  */
 
-export var data_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
+export default {
 	"_type": "object",
 	"_data": {
 		"main": {
 			"_type": "object",
 			"_data": {
 				"floorIds": {
-					"_leaf": true,
-					"_type": "textarea",
-					"_range": "editor.mode.checkFloorIds(thiseval)",
-					"_data": "在这里按顺序放所有的楼层；其顺序直接影响到楼层传送器、浏览地图和上/下楼器的顺序"
+					"_hide": true,
 				},
 				"images": {
-					"_leaf": true,
-					"_type": "textarea",
-					"_range": "editor.mode.checkUnique(thiseval)",
-					"_data": "在此存放所有可能使用的图片（tilesets除外） \n图片可以被作为背景图（的一部分），也可以直接用自定义事件进行显示。 \n 图片名不能使用中文，不能带空格或特殊字符；可以直接改名拼音就好 \n 建议对于较大的图片，在网上使用在线的“图片压缩工具(http://compresspng.com/zh/)”来进行压缩，以节省流量 \n 依次向后添加"
+					"_hide": true,
 				},
 				"tilesets": {
-					"_leaf": true,
-					"_type": "textarea",
-					"_range": "editor.mode.checkUnique(thiseval)",
-					"_data": "在此存放额外素材的图片名, \n可以自定导入任意张素材图片，无需PS，无需注册，即可直接在游戏中使用 \n 形式如[\"1.png\", \"2.png\"] ,将需要的素材图片放在images目录下 \n 素材的宽高必须都是32的倍数，且图片上的总图块数不超过1000（即最多有1000个32*32的图块在该图片上）"
+					"_hide": true,
+				},
+				"autotiles": {
+					"_hide": true,
 				},
 				"animates": {
-					"_leaf": true,
-					"_type": "textarea",
-					"_range": "editor.mode.checkUnique(thiseval)",
-					"_data": "在此存放所有可能使用的动画，必须是animate格式，在这里不写后缀名 \n动画必须放在animates目录下；文件名不能使用中文，不能带空格或特殊字符 \n \"jianji\", \"thunder\" 根据需求自行添加"
+					"_hide": true,
 				},
 				"bgms": {
-					"_leaf": true,
-					"_type": "textarea",
-					"_range": "editor.mode.checkUnique(thiseval)",
-					"_data": "在此存放所有的bgm，和文件名一致。 \n音频名不能使用中文，不能带空格或特殊字符；可以直接改名拼音就好"
+					"_hide": true,
 				},
 				"sounds": {
-					"_leaf": true,
-					"_type": "textarea",
-					"_range": "editor.mode.checkUnique(thiseval)",
-					"_data": "在此存放所有的SE，和文件名一致 \n音频名不能使用中文，不能带空格或特殊字符；可以直接改名拼音就好"
+					"_hide": true,
 				},
 				"nameMap": {
 					"_leaf": true,
-					"_type": "textarea",
+					"_type": "table",
+					"_parse": "object",
+					"_items": ["string", "string"],
 					"_data": "文件名映射，目前仅对images, animates, bgms, sounds有效。\n例如定义 {\"精灵石.mp3\":\"jinglingshi.mp3\"} 就可以使用\ncore.playBgm(\"精灵石.mp3\") 或对应的事件来播放该bgm。"
 				},
 				"startBackground": {
 					"_leaf": true,
-					"_type": "textarea",
+					"_type": "image",
 					"_string": true,
 					"_data": "标题界面的背景，建议使用jpg格式以压缩背景图空间"
 				},
@@ -71,19 +58,22 @@ export var data_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
 				},
 				"levelChoose": {
 					"_leaf": true,
-					"_type": "textarea",
-					"_range": "thiseval instanceof Array && thiseval.length>=1 && thiseval[0] instanceof Array && thiseval[0].length==2",
+					"_type": "table",
+					"_parse": "array",
+					"_items": ["string", "string"],
 					"_data": "难度选择：每个数组的第一个是其在标题界面显示的难度，第二个是在游戏内部传输的字符串，会显示在状态栏，修改此处后需要在project/functions中作相应更改。\n如果需直接开始游戏将下面的startDirectly开关打开即可。"
 				},
 				"equipName": {
 					"_leaf": true,
-					"_type": "textarea",
+					"_type": "table",
+					"_parse": "array",
+					"_items": "string",
 					"_range": "(thiseval instanceof Array && thiseval.length<=6)||thiseval==null",
 					"_data": "装备位名称，为不超过6个的数组，此项的顺序与equiptype数值关联；例如可写[\"武器\",\"防具\",\"首饰\"]等等。"
 				},
 				"startBgm": {
 					"_leaf": true,
-					"_type": "textarea",
+					"_type": "music",
 					"_string": true,
 					"_data": "在标题界面应该播放的bgm内容"
 				},
@@ -107,19 +97,19 @@ export var data_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
 				},
 				"borderColor": {
 					"_leaf": true,
-					"_type": "textarea",
+					"_type": "text",
 					"_string": true,
 					"_data": "边框颜色，包括游戏边界的边框和对话框边框等。"
 				},
 				"statusBarColor": {
 					"_leaf": true,
-					"_type": "textarea",
+					"_type": "text",
 					"_string": true,
 					"_data": "状态栏的文字颜色，默认是白色"
 				},
 				"hardLabelColor": {
 					"_leaf": true,
-					"_type": "textarea",
+					"_type": "text",
 					"_string": true,
 					"_data": "难度显示的颜色，默认是红色"
 				},
@@ -131,13 +121,13 @@ export var data_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
 				},
 				"floorChangingTextColor": {
 					"_leaf": true,
-					"_type": "textarea",
+					"_type": "text",
 					"_string": true,
 					"_data": "楼层转换界面的文字颜色，默认是白色"
 				},
 				"font": {
 					"_leaf": true,
-					"_type": "textarea",
+					"_type": "text",
 					"_string": true,
 					"_data": "游戏中使用的字体，默认是Verdana"
 				}
@@ -171,11 +161,13 @@ export var data_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
 				"floorId": {
 					"_leaf": true,
 					"_type": "select",
-					"_select": {
-						"values": data_a1e2fb4a_e986_4524_b0da_9b7ba7c0874d.main.floorIds
+					"_options": {
+						"values": function() {
+							return editor.game.data.floorIds;
+						}
 					},
 					"_name": "初始楼层",
-					"_range": "data_a1e2fb4a_e986_4524_b0da_9b7ba7c0874d.main.floorIds.indexOf(thiseval)!==-1",
+					"_range": "editor.game.getMapList().indexOf(thiseval)!==-1",
 					"_data": "初始楼层的ID"
 				},
 				"hero": {
@@ -193,13 +185,14 @@ export var data_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
 							"_leaf": true,
 							"_type": "number",
 							"_name": "初始等级",
-							"_range": "thiseval==~~thiseval &&thiseval>0",
+							"_min": 1,
 							"_data": "初始等级，该项必须为正整数"
 						},
 						"hpmax": {
 							"_leaf": true,
 							"_type": "number",
 							"_name": "初始生命上限",
+							"_condition": "[value][enableHPMax]",
 							"_data": "初始生命上限，只有在enableHPMax开启时才有效"
 						},
 						"hp": {
@@ -218,6 +211,7 @@ export var data_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
 							"_leaf": true,
 							"_type": "number",
 							"_name": "初始魔力值",
+							"_condition": "[value][enableMana]",
 							"_data": "初始魔力值，只在enableMana开启时才有效"
 						},
 						"atk": {
@@ -253,43 +247,18 @@ export var data_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
 						"equipment": {
 							"_leaf": true,
 							"_type": "textarea",
-							"_name": "初始装备",
+							"_type": "table",
+							"_parse": "array",
+							"_items": "string",
 							"_range": "thiseval instanceof Array",
 							"_data": "初始装上的装备，此处建议请直接留空数组"
 						},
 						"items": {
 							"_name": "初始道具",
-							"_type": "object",
-							"_data": {
-								"keys": {
-									"_leaf": true,
-									"_name": "初始钥匙",
-									"_type": "textarea",
-									"_range": "thiseval instanceof Object && !(thiseval instanceof Array)",
-									"_data": "初始三种钥匙个数"
-								},
-								"constants": {
-									"_leaf": true,
-									"_name": "初始永久道具",
-									"_type": "textarea",
-									"_range": "thiseval instanceof Object && !(thiseval instanceof Array)",
-									"_data": "初始永久道具个数，例如初始送手册可以写 {\"book\": 1}"
-								},
-								"tools": {
-									"_leaf": true,
-									"_name": "初始消耗道具",
-									"_type": "textarea",
-									"_range": "thiseval instanceof Object && !(thiseval instanceof Array)",
-									"_data": "初始消耗道具个数，例如初始有两破可以写 {\"pickaxe\": 2}"
-								},
-								"equips": {
-									"_leaf": true,
-									"_name": "初始装备",
-									"_type": "textarea",
-									"_range": "thiseval instanceof Object && !(thiseval instanceof Array)",
-									"_data": "初始装备个数，例如初始送铁剑可以写 {\"sword1\": 1}"
-								}
-							}
+							"_type": "table",
+							"_parse": "object",
+							"_items": ["string", "number"],
+							"_data": "初始持有的物品",
 						},
 						"loc": {
 							"_name": "初始位置",
@@ -300,7 +269,7 @@ export var data_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
 									"_name": "勇士初始方向",
 									"_type": "select",
 									"_data": "勇士初始方向",
-									"_select": {
+									"_options": {
 										"values": [
 											"up",
 											"down",

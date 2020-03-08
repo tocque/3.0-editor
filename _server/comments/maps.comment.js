@@ -1,4 +1,4 @@
-export var maps_comment_c456ea59_6018_45ef_8bcc_211a24c627dc =
+var maps_comment_c456ea59_6018_45ef_8bcc_211a24c627dc =
 {
     ////////////////////////// 地形部分 //////////////////////////
 

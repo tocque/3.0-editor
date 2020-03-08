@@ -4,7 +4,7 @@
  * 本配置项包括：插件编写。
  */
 
-export var plugins_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
+var plugins_comment_c456ea59_6018_45ef_8bcc_211a24c627dc = {
 	"_type": "object",
 	"_data": function (key) {
 		var obj = {
