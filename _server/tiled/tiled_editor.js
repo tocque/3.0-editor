@@ -18,26 +18,52 @@ let components = {
     paintBox, lastUsedBlocks, ...widgets,
 }
 
+const brushs = [
+    {
+        name: "line",
+        icon: "pen",
+        title:"画线"
+    },
+    {
+        name: "rectangle",
+        icon: "rectangle",
+        title:"画矩形"
+    },
+    {
+        name: "fill",
+        icon: "paint-bucket",
+        title:"油漆桶"
+    },
+]
+
+const layerDict = {
+    "fgmap": "前景层",
+    "map": "事件层",
+    "bgmap": "背景层",
+}
+
 export default {
     template: /* HTML */`
-    <div>
+    <div class="tileEditor">
         <div class="__topbar">
-            <span style="font-size: 12px"><input type="checkbox" v-model="lockMode"/>锁定模式</span>
-            <br/>
-            <span style="font-size: 12px;">
-                <input type="radio" v-model="brushMod" value="line" />画线
-                <input type="radio" v-model="brushMod" value="rectangle" />画矩形
-                <input type="radio" v-model="brushMod" value="tileset" />tileset贴图
-            </span>
-            <br/>
-            <span style="font-size: 12px">
-                <input type="radio" v-model="layerMod" value="bgmap" />背景层
-                <input type="radio" v-model="layerMod" value="map" checked="checked" style="margin-left: 5px" />事件层
-                <input type="radio" v-model="layerMod" value="fgmap" style="margin-left: 5px" />前景层
-            </span>
-            <br/>
-            <select id="selectFloor"></select>
-            <input type="button" value="保存地图" @click="saveFloor"/>
+            <mt-view ref="layer">
+                <template slot="tools">
+                    <div title="锁定模式" @click="switchLock">
+                        <mt-icon :icon="lockMode ? 'lock' : 'unlock'"></mt-icon>
+                    </div>
+                    <span class="__toolGroup">
+                        <div v-for="(brush, index) of brushs" :key="index"
+                            :class="{ active: brushMod == brush.name }"
+                            :title="brush.title" @click="changeBrush(brush.name)"
+                        >
+                            <mt-icon :icon="brush.icon"></mt-icon>
+                        </div>
+                    </span>
+                    <div title="保存地图 (ctrl+s)" @click="saveFloor">
+                        <mt-icon icon="save"></mt-icon>
+                    </div>
+                </template>
+            </mt-view>
         </div>
         <marked-container :size="mapSize" class="mapEdit">
             <canvas 
@@ -54,8 +80,9 @@ export default {
     data: function() {
         return {
             pos: new pos,
-            brushMod: "line", // ["line","rectangle","tileset"]
-            layerMod: "map", // ["fgmap","map","bgmap"]
+            brushMod: "line", // ["line", "rectangle", "fill"]
+            brushs,
+            layerMod: "map", // ["fgmap", "map", "bgmap"]
             // 绘制区拖动有关
             holdingPath: 0,
             stepPostfix: null,//用于存放寻路检测的第一个点之后的后续移动
@@ -122,7 +149,24 @@ export default {
             this.resize(width, height);
             this.mapSize = [width, height];
             game.changeFloor(floorId);
+            const layers = ["bgmap", "map", "fgmap"].map((e) => {
+                return { type: "tile", id: e, label: layerDict[e] }
+            })
+            this.$refs.layer.init(layers);
+            this.$refs.layer.openTabByKey("tilemap");
         },
+
+        switchLock() {
+            this.lockMode = !this.lockMode;
+            if (this.lockMode) {
+                this.$print('锁定模式开启时点击空白处将不再自动保存，请谨慎操作。');
+            }
+        },
+
+        changeBrush(mode) {
+            this.brushMod = mode;
+        },
+
         //////////// 工具函数 ////////////
 
         blockAt(pos, layer) {
@@ -580,20 +624,6 @@ export default {
 
     },
     watch: {
-        // 锁定模式提示
-        lockMode: function (newValue) {
-            if (newValue) this.$print('锁定模式开启时点击空白处将不再自动保存，请谨慎操作。');
-        },
-        // tileset模式提示
-        brushMod: function (newValue) {
-            if (newValue != 'tileset') return;
-            if (!core.getLocalStorage('alertTileMode') &&
-                !confirm("从V2.6.6开始，tileset贴图模式已被废弃。\n请右键额外素材，并输入所需要绘制的宽高，然后单击地图以绘制一个区域。\n\n点取消将不再显示此提示。")) {
-                core.setLocalStorage('alertTileMode', true);
-            }
-            tip.msgs[11] = String('tileset贴图模式下可以按选中tileset素材，并在地图上拖动来一次绘制一个区域');
-            tip.whichShow(12);
-        },
         layerMod: function (newValue) {
             if (newValue == 'map') {
                 [this.dom.bgc, this.dom.evc, this.dom.ev2c].forEach(function (x) {

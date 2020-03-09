@@ -1,10 +1,25 @@
+@import "../css/editor_skin.less";
+
 .paintBox {
     background-color: #444;
     box-shadow: -3px 0px 3px #111;
     width: 360px;
 }
 
+.tileEditor {
+    .__topbar {
+        height: 35px;
+        .__toolBar {
+            .active i.codicon {
+                color: @c-text-hl;
+            } 
+        }
+    }
+}
+
 .markedContainer {
+    position: absolute;
+    top: 35px;
     .colMark, .rowMark {
         position: absolute;
         display: flex;
