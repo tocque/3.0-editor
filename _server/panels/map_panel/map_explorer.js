@@ -22,7 +22,7 @@ export default {
         }
     },
     created() {
-        this.data = game.map.build;
+        this.data = game.map.getMapTree();
     },
     methods: {
         handleNodeClick(item) {

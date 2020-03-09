@@ -1,10 +1,7 @@
 export default {
     template: /* HTML */`
-    <div>
-        <p style="margin: 10px">最近使用的图块列表：</p>
-        <div class="map" id="lastUsedDiv" @click="">
-            <canvas id='lastUsed' width='416' height='416' style="overflow: hidden"></canvas>
-        </div>
+    <div ref='container' class="lastUsed" @click="">
+        <canvas ref='blocks'></canvas>
     </div>`,
     props: {
         selection: Number,
@@ -19,7 +16,11 @@ export default {
         event: 'select',
     },
     mounted() {
-        this.lastUsedCtx = document.getElementById('lastUsed').getContext('2d');
+        new window.MutationObserver((e) => {
+            console.log(e);
+        }).observe(this.$refs.container, { attributes: true });
+
+        this.blockCtx = this.$refs.blocks.getContext('2d');
     },
     methods: {
         lastUsed_click: function (e) {

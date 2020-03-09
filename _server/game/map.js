@@ -52,6 +52,10 @@ export const getMap = function(mapid) {
     return game.maps[mapid];
 }
 
+export const getIcons = function() {
+    return game.oriData.icons;
+}
+
 ////////////////////////// setter //////////////////////////
 
 

@@ -30,7 +30,6 @@ class ctxrd {
                 case "style": 
                 for (let k in value) {
                     const v = value[k];
-                    console.log(v);
                     if (["width", "height"].includes(v) && typeof v == 'number') {
                         v = v + "px";
                     }
@@ -81,6 +80,11 @@ class ctxrd {
     resize(width, height) {
         this.canvas.width = width;
         this.canvas.height = height;
+    }
+
+    /** */
+    onRect() {
+
     }
 }
 

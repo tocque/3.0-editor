@@ -160,7 +160,7 @@ export default {
             const height = game.maps[floorId].access("height");
             this.resize(width, height);
             this.mapSize = [width, height];
-            game.changeFloor(floorId);
+            game.map.changeFloor(floorId);
             const layers = ["bgmap", "map", "fgmap"].map((e) => {
                 return { type: "tile", id: e, label: layerDict[e] }
             })

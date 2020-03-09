@@ -47,5 +47,9 @@
         { "label": "音乐", "path": "bgms", "type": "music" },
         { "label": "音效", "path": "sounds", "type": "music" },
         { "label": "系统图片", "path": "materials", "type": "image", "src": "main.materials", "const": true }
-    ]
+    ],
+    "suffix": {
+        "animate": ".animate",
+        "image": ".png"
+    }
 }

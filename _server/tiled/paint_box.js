@@ -1,17 +1,18 @@
 import { $ } from "../mt-ui/canvas.js"
 import { isset } from "../editor_util.js"
+import game from "../editor_game.js"
 
 const imgNames = [
-    "terrains", "animates", "enemys", "enemy48", "items", "npcs", "npc48", "autotile"
+    "terrains", "animates", "enemys", "enemy48", "items", "npcs", "npc48", "autotiles"
 ];
-const tilesConfig = {
+const tileConfigs = {
     "terrains": {
         offset: 1,
     },
     "animates": {
         grid: 4,
     },
-    "enemy": {
+    "enemys": {
         grid: 2,
     },
     "enemy48": {
@@ -25,29 +26,34 @@ const tilesConfig = {
         grid: 4,
         height: 48,
     },
-    "autotile": {
-        grid: [4, 3],
-        imageArray: true,
-        summary: [128, 96],
+    "autotiles": {
+        grid: [3, 4],
+        imageArray: true
     },
-    "tileset": {
+    "tilesets": {
         drawRect: true,
         nowrap: true,
     }
 }
 
-class tileImage {
-
+class TileImage {
+    /**
+     * Creates an instance of tileImage.
+     * @param {Function} datasource
+     * @param {Object} config
+     * @param {Function} onclick
+     * @memberof tileImage
+     */
     constructor(datasource, config, onclick) {
         this.ctx = $({ style: { position: "relative" }});
         this.config = config;
         this.datasource = datasource;
-        this.ctx.addEventListener("click", function(e) {
+        this.ctx.canvas.addEventListener("click", function(e) {
             const [w, h] = this.getGrid();
             onclick(Math.floor(e.layerX) / w, Math.floor(e.layerY / h));
         }.bind(this));
         if (config.drawRect) {
-            this.ctx.onRect(fn, this.getGrid());
+            // this.ctx.onRect(fn, this.getGrid());
         }
     }
 
@@ -64,7 +70,8 @@ class tileImage {
         const image = this.datasource();
         let grid = config.grid || [1, 1];
         if (!Array.isArray(grid)) grid = [grid, 1];
-        const w = config.width || 32, h = config.height || 32;
+        let w = config.width || 32, h = config.height || 32;
+        const offset = config.offset || 0;
 
         if (folded) config.folded = folded;
         if (perCol) config.perCol = perCol;
@@ -77,25 +84,38 @@ class tileImage {
             oriCol = image.width / grid[0] / w;
             oriRow = image.height / grid[1] / h;
         }
-        let col = oriCol, row = oriRow + (config.offset || 0);
-        if (config.folded) {
+        let col = oriCol, row = oriRow + offset;
+        if (config.folded && !config.nowrap) {
+            grid = [1, 1];
             col = Math.ceil(row / config.perCol);
             row = config.perCol;
         }
 
-        this.ctx.resize(col * w, row * h);
+        w *= grid[0], h *= grid[1];
+        this.ctx.resize(col*w, row*h);
+        this.ctx.setting("style", { width: col*w, height: row*h });
 
         // 绘制
-        if (config.folded) grid = [1, 1];
-
+        if (config.imageArray) {
+            for (let i = 0; i < oriRow; i++) {
+                this.ctx.ctx.drawImage(image[i], 0, 0, w, h, 0, i*h, w, h);
+            }
+        } else {
+            const total = oriCol * oriRow;
+            for (let i = 0, cnt = 0; i < col; i++) {
+                const sh = Math.min(total-cnt, row)*h, sy = Math.max(offset-cnt, 0)*h;
+                this.ctx.ctx.drawImage(image, 0, cnt*h, oriCol*w, sh, i*w, sy, oriCol*w, sh);
+                cnt += row;
+            }
+        }
     }
 }
 
 export default {
     template: /* HTML */`
     <div class="paintBox">
-        <div id="tiledImages" @mousedown="ondown"></div>
-        <button id="iconExpandBtn" @click="toggleFold">{{ folded ? "展开素材区" : "折叠素材区" }}</button>
+        <div ref="ctxContainer" class="tiledImages" @mousedown="ondown"></div>
+        <button class="expandBtn" @click="toggleFold">{{ folded ? "展开素材区" : "折叠素材区" }}</button>
     </div>`,
     data: function() {
         return {
@@ -107,13 +127,13 @@ export default {
     },
     created: function() {
         this.selection = {},
-        this.icons = core.icons.icons;
+        this.icons = game.map.getIcons();
         this.folded = editor.userdata.get('folded', false);
         this.foldPerCol = editor.userdata.get('foldPerCol', 50);
         //oncontextmenu = function (e) { e.preventDefault() }
     },
     mounted: function() {
-        this.initTileImages(core.material.images);
+        this.tileImages = this.initTileImages();
         this.setTileFold(this.folded, this.perCol);
     },
     methods: {
@@ -135,7 +155,21 @@ export default {
         },
 
         initTileImages(images) {
-
+            const tileImages = [];
+            for (let c of imgNames) {
+                const tileImage = new TileImage(() => {
+                    return game.resource.getImage(c);
+                }, tileConfigs[c] || {}, console.log);
+                this.$refs.ctxContainer.appendChild(tileImage.ctx.canvas);
+                tileImages.push(tileImage);
+            }
+            return tileImages.concat(game.resource.getList("tilesets").map((e) => {
+                const tileImage = new TileImage(() => {
+                    return game.resource.getImage("tilesets", e);
+                }, tileConfigs.tilesets, console.log);
+                this.$refs.ctxContainer.appendChild(tileImage.ctx.canvas);
+                return tileImage;
+            }));
         },
 
         /**
