@@ -12,7 +12,7 @@ export default {
     label: "公共事件",
     template: /* HTML */`
     <div class="main-side-layout" id="commoneventPanel">
-        <mt-side class="left" @toggle="e => leftCollapsed = e">
+        <mt-side class="left" :tucked.sync="leftCollapsed">
             <commonevent-tree active ref="commoneventTree" @openTab="openTab"></commonevent-tree>
         </mt-side>
         <status-item></status-item>

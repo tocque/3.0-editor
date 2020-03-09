@@ -15,7 +15,7 @@ export default {
     label: "脚本",
     template: /* HTML */`
     <div class="main-side-layout" id="scriptPanel">
-        <mt-side class="left" @tucked.sync="leftCollapsed">
+        <mt-side class="left" :tucked.sync="leftCollapsed">
             <script-tree active ref="scriptTree" @openTab="openTab"></script-tree>
             <plugin-lib @openTab="openTab"></plugin-lib>
         </mt-side>
