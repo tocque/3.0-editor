@@ -74,6 +74,17 @@ export default {
                 @dblclick="selectIcon"
             ></canvas>
         </marked-container>
+        <div class="__dock" role="complementary">
+            <div class="__title">
+                <div class="__item active">最近使用图块</div>
+                <div class="__toolBar">
+                    <mt-icon icon="unfold"></mt-icon>
+                </div>
+            </div>
+            <div class="__content">
+                <last-used-blocks></last-used-blocks>
+            </div>
+        </div>
         <paint-box></paint-box>
         <context-menu ref="contextmenu" @beforeOpen="$trigger('beforeConextMenu')"></context-menu>
     </div>`,

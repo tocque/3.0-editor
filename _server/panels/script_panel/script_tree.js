@@ -20,7 +20,7 @@ export default {
     },
     async created() {
         const scriptComment = (await import('../../comments/functions.comment.js')).default;
-        this.data = buildTree(game.data.functions.data, scriptComment).children;
+        this.data = buildTree(game.gameData.functions.data, scriptComment).children;
     },
     methods: {
         handleNodeClick(data, node) {
@@ -28,14 +28,14 @@ export default {
             this.$emit('openTab', {
                 type: "script",
                 id: data.field,
-                text: game.data.functions.access(data.field),
+                text: game.gameData.functions.access(data.field),
                 label: data.key,
                 editted: false,
                 icon: "javascript"
             })
         },
         async saveNode(node) {
-            game.data.functions.modify({ key: node.id, value: node.text });
+            game.gameData.functions.modify({ key: node.id, value: node.text });
         }
     },
 }

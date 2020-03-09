@@ -119,7 +119,7 @@ export default {
         modifyList() {
             const item = this.dir.path;
             const list = this.fileList.filter(e => e.added).map(e => e.name);
-            game.data.data.modify({ key: `[main][${item}]`, value: list });
+            game.gameData.data.modify({ key: `[main][${item}]`, value: list });
         },
         addin(file) {
             this.optType = "append";

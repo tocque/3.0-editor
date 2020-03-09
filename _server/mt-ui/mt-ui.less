@@ -409,7 +409,7 @@
     overflow: hidden;
     height: 35px;
     display: flex;
-    background: @c-main;
+    background: @c-bg-pop;
     .mt-tabs {
         display: flex;
     }
@@ -428,6 +428,7 @@
         padding-left: 10px;
         background-color: @c-tab;
         --separator-border: #444444;
+        border-right: 1px solid @c-bg-pop;
         &.active {
             span {
                 color: @c-text-hl;

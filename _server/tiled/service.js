@@ -5,7 +5,7 @@ editor.service.register('tiledEditor', 'Clipboard', {
         pos: null,
     },
     mounted(h) {
-        var _this = this;
+        const _this = this;
         h.$refs.contextmenu.inject([
             {
                 text: "复制事件",

@@ -111,7 +111,6 @@ export const MtSide = {
         },
         toggle(code) {
             if (!isset(code)) code = !this.tucked;
-            this.tucked = code;
             this.$emit("update:tucked", code);
         }
     }

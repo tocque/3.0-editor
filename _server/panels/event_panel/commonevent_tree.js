@@ -24,12 +24,12 @@ export default {
     inject: [ "openBlockly" ],
     methods: {
         buildEventList() {
-            let list = [];
-            for (let c in game.data.events.data.commonEvent) {
+            const list = [], events = game.data.getCommonEvents();
+            for (let c in events) {
                 list.push({
                     field: `[commonEvent][${c}]`,
                     name: c,
-                    event: game.data.events.data.commonEvent[c]
+                    event: events[c]
                 })
             }
             return list

@@ -1,13 +1,13 @@
 {
-    "project": {
-        "data": "_a1e2fb4a_e986_4524_b0da_9b7ba7c0874d",
-        "maps": "_90f36752_8815_4be8_b32b_d7fad1d0542e",
-        "items": "_296f5d02_12fd_4166_a7c1_b5e830c9ee3a",
-        "icons": "_4665ee12_3a1f_44a4_bea3_0fccba634dc1",
-        "enemys": "_fcae963b_31c9_42b4_b48c_bb48d09f3f80",
-        "events": "_c12a15a8_c380_4b28_8144_256cba95f760",
-        "plugins": "_bb40132b_638b_4a9f_b028_d3fe47acc8d1",
-        "functions": "_d6ad677b_427a_4623_b50f_a445a3b0ef8a"
+    "pureData": {
+        "data": "data_a1e2fb4a_e986_4524_b0da_9b7ba7c0874d",
+        "maps": "maps_90f36752_8815_4be8_b32b_d7fad1d0542e",
+        "items": "items_296f5d02_12fd_4166_a7c1_b5e830c9ee3a",
+        "icons": "icons_4665ee12_3a1f_44a4_bea3_0fccba634dc1",
+        "enemys": "enemys_fcae963b_31c9_42b4_b48c_bb48d09f3f80",
+        "events": "events_c12a15a8_c380_4b28_8144_256cba95f760",
+        "plugins": "plugins_bb40132b_638b_4a9f_b028_d3fe47acc8d1",
+        "functions": "functions_d6ad677b_427a_4623_b50f_a445a3b0ef8a"
     },
     "defaultMap": {
         "floorId": "to be covered",
@@ -38,5 +38,14 @@
         "afterOpenDoor": {},
         "autoEvent": {},
         "cannotMove": {}
-    }
+    },
+    "dirs": [
+        { "label": "动画", "path": "animates", "type": "animate" },
+        { "label": "元件组", "path": "tilesets", "type": "image" },
+        { "label": "自动元件", "path": "autotiles", "type": "image" },
+        { "label": "图片", "path": "images", "type": "image" },
+        { "label": "音乐", "path": "bgms", "type": "music" },
+        { "label": "音效", "path": "sounds", "type": "music" },
+        { "label": "系统图片", "path": "materials", "type": "image", "src": "main.materials", "const": true }
+    ]
 }

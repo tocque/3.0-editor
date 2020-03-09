@@ -26,7 +26,7 @@ export default {
             <map-data></map-data>
         </mt-side>
         <div class="mid" :class="{ expend: leftCollapsed }">
-            <tiled-editor @showBlock="showBlock"></tiled-editor>
+            <tiled-editor ref="tiledEditor" @showBlock="showBlock"></tiled-editor>
         </div>
         <status-item v-show="active">{{ currentMapid }}</status-item>
     </div>`,
@@ -49,8 +49,6 @@ export default {
         }
     },
     created() {
-        this.mapList = game.getMapList();
-        this.maps = game.getMaps();
         const _this = this;
         listen.regShortcut("b.ctrl", {
             action() { _this.leftCollapsed = !_this.leftCollapsed },
@@ -58,8 +56,8 @@ export default {
         })
     },
     mounted() {
-        const mapid = editor.towerInfo.get("lastEditFloorId", null)
-            || game.data.data.access('firstData.floorId');
+        const mapid = editor.towerInfo.get("lastEditFloorId", 
+            game.data.getStartpos("floorId"));
         this.$store.commit('openMap', mapid);
     },
     activated() {
@@ -76,7 +74,10 @@ export default {
     watch: {
         currentMapid(newValue, oldValue) {
             if (this.currentMap) this.currentMap.save();
-            this.currentMap = this.maps[newValue];
+            this.currentMap = game.map.getMap(newValue);
+            this.$refs.tiledEditor.ready.then((e) => {
+                e.openMap(newValue);
+            })
         }
     },
     components,
