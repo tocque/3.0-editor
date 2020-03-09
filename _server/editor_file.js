@@ -1,7 +1,7 @@
 /**
  * @file editor_file.js 文件操作的中间层
  */
-import { createGuid, clone } from "./editor_util.js";
+import { createGuid, clone, accessField } from "./editor_util.js";
 
 /**是否警告过压缩 */
 let alertedCompress = false;
@@ -175,15 +175,7 @@ export class jsFile {
      * @param {String} 路径
      */
     access(route) {
-        if (route[0] == '[') {
-            route = route.slice(1, -1).split('][');
-        } else {
-            route = route.split('.');
-        }
-        let data = this.data;
-        for (let n of route) {
-            data = data[n];
-        }
+        let data = accessField(this.data, route);
         if (typeof data === 'string' && this.functionPool[data]) {
             data = this.functionPool[data];
         }

@@ -1,52 +1,16 @@
 /**
+ * @module game
  * editor_game.js 游戏运行时的类
  * 原则上其他部分获取游戏信息均需要通过此处, 若玩家自行修改游戏, 对应获取信息的更改也均在此处调整
  */
 
-import { ftools, jsFile } from "./editor_file.js";
+import { ftools, jsFile, config } from "./editor_file.js";
 import { createGuid } from "./editor_util.js";
 
-const project = {
-    data: "_a1e2fb4a_e986_4524_b0da_9b7ba7c0874d",
-    maps: "_90f36752_8815_4be8_b32b_d7fad1d0542e",
-    items: "_296f5d02_12fd_4166_a7c1_b5e830c9ee3a",
-    icons: "_4665ee12_3a1f_44a4_bea3_0fccba634dc1",
-    enemys: "_fcae963b_31c9_42b4_b48c_bb48d09f3f80",
-    events: "_c12a15a8_c380_4b28_8144_256cba95f760",
-    plugins: "_bb40132b_638b_4a9f_b028_d3fe47acc8d1",
-    functions: "_d6ad677b_427a_4623_b50f_a445a3b0ef8a",
-}
-
-const defaultMap = {
-    "floorId": "to be covered",
-    "title": "new floor",
-    "name": "new floor",
-    "width": 13,
-    "height": 13,
-    "canFlyTo": true,
-    "canUseQuickShop": true,
-    "cannotViewMap": false,
-    "cannotMoveDirectly": false,
-    "images": [],
-    "item_ratio": 1,
-    "underGround": false,
-    "defaultGround": "ground",
-    "bgm": null,
-    "upFloor": null,
-    "downFloor": null,
-    "color": null,
-    "weather": null,
-    "firstArrive": [],
-    "eachArrive": [],
-    "parallelDo": "",
-    "events": {},
-    "changeFloor": {},
-    "afterBattle": {},
-    "afterGetItem": {},
-    "afterOpenDoor": {},
-    "autoEvent": {},
-    "cannotMove": {}
-}
+import * as _map from "./game/map.js";
+import * as _data from "./game/data.js";
+import * as _plugin from "./game/plugin.js";
+import * as _resource from "./game/resource.js";
 
 class map extends jsFile {
     constructor(mapid, data) {
@@ -73,15 +37,20 @@ class map extends jsFile {
 
 export default new class gameRuntime {
 
-    /** 游戏数据 */
-    data = {};
-    /** 
-     * 生命周期钩子, 均为Promise
-     */
-    hooks = {};
-    __resolves__ = {} // 生命周期钩子的resolve函数存放在此
+    /** 原始游戏数据 */ oriData = {};
+    /** 包装的游戏数据类 @type {Object<jsFile>} */ gameData = {};
+
+    /** 生命周期钩子 @type {Object<Promise>} */ hooks = {};
+    /** 生命周期钩子的resolve @type {Object<Function>} */ __resolves__ = {}
 
     maps = {};
+
+    scenes = {};
+
+    map = _map;
+    data = _data;
+    plugin = _plugin;
+    resource = _resource;
 
     /////// 初始化方法 ////////
 
@@ -94,20 +63,31 @@ export default new class gameRuntime {
         this.createHooks([
             'iframeLoad', 'dataLoad', 'libLoad', 'floorsLoad', 'imagesLoad', 'initOver'
         ]);
-        this.load();
 
         // 设置钩子对应事件
         this.hooks.dataLoad.then(function() {
             this.wrapData();
-            this.mapList = this.main.floorIds;
+        }.bind(this))
+
+        this.hooks.libLoad.then(function() {
+            this.fixLoadImage();
         }.bind(this))
 
         this.hooks.floorsLoad.then(function() {
             this.wrapMaps();
+        }.bind(this));
+
+        this.hooks.imagesLoad.then(function() {
+            this.fixCreateCleanCanvas();
         }.bind(this))
+
+        this.hooks.initOver.then(function() {
+            const core = this.core;
+            core.resetGame(core.firstData.hero, null, core.firstData.floorId, core.clone(core.initStatus.maps));
+        }.bind(this));
     }
 
-    load() {
+    async load() {
         const res = this.__resolves__;
         this.iframe.onload = function() {
             this.runtime._editor__setHooks__(res);
@@ -119,6 +99,7 @@ export default new class gameRuntime {
             res.iframeLoad(this);
         }.bind(this)
         this.iframe.src = "./editor_runtime.html";
+        await this.hooks.floorsLoad;
     }
 
     createHooks(hooks) {
@@ -131,12 +112,13 @@ export default new class gameRuntime {
     }
 
     wrapData() {
+        /**@todo 将formatter移动到editor_file, 并配置化 */
         const normalFormat = function(data) {
             return JSON.stringify(data, ftools.replacerForSaving, '\t');
         }
         const listFormat = function(data) {
             // 只用\t展开第一层
-            let emap = {};
+            const emap = {};
             let estr = JSON.stringify(data, function (_k, v) {
                 if (v.id != null) {
                     const id_ = createGuid();
@@ -149,9 +131,11 @@ export default new class gameRuntime {
             }
             return estr;
         }
-        for (let n in project) {
-            const name = n+project[n];
-            this.data[n] = new jsFile(`./project/${n}.js`, this.runtime[name], `var ${name} = \n`, {
+        const pureData = editor.gameInfo.get("pureData", {});
+        for (let n in pureData) {
+            const name = pureData[n];
+            this.oriData[n] = this.runtime[name];
+            this.gameData[n] = new jsFile(`./project/${n}.js`, this.runtime[name], `var ${name} = \n`, {
                 stringifier: ['maps', 'enemys'].some(e => e === n) ? listFormat : normalFormat,
             });
         }
@@ -159,34 +143,53 @@ export default new class gameRuntime {
 
     wrapMaps() {
         let maps = this.main.floors;
+        const defaultMap = editor.gameInfo.get("defaultMap", {});
         for (let m in maps) {
             this.maps[m] = new map(m, Object.assign({}, defaultMap, maps[m]));
         }
     }
 
-    buildMapTree(mapStruct) {
-        const decodeMapStruct = function(arr, attach) {
-            let output = [], record = {};
-            for (let i = 0; i < arr.length; i++) {
-                if (arr[i] instanceof Array) {
-                    let { output: o, record: r } = decodeMapStruct(arr[i], attach);
-                    output[output.length-1].children = o;
-                    record = Object.assign({}, record, r);
-                } else {
-                    output.push({ mapid: arr[i], map: attach[arr[i]] });
-                    record[arr[i]] = true;
+    fixLoadImage() {
+        this.runtime.loader.prototype.loadImage = function(dir, imgName, callback) {
+            try {
+                var name = imgName;
+                if (name.indexOf(".") < 0)
+                    name = name + ".png";
+                var image = new Image();
+                image.onload = function () {
+                    callback(imgName, image);
                 }
+                image.src = 'project/'+ dir + '/' + name + "?v=" + this.main.version;
             }
-            return { output, record };
-        }
+            catch (e) {
+                console.error(e);
+            }
+        }.bind(this);
+    }
 
-        let { output, record } = decodeMapStruct(mapStruct, this.maps);
-        for (let mapid of this.mapList) {
-            if (!record[mapid]) {
-                output.push({ mapid, map: this.maps[mapid] });
-            }
-        }
-        this.mapTree = output;
+    fixCreateCleanCanvas() {
+        this.runtime.core.scenes.createCleanCanvas = function (name, x, y, width, height, z) {
+            var newCanvas = document.createElement("canvas");
+            var scale = this.runtime.core.domStyle.scale;
+            newCanvas.id = name;
+            newCanvas.style.display = 'block';
+            newCanvas.width = width;
+            newCanvas.height = height;
+            newCanvas.setAttribute("_left", x);
+            newCanvas.setAttribute("_top", y);
+            newCanvas.style.width = width * scale + 'px';
+            newCanvas.style.height = height * scale + 'px';
+            newCanvas.style.left = x * scale + 'px';
+            newCanvas.style.top = y * scale + 'px';
+            newCanvas.style.zIndex = z;
+            newCanvas.style.position = 'absolute';
+            return newCanvas;
+        }.bind(this);
+    }
+
+    async fetchScene(name) {
+        await this.hooks.initOver;
+        return this.scenes[name];
     }
 
     apply(func, ...rest) {
@@ -194,29 +197,6 @@ export default new class gameRuntime {
     }
 
     //////// 获取游戏信息的方法 ////////
-
-    /** 获取工程名称 */
-    getProjectName() {
-        return this.data.data.access("firstData.title");
-    }
-
-    /** 
-     * 获取地图列表
-     * @returns {Array<String>}
-     */
-    getMapList() {
-        return this.mapList;
-    }
-
-    /** 获取地图文件列表 */ 
-    async getMapFileList() {
-        return new Promise((res, rej) => {
-            editor.fs.readdir('project/floors', function(err, data) {
-                if (err) rej(err);
-                else res(data);
-            });
-        })
-    }
 
     /** 
      * 获取游戏地图
@@ -325,42 +305,6 @@ export default new class gameRuntime {
             }
             startOffset += core.icons.tilesetStartOffset;
         }
-    }
-
-    getResourceFolders() {
-        return [
-            { label: "动画", path: "animates", type: "animate", suffix: ".animate" },
-            { label: "元件", path: "tiles", type: "image", src: h => h.main.materials, opt: "append", suffix: ".png" },
-            { label: "元件组", path: "tilesets", type: "image" },
-            { label: "自动元件", path: "autotiles", modify: this.updateAutotiles, type: "image", suffix: ".png" },
-            { label: "图片", path: "images", type: "image" },
-            { label: "音乐", path: "bgms", type: "music" },
-            { label: "音效", path: "sounds", type: "music" },
-            { label: "系统图片", path: "system", type: "image", src: h => h.main.systemMaterials, opt: "const", suffix: ".png" },
-        ]
-    }
-
-    getResourceList(folder) {
-        let registered = [];
-        if (folder.src) {
-            registered = folder.src(this);
-        } else {
-            registered = this.data.data.access(`[main][${folder.path}]`);
-        }
-        console.log(this.main);
-        if (folder.suffix) registered = registered.map(e => e + folder.suffix)
-        return registered;
-    }
-
-
-    /** 获取资源列表 */
-    async readResourceDir(folder) {
-        return await new Promise((res, rej) => {
-            fs.readdir('./project/'+folder.path, (err, data) => {
-                if (err) rej(err);
-                else res(data);
-            })
-        });
     }
 
     updateAutotiles() {

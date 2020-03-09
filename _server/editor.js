@@ -12,7 +12,7 @@ const libs = {
 class editor {
     version = "2.0";
 
-    proJectName = ''; // vue监听
+    /** vue监听字段 */proJectName = '';
 
     constructor() {
         this.fs = fs;
@@ -24,18 +24,20 @@ class editor {
         console.log(libs);
         for (let lib in libs) { // 仍然提供通过editor访问的方式, 但是原则上内部不使用
             if (libs.hasOwnProperty(lib)) {
-              this[lib] = libs[lib];
+                this[lib] = libs[lib];
             }
         }
 
-        this.userdata = await new file.config("./_server/config.json");
-        [this.towerInfo, this.window] = await Promise.all([
+        [
+            this.userdata, this.extensions, this.towerInfo, this.gameInfo
+        ] = await Promise.all([
+            new file.config("./_server/config.json"), 
+            new file.config("./_server/extensions.json"),
             new file.config("./work.h5mota"),
-            import('./editor_window.js'),
-            game.hooks.floorsLoad
+            new file.config("./_server/game/gameInfo.json"),
         ]);
-
-        game.buildMapTree(this.towerInfo.get("mapStruct"));
+        await game.load();
+        this.window = await import('./editor_window.js');
 
         this.window = this.window.default();
         return this;
@@ -67,17 +69,4 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
     return false;
 };
 
-// 兼容
-window.main = {
-    floors: {},
-    log: function (e) {
-        if (e) {
-            if (main.core && main.core.platform && !main.core.platform.isPC) {
-                console.log((e.stack || e.toString()));
-            }
-            else {
-                console.log(e);
-            }
-        }
-    },
-};
+window.editor = new editor();

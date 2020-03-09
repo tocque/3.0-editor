@@ -273,3 +273,18 @@
         script.innerHTML = text;
         document.body.appendChild(script);
     }
+
+    /**
+     * 
+     * @param {Object} data 
+     * @param {String} route 
+     */
+    export const accessField = function(data, route) {
+        if (route.startsWith("[")) {
+            route = route.slice(1, -1).split("][");
+        } else route = route.split(".");
+        for (let n of route) {
+            data = data[n];
+        }
+        return data;
+    }

@@ -8,7 +8,7 @@ import listen from "./editor_listen.js"
 
 const require = loader.require;
 require.config({ paths: { 'vs': '_server/vs' }});
-let monacoLoad = new Promise((res, rej) => {
+const monacoLoad = new Promise((res, rej) => {
     window.define = loader.define;
     require(['vs/editor/editor.main'], res);
 });

@@ -54,7 +54,7 @@ const window = {
         Vue.prototype.$clear = this.clear.bind(this);
         Vue.prototype.$injectStatusItem = this.injectStatusItem.bind(this);
 
-        this.projectName = game.getProjectName();
+        this.projectName = game.data.getProjectName();
         this.mainPanels = this.mainPanels.concat(Object.entries(mainPanels)
             .map(e => ({ id: e[0], label: e[1].label })));
     },
