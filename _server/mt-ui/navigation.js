@@ -152,6 +152,7 @@ export const MtView = {
                     <mt-icon :icon="tab.icon" :size="18"></mt-icon>
                     <span>{{ tab.label }}</span>
                     <mt-icon 
+                        v-if="canClose != null"
                         :icon="tab.editted ? 'circle-filled' : 'close'"
                         @click.stop="closeTab(tab)" :size="18"
                         class="status-icon" :class="{ editted: tab.editted }"
@@ -159,9 +160,9 @@ export const MtView = {
                 </slot>
             </template>
         </mt-tabs>
-        <div class="toolBar">
+        <div class="__toolBar">
             <slot name="tools"></slot>
-            <div v-if="canClose"><li></li></div>
+            <div v-if="canClose != null"><li></li></div>
         </div>
     </div>
     `,
@@ -169,11 +170,18 @@ export const MtView = {
     data() {
         return {
             tabNow: null,
-            tabs: [],
-            keys: {}
+            tabs: []
         }
     },
+    created() {
+        this.keys = {};
+    },
     methods: {
+        init(tabs = []) {
+            this.keys = {};
+            this.tabs.splice(0, this.tabs.length, ...tabs);
+            for (let tab of tabs) this.keys[this.getKey(tab)] = tab;
+        },
         getKey(tab) {
             return tab.type + tab.id;
         },
@@ -219,7 +227,7 @@ export const MtView = {
                 this.$emit("close", tab, handler);
                 if (handler.prevent) return;
             }
-            Vue.$set(this.tabs, []);
+            this.init();
             this.$refs.tabs.chosen = null;
             this.$emit('switch', {});
         }

@@ -408,6 +408,7 @@
     position: relative;
     overflow: hidden;
     height: 35px;
+    display: flex;
     .mt-tabs {
         display: flex;
     }
@@ -456,6 +457,30 @@
             padding: 8px;
             margin-left: auto;
             visibility: hidden;
+        }
+    }
+    .__toolBar {
+        display: flex;
+        align-items: center;
+        background: @c-main;
+        margin-left: 2px;
+        i.codicon {
+            cursor: pointer;
+            width: 22px;
+            height: 22px;
+            font-size: 22px;
+            padding: 4px;
+            color: darkGray;
+        }
+        .__toolGroup {
+            display: flex;
+            align-items: center;
+            height: 14px;
+            border-left: 1px @c-text solid;
+            border-right: 1px @c-text solid;
+        }
+        .__toolGroup + .__toolGroup {
+            border-left: none;
         }
     }
 }
