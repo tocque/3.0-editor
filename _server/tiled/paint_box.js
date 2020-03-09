@@ -93,16 +93,12 @@ class tileImage {
 
 export default {
     template: /* HTML */`
-    <div id="paintBox">
+    <div class="paintBox">
         <div id="tiledImages" @mousedown="ondown"></div>
-        <div id="selectBox">
-            <div id='dataSelection' v-show="selected"></div>
-        </div>
         <button id="iconExpandBtn" @click="toggleFold">{{ folded ? "展开素材区" : "折叠素材区" }}</button>
     </div>`,
     data: function() {
         return {
-            selection: Number,
             scrollBarHeight :0,
             folded: false,
             foldPerCol: 50,
@@ -110,6 +106,7 @@ export default {
         }
     },
     created: function() {
+        this.selection = {},
         this.icons = core.icons.icons;
         this.folded = editor.userdata.get('folded', false);
         this.foldPerCol = editor.userdata.get('foldPerCol', 50);

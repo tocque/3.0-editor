@@ -74,6 +74,7 @@ export default {
                 @dblclick="selectIcon"
             ></canvas>
         </marked-container>
+        <paint-box></paint-box>
         <context-menu ref="contextmenu" @beforeOpen="$trigger('beforeConextMenu')"></context-menu>
     </div>`,
     extends: serviceManager.mainEditorExtension,
