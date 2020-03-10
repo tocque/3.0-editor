@@ -40,16 +40,63 @@
         "cannotMove": {}
     },
     "dirs": [
-        { "label": "动画", "path": "animates", "type": "animate" },
-        { "label": "元件组", "path": "tilesets", "type": "image" },
-        { "label": "自动元件", "path": "autotiles", "type": "image" },
-        { "label": "图片", "path": "images", "type": "image" },
-        { "label": "音乐", "path": "bgms", "type": "music" },
-        { "label": "音效", "path": "sounds", "type": "music" },
-        { "label": "系统图片", "path": "materials", "type": "image", "src": "main.materials", "const": true }
+        {
+            "label": "动画",
+            "path": "animates",
+            "type": "animate"
+        },
+        {
+            "label": "元件组",
+            "path": "tilesets",
+            "type": "image"
+        },
+        {
+            "label": "自动元件",
+            "path": "autotiles",
+            "type": "image"
+        },
+        {
+            "label": "图片",
+            "path": "images",
+            "type": "image",
+            "keepSuffix": true,
+            "acceptSuffix": [
+                ".png",
+                ".jpg"
+            ],
+            "defaultSuffix": ".png"
+        },
+        {
+            "label": "音乐",
+            "path": "bgms",
+            "type": "music"
+        },
+        {
+            "label": "音效",
+            "path": "sounds",
+            "type": "music"
+        },
+        {
+            "label": "系统图片",
+            "path": "materials",
+            "type": "image",
+            "list": "main.materials",
+            "editable": true,
+            "const": true
+        }
     ],
-    "suffix": {
-        "animate": ".animate",
-        "image": ".png"
+    "dirType": {
+        "animate": {
+            "acceptSuffix": ".animate"
+        },
+        "image": {
+            "acceptSuffix": ".png"
+        },
+        "music": {
+            "acceptSuffix": [
+                ".mp3",
+                ".ogg"
+            ]
+        }
     }
 }

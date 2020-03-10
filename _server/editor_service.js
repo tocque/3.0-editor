@@ -74,9 +74,9 @@ export default new class serviceManager {
              */
             $work(name, mode) {
                 let me = this.sys_mainEditor__;
-                this.$changeMode.finish = function() {
+                this.$changeMode.finish = () => {
                     this.$changeMode(me.modeStack.pop());
-                }.bind(this);
+                };
                 me.name = name;
                 editor.service.receive(this, name);
                 if (mode.task) console.warn("初始状态不能是task");

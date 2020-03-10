@@ -11,8 +11,6 @@ let components = {
     rescourceAppend
 }
 
-importCSS("./_server/panels/resource_panel/resource_panel.css");
-
 export default {
     label: "资源",
     template: /* HTML */`
@@ -43,13 +41,13 @@ export default {
                 >
                     <mt-icon icon="item.icon"></mt-icon>
                     <span>{{ item.name }}</span>
-                    <mt-btn v-if="dir.opt=='append'" mini
+                    <mt-btn v-if="dir.editable" mini
                         @click="addin(item)"
-                    >追加</mt-btn>
-                    <mt-btn v-else-if="!dir.opt && item.added" class="__delete" mini
+                    >修改</mt-btn>
+                    <mt-btn v-if="!dir.const && item.added" class="__delete" mini
                         @click="unaddFile(item)"
                     >移除</mt-btn>
-                    <mt-btn v-else-if="!dir.opt" class="__add" mini
+                    <mt-btn v-else-if="!dir.const" class="__add" mini
                         @click="addFile(item)"
                     >添加</mt-btn>
                 </li>
@@ -78,14 +76,14 @@ export default {
         }
     },
     created() {
-        this.dirList = game.getResourceFolders();
+        this.dirList = game.resource.listDirs();
     },
     methods: {
         async choseDir(dir) {
             if (dir == this.dir) return;
             this.dir = dir;
-            const fileList = await game.readResourceDir(dir);
-            const registered = game.getResourceList(dir);
+            const fileList = await game.resource.readDir(dir.name, true);
+            const registered = game.resource.getList(dir.name);
             const checked = new Set(registered);
             this.fileList = fileList.map((e) => {
                 const file = { name: e, checked: false, icon: ftools.getIcon(e) }
@@ -95,31 +93,30 @@ export default {
                 }
                 return file;
             })
-            const missing = [...checked];
-            if (missing.length) {
+            if (checked.size) {
                 this.$notify.error("有注册但不存在的文件, 打开控制台以查看文件列表", {
                     source: "文件浏览",
                 });
-                console.error("missing Files in /"+dir.path+ ": " + missing);
+                console.error(`missing Files in /${dir.name}: `, [...checked]);
             }
             this.selectedFile = null;
         },
-        addFile(item) {
-            item.added = true;
-            this.modifyList();
+        async addFile(item) {
+            try {
+                await game.resource.regFile(dir.name, item.name);
+                item.added = true;
+            } catch {}
         },
-        unaddFile() {
+        async unaddFile(item) {
+            try {
+                await game.resource.unRegFile(dir.name, item.name);
+                item.added = true;
+            } catch {}
             item.added = false;
-            this.modifyList();
         },
         choseFile(file) {
             this.optType = "preview";
             this.selectedFile = file;
-        },
-        modifyList() {
-            const item = this.dir.path;
-            const list = this.fileList.filter(e => e.added).map(e => e.name);
-            game.gameData.data.modify({ key: `[main][${item}]`, value: list });
         },
         addin(file) {
             this.optType = "append";

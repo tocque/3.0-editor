@@ -38,7 +38,7 @@ class editor {
         ]);
         await game.load();
         this.window = await import('./editor_window.js');
-
+        await game.hooks.imageLoad;
         this.window = this.window.default();
         return this;
     };

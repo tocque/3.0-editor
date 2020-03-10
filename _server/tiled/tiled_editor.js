@@ -111,9 +111,8 @@ export default {
         }
     },
     created() {
-        const _this = this;
         this.ready = new Promise((res, rej) => {
-            _this.__resolver__ = () => res(_this);
+            this.__resolver__ = () => res(this);
         })
     },
     async mounted() {

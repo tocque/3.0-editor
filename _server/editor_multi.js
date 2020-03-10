@@ -72,10 +72,9 @@ Vue.component('code-editor', {
         this.multi.onDidChangeModelContent(this.onedit.bind(this));
         this.multi.onDidChangeCursorPosition(this.oncursor.bind(this));
 
-        const _this = this;
         listen.regShortcut("s.ctrl", {
             action: this.save.bind(this),
-            condition: () => _this.active,
+            condition: () => this.active,
             prevent: true,
         })
     },

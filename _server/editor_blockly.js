@@ -6,7 +6,7 @@ import { mountJs } from "./editor_util.js";
 import { importCSS } from "./editor_ui.js";
 
  /** blockly钩子, 当blockly模块加载完毕时resolve */
-let blocklyHook = (new class BlocklyProxy {
+const blocklyHook = (new class BlocklyProxy {
 
     async load() {
         try {
@@ -189,9 +189,9 @@ let blocklyHook = (new class BlocklyProxy {
     overrideMotaActionFunctions() {
         // 因为在editor_blockly.parse里已经HTML转义过一次了,所以这里要覆盖掉以避免在注释中出现&lt;等
         MotaActionFunctions.xmlText = function (ruleName,inputs,isShadow,comment) {
-            let rule = MotaActionBlocks[ruleName];
+            const rule = MotaActionBlocks[ruleName];
             const blocktext = isShadow?'shadow':'block';
-            let xmlText = [];
+            const xmlText = [];
             xmlText.push('<'+blocktext+' type="'+ruleName+'">');
             if(!inputs)inputs=[];
             for (let ii=0,inputType;inputType=rule.argsType[ii];ii++) {
@@ -285,7 +285,6 @@ export default {
             entryType: '', // 入口类型
             disableReplace: false,
             active: false,
-            completeItems: [],
             searchKeyword: "",
             lastUsedType: [],
             lastUsedTypeNum: 15,
@@ -320,25 +319,15 @@ export default {
             this.entryType = type;
             this.parse();
             this.show();
-            const _this = this;
-            window.re = this;
-            return new Promise((res, rej) => { _this.res = res });
+            return new Promise((res, rej) => { this.res = res });
         },
     
         show() {
             this.active = true;
-            for (let node of this.blocklyWidgetDiv) {
-                node.style.zIndex = 201;
-                node.style.opacity = '';
-            }
         },
     
         hide() {
             this.active = false;
-            for (let node of this.blocklyWidgetDiv) {
-                node.style.zIndex = -1;
-                node.style.opacity = 0;
-            }
         },
     
         close(value) {

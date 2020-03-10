@@ -49,10 +49,9 @@ export default {
         }
     },
     created() {
-        const _this = this;
         listen.regShortcut("b.ctrl", {
-            action() { _this.leftCollapsed = !_this.leftCollapsed },
-            condition() { return _this.active; }
+            action: () => { this.leftCollapsed = !this.leftCollapsed },
+            condition: () => this.active
         })
     },
     mounted() {

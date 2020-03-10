@@ -48,10 +48,10 @@ class TileImage {
         this.ctx = $({ style: { position: "relative" }});
         this.config = config;
         this.datasource = datasource;
-        this.ctx.canvas.addEventListener("click", function(e) {
+        this.ctx.canvas.addEventListener("click", (e) => {
             const [w, h] = this.getGrid();
             onclick(Math.floor(e.layerX) / w, Math.floor(e.layerY / h));
-        }.bind(this));
+        });
         if (config.drawRect) {
             // this.ctx.onRect(fn, this.getGrid());
         }

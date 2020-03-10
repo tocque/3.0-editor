@@ -22,10 +22,9 @@ Vue.use(function() {
         `,
         props: ["config", "source", "buttons", "onclose"],
         created: function() {
-            const _this = this;
             if (this.config.time > 0) {
-                let timer = setTimeout(function() { 
-                    _this.close();
+                const timer = setTimeout(() => { 
+                    this.close();
                     window.clearTimeout(timer);
                 }, this.config.time);
             }

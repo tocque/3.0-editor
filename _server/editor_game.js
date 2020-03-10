@@ -16,17 +16,16 @@ class map extends jsFile {
     constructor(mapid, data) {
         super(`./project/floors/${mapid}.js`, data, `main.floors.${mapid}=\n`, {
             stringifier: function(data) {
-                const tempJsonObj = Object.assign({}, data);
-                const tempMap = ['map', 'bgmap','fgmap'].map(key => {
-                    const value = [key, createGuid(), tempJsonObj[key]];
-                    tempJsonObj[key] = value[1];
+                const tempObj = Object.assign({}, data);
+                const tempMap = ['map', 'bgmap','fgmap'].map((key) => {
+                    const value = [key, createGuid(), tempObj[key]];
+                    tempObj[key] = value[1];
                     return value;
                 });
-                let tempJson = JSON.stringify(tempJsonObj, ftools.replacerForSaving, 4);
-                tempMap.forEach(function (v) {
-                    tempJson = tempJson.replace(`"${v[1]}"`, `[\n${ftools.formatMap(v[2], v[0] != 'map')}\n]`)
-                });
-                return tempJson;
+                const tempJson = JSON.stringify(tempObj, null, 4);
+                return tempMap.reduce((e, [k, g, v]) => {
+                    return e.replace(`"${g}"`, `[\n${ftools.formatMap(v, k != 'map')}\n]`)
+                }, tempJson);
             }
         });
         this.addEmitter('afterSave', function(h, str) {
@@ -38,10 +37,10 @@ class map extends jsFile {
 export default new class gameRuntime {
 
     /** 原始游戏数据 */ oriData = {};
-    /** 包装的游戏数据类 @type {Object<jsFile>} */ gameData = {};
+    /** @type {Object<jsFile>} 包装的游戏数据类 */ gameData = {};
 
-    /** 生命周期钩子 @type {Object<Promise>} */ hooks = {};
-    /** 生命周期钩子的resolve @type {Object<Function>} */ __resolves__ = {}
+    /** @type {Object<Promise>} 生命周期钩子 */ hooks = {};
+    /** @type {Object<Function>} 生命周期钩子的resolve */ __resolves__ = {}
 
     maps = {};
 
@@ -59,46 +58,47 @@ export default new class gameRuntime {
         this.iframe.style.display = "none";
         document.body.appendChild(this.iframe);
         this.runtime = this.iframe.contentWindow;
-        this.document = this.iframe.document;
-        this.createHooks([
+        this.document = this.iframe.contentDocument;
+        const res = this.createHooks([
             'iframeLoad', 'dataLoad', 'libLoad', 'floorsLoad', 'imagesLoad', 'initOver'
         ]);
+        this.iframe.onload = res.iframeLoad;
+        this.iframe.src = "./editor_runtime.html";
 
         // 设置钩子对应事件
-        this.hooks.dataLoad.then(function() {
+        this.hooks.dataLoad.then(() => {
+            this.resource.init();
+            // ["map", "data", "plugin", "resource"].forEach(e => this[e].init(e));
             this.wrapData();
-        }.bind(this))
+        })
 
-        this.hooks.libLoad.then(function() {
+        this.hooks.libLoad.then(() => {
             this.fixLoadImage();
-        }.bind(this))
+        })
 
-        this.hooks.floorsLoad.then(function() {
+        this.hooks.floorsLoad.then(() => {
             this.wrapMaps();
-        }.bind(this));
+        });
 
-        this.hooks.imagesLoad.then(function() {
+        this.hooks.imagesLoad.then(() => {
             this.fixCreateCleanCanvas();
-        }.bind(this))
+        })
 
-        this.hooks.initOver.then(function() {
+        this.hooks.initOver.then(() => {
             const core = this.core;
             core.resetGame(core.firstData.hero, null, core.firstData.floorId, core.clone(core.initStatus.maps));
-        }.bind(this));
+        });
     }
 
     async load() {
+        await this.hooks.iframeLoad;
         const res = this.__resolves__;
-        this.iframe.onload = function() {
-            this.runtime._editor__setHooks__(res);
-            this.main = this.runtime.main;
-            this.main.init('editor', function () {
-                this.core = this.runtime.core;
-                res.initOver();
-            }.bind(this));
-            res.iframeLoad(this);
-        }.bind(this)
-        this.iframe.src = "./editor_runtime.html";
+        this.runtime._editor__setHooks__(res);
+        this.main = this.runtime.main;
+        this.main.init('editor', () => {
+            this.core = this.runtime.core;
+            res.initOver();
+        });
         await this.hooks.floorsLoad;
     }
 
@@ -106,9 +106,10 @@ export default new class gameRuntime {
         const resolves = this.__resolves__;
         for (let h of hooks) {
             this.hooks[h] = new Promise((res, rej) => {
-                resolves[h] = () => { console.log("======"+h+"======"); res() };
+                resolves[h] = () => { console.log("======"+h+"======");res(); };
             });
         }
+        return resolves;
     }
 
     wrapData() {

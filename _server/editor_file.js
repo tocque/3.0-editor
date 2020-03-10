@@ -1,7 +1,7 @@
 /**
  * @file editor_file.js 文件操作的中间层
  */
-import { createGuid, clone, accessField } from "./editor_util.js";
+import { createGuid, clone, accessField, encode64 } from "./editor_util.js";
 
 /**是否警告过压缩 */
 let alertedCompress = false;
@@ -63,14 +63,9 @@ export const ftools = {
         }
         return formatArrStr;
     },
-    replacerForSaving(_key, value) {
-        if (replacerRecord.hasOwnProperty(value)) {
-            return replacerRecord[value]
-        }
-        return value
-    },
-    getIcon(fileName) {
-        const suffix = fileName.split(".")[1];
+    /** @param {String} filename */
+    getIcon(filename) {
+        const suffix = filename.split(".")[1];
         return fileIcons[suffix] || "file";
     }
 }
@@ -117,31 +112,29 @@ export class config {
     
     constructor(src, defaultConfig = {}) {
         this.src = src;
-        const _this = this;
         return fs.fetch(src).then(data => {
-                _this.config = JSON.parse(data);
-                return _this;
+                this.config = JSON.parse(data);
+                return this;
             }).catch(err => {
                 console.warn(`无法读取配置文件(${src}), 已重新生成, 错误信息 ${err}`);
-                _this.config = defaultConfig;
-                return _this.save();
+                this.config = defaultConfig;
+                return this.save();
             });
     }
     
     get(key, defaultValue) {
-        const value = this.config[key];
-        return value != null ? value : defaultValue;
+        const value = clone(this.config[key]);
+        return value ?? defaultValue;
     }
     
     set(key, value, save) {
-        this.config[key] = value;
+        this.config[key] = clone(value);
         if (save !== false) return this.save();
     }
     
     save() {
-        const _this = this;
         return new Promise((res, rej) => {
-            fs.writeFile(_this.src, JSON.stringify(_this.config, null, 4) ,'utf-8', (e) => {
+            fs.writeFile(this.src, JSON.stringify(this.config, null, 4) ,'utf-8', (e) => {
                 if (e) editor.window.$notify(`写入配置文件${src}失败, 错误信息: ${e}`, {
                     time: 5000,
                 });
@@ -217,13 +210,12 @@ export class jsFile {
 
     save() {
         this.emit('beforeSave', this);
-        let datastr = this.prefix + ftools.fixByPool(this.stringifier(this.data), this.functionPool);
-        const _this = this;
+        const datastr = this.prefix + ftools.fixByPool(this.stringifier(this.data), this.functionPool);
         return new Promise((res, rej) => {
-            fs.writeFile(_this.src, editor.util.encode64(datastr), 'base64', (err, data) => {
+            fs.writeFile(this.src, encode64(datastr), 'base64', (err, data) => {
                 if (err) rej(err);
                 else {
-                    _this.emit('afterSave', _this, datastr);
+                    this.emit('afterSave', this, datastr);
                     checkCompress();
                     res(data);
                 }

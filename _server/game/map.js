@@ -23,9 +23,6 @@ const decodeMapStruct = function(arr, attach) {
     }
     return { output, record };
 }
-const buildMapTree = function(mapStruct) {
-    return output;
-}
 
 ////////////////////////// getter //////////////////////////
 

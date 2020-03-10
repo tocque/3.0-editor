@@ -83,7 +83,7 @@ export const MtSide = {
     },
     mounted() {
         const panes = this.$slots.default;
-        this.$nextTick(function() {
+        this.$nextTick(() => {
             for (let pane of panes) {
                 if (!pane.elm.getAttribute) continue;
                 const attr = p => pane.elm.getAttribute(p);
@@ -93,7 +93,7 @@ export const MtSide = {
                     this.$refs.switcher.switchTab(tab);
                 }
             }
-        }.bind(this));
+        });
     },
     methods: {
         switchPane(pane) {

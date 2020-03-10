@@ -5,22 +5,21 @@ editor.service.register('tiledEditor', 'Clipboard', {
         pos: null,
     },
     mounted(h) {
-        const _this = this;
         h.$refs.contextmenu.inject([
             {
                 text: "复制事件",
-                action: (e, h) => _this.store(h.pos),
+                action: (e, h) => this.store(h.pos),
             },
             {
                 text: "剪切事件",
                 action: (e, h) => {
-                    _this.store(h.pos);
+                    this.store(h.pos);
                     h.clearPos(h.pos);
                 }
             },
             {
-                text: (e, h) => `粘贴事件(${_this.pos.x}, ${_this.pos.y})到此处`,
-                vaildate: (e, h) => !_this.pos.equal(h.pos) && _this.clipboard,
+                text: (e, h) => `粘贴事件(${this.pos.x}, ${this.pos.y})到此处`,
+                vaildate: (e, h) => !this.pos.equal(h.pos) && this.clipboard,
                 action: function (e, h) {
                     editor.savePreMap();
                     editor_mode.onmode('');

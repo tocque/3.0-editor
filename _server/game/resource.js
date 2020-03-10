@@ -4,64 +4,145 @@
 import game from "../editor_game.js";
 import { accessField } from "../editor_util.js"
 
+class Dir {
+    constructor (config) {
+        this.init(config);
+    }
 
+    init(config) {
+        Object.entries(config).forEach(([k, v]) => this[k] = v);
+        if (!Array.isArray(this.acceptSuffix)) {
+            /** @type {String} */this.defaultSuffix = this.acceptSuffix;
+            /** @type {Array<String>} */this.acceptSuffix = [this.acceptSuffix];
+        }
+        this.suffixReg = new RegExp(`(${this.acceptSuffix.join('|')})$`, "i");
+    }
+
+    /** @returns {Array<String>} */
+    getList() {
+        if (this.list) {
+            return accessField(game.runtime, this.list);
+        } else {
+            return game.oriData.data.main[this.path];
+        }
+    }
+
+    /**
+     * 判断一个文件名是否是可用的
+     * @param {String} filename 
+     * @returns {Boolean}
+     */
+    isAccepted(filename) {
+        return this.suffixReg.test(filename);
+    }
+
+    outputInfo() {
+        return {
+            label: this.label,
+            name: this.path,
+            const: this.const,
+            editable: this.editable
+        };
+    }
+}
+
+/**@type {Map<String, Dir>} 所有目录 */const dirs = new Map();
+
+export const init = function() {
+    const _dirs = editor.gameInfo.get("dirs", {});
+    const dirType = editor.gameInfo.get("dirType", {});
+    for (let _dir of _dirs) {
+        dirs.set(_dir.path, new Dir(Object.assign({}, dirType[_dir.type], _dir)));
+    }
+}
 
 ////////////////////////// getter //////////////////////////
 
 /**
+ * 列出所有的目录
  * @returns {Array<Object>}
  */
 export const listDirs = function() {
-    return editor.gameInfo.get("dirs", {});
+    return [...dirs].map((e) => e[1].outputInfo());
 }
  
 /** 
  * 获取文件列表
  * @param {String} dirname 目录名称
+ * @param {Boolean} filter 是否只筛选允许的后缀
  */ 
-export const readDir = async function(dirname) {
+export const readDir = async function(dirname, filter) {
+    const dir = dirs.get(dirname);
     return new Promise((res, rej) => {
         fs.readdir('project/'+dirname, (err, data) => {
             if (err) rej(err);
-            else res(data);
+            else {
+                if (filter) data = data.filter((e) => dir.isAccepted(e));
+                res(data);
+            }
         });
     })
 }
 
 /**
- * 获取注册的资源列表
- * @param {Object|String} folder
+ * 获取注册的文件列表
+ * @param {String} dirname
  * @returns {Array<String>}
  */
-export const getList = function(folder) {
-    if (typeof folder == "string") {
-        folder = listDirs().find((e) => e.path == folder);
-    }
-    let registered = [];
-    if (folder.src) {
-        registered = accessField(game.runtime, folder.src);
-    } else {
-        registered = game.oriData.data.main[folder.path];
-    }
-    const suffix = editor.gameInfo.get("suffix", {})[folder.type];
-    if (suffix) registered = registered.map((e) => {
-        if (!e.includes(".")) e += suffix;
-        return e;
-    })
-    return registered;
+export const getList = function(dirname) {
+    const dir = dirs.get(dirname);
+    const list = dir.getList();
+    if (dir.defaultSuffix) {
+        return list.map((e) => {
+            if (!e.includes(".")) e += dir.defaultSuffix;
+            return e;
+        })
+    } else return [].concat(list);
 }
 
-export const getImage = function(dir, name) {
-    const res = game.main.core.material.images[dir];
+/**
+ * 获取图像资源
+ * @param {String} dirname 目录
+ * @param {String} name 图像名称
+ * @returns {Image|Array<Image>}
+ */
+export const getImage = function(dirname, name) {
+    const res = game.main.core.material.images[dirname];
     if (res instanceof Image) {
         return res;
     } else {
         if (name) return res[name];
-        return game.oriData.data.main[dir].map((e) => res[e]);
+        return game.oriData.data.main[dirname].map((e) => res[e]);
     }
 }
 
 ////////////////////////// setter //////////////////////////
 
+/**
+ * @todo 同时加载对应文件
+ * 注册文件
+ * @param {String} dirname
+ * @param {String} filename
+ * @returns
+ */
+export const regFile = async function(dirname, filename) {
+    const dir = dirs.get(dirname);
+    if (dir.isAccepted(filename)) return;
+    const list = dir.getList();
+    const regName = dir.getRegName(filename);
+    if (list.includes(regName)) return;
+    list.push(regName);
+    return game.gameData.data.modify({ key: `[main][${dir.path}]`, value: list });
+}
+
+export const unRegFile = async function(dirname, filename) {
+    const dir = dirs.get(dirname);
+    const list = dir.getList();
+    const regName = dir.getRegName(filename);
+    const id = list.indexOf(regName);
+    if (id < 0) return;
+    list.splice(id, 1);
+    return game.gameData.data.modify({ key: `[main][${dir.path}]`, value: list });
+}
 
 ////////////////////////// wrapapi //////////////////////////
