@@ -1,7 +1,7 @@
 import { isset } from "../editor_util.js";
 import serviceManager from "../editor_service.js";
 
-serviceManager.register('tiledEditor', 'Clipboard', {
+serviceManager.register('tiledEditor', 'clipboard', {
     data: {
         block: null,
         events: null,
@@ -21,7 +21,7 @@ serviceManager.register('tiledEditor', 'Clipboard', {
                 }
             },
             {
-                condition: () => isset(console.log(this), this.pos),
+                condition: () => isset(this.pos),
                 text: (e, h) => `粘贴事件(${this.pos.format(", ")})到此处`,
                 vaildate: (e, h, pos) => !this.pos.equal(pos) && this.clipboard,
                 action: function (e, h) {
@@ -47,14 +47,6 @@ serviceManager.register('tiledEditor', 'Clipboard', {
     },
     methods: {
         store(pos) {
-            var fields = Object.keys(editor.file.comment._data.floors._data.loc._data);
-            this.block = core.clone(this.$host.blockAt(pos));
-            this.events = {};
-            this.pos = pos.copy();
-            let events = this.events;
-            fields.forEach(function(v) {
-                events[v] = core.clone(editor.currentFloorData[v][pos.format(",")]);
-            })
         },
         pasteTo(pos) {
             var fields = Object.keys(editor.file.comment._data.floors._data.loc._data);
@@ -77,3 +69,21 @@ serviceManager.register('tiledEditor', 'Clipboard', {
         },
     }
 })
+
+serviceManager.register('tiledEditor', 'paint', {
+    data: {
+        /** 绘制区拖动有关 */holdingPath: 0,
+        /** 用于存放寻路检测的第一个点之后的后续移动 */stepPostfix: null,
+        mouseOut: true,
+        startPos: null,
+        endPos: null,
+    },
+    mounted(h) {
+        h.$registerMode("paint", {
+            name: "绘制地图",
+            event: {
+                selectPos: (pos) => this.$emit("editEvent", pos),
+            }
+        })
+    }
+});

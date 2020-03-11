@@ -70,45 +70,7 @@ export const ftools = {
     }
 }
 
-export class commandStack {
-
-    stack = []
-    pointer = -1
-
-    /**
-     * 命令栈
-     * @param {Number} size 命令栈的大小, 默认为20 
-     */
-    constructor(size = 20) {
-        this.size = size;
-    }
-
-    push(command) {
-        if (this.pointer < this.stack.length-1) {
-            this.stack.splice(this.pointer+1);
-            this.pointer = this.stack.length;
-        } else if (this.stack.length >= this.size) this.stack.shift();
-        else this.pointer++;
-        this.stack.push(command);
-    }
-
-    hasBack() { return this.pointer >= 0; }
-
-    back() {
-        if (~this.pointer) return null;
-        return this.stack[this.pointer--];
-    }
-
-    hasNext() { return this.pointer < this.stack.length-1; }
-
-    next() {
-        if (this.pointer >= this.stack.length-1) return null;
-        this.pointer++;
-        return this.stack[this.pointer];
-    }
-}
-
-export class config {
+export class Config {
     
     constructor(src, defaultConfig = {}) {
         this.src = src;
@@ -144,7 +106,7 @@ export class config {
     }
 }
 
-export class jsFile {
+export class JsFile {
 
     /**
      * javascript文件的类

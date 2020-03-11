@@ -2,7 +2,7 @@
  * @file tiled/tiled_editor.js
  */
 import game from "../editor_game.js";
-import { pos } from "../editor_util.js";
+import { Pos, CommandStack } from "../editor_util.js";
 import { importCSS } from "../editor_ui.js";
 import { $ } from "../mt-ui/canvas.js";
 
@@ -67,7 +67,7 @@ export default /** @mixes mainEditorExtension */{
         </div>
         <marked-container :size="mapSize" class="mapEdit" :class="{ expend: dockTucked }">
             <canvas 
-                class='gameCanvas' ref="eui" 
+                class='uiCanvas' ref="eui" 
                 width='416' height='416' 
                 style='z-index:100'
                 @mousedown="onmousedown"
@@ -97,27 +97,18 @@ export default /** @mixes mainEditorExtension */{
     extends: serviceManager.mainEditorExtension,
     data: function() {
         return {
-            pos: new pos,
+            pos: new Pos,
             brushMod: "line", // ["line", "rectangle", "fill"]
             brushs,
             layerMod: "map", // ["fgmap", "map", "bgmap"]
-            // 绘制区拖动有关
-            holdingPath: 0,
-            stepPostfix: null,//用于存放寻路检测的第一个点之后的后续移动
-            mouseOut: true,
-            startPos: null,
-            endPos: null,
             // 锁定模式
             lockMode: false,
-            ctx: {
-                width: 416, 
-                height: 416,
-            },
             mapSize: [0, 0],
             dockTucked: false,
         }
     },
     created() {
+        this.commandStack = new CommandStack(20);
         this.ready = new Promise((res, rej) => {
             this.__resolver__ = () => res(this);
         })
@@ -127,9 +118,7 @@ export default /** @mixes mainEditorExtension */{
         this.app = await game.fetchScene("map");
         this.gameCanvas = this.app.view;
         this.$refs.eui.parentElement.insertBefore(this.app.view, this.$refs.eui);
-        this.dom = {
-            mid: this.$el,
-        }
+        this.eui = $(this.$refs.eui);
         this.$refs.contextmenu.inject([
             {
                 text: (e, h) => `编辑此点(${h.eToPos(e).format(",")})`,
@@ -155,7 +144,7 @@ export default /** @mixes mainEditorExtension */{
         this.$registerMode("event", {
             name: "事件编辑",
             event: {
-                click:
+                clickPos: (pos) => this.$emit("editPos", pos),
             }
         });
         this.$work("tiledEditor", "event");
@@ -198,7 +187,7 @@ export default /** @mixes mainEditorExtension */{
          */
         eToPos: function (e) {
             const size = editor.isMobile ? (32 * innerWidth * 0.96 / core.__PIXELS__) : 32;
-            return new pos(e.layerX, e.layerY).gridding(size);
+            return new Pos(e.layerX, e.layerY).gridding(size);
         },
 
         //////////// 绘制函数 ////////////
@@ -269,6 +258,8 @@ export default /** @mixes mainEditorExtension */{
             this.app.renderer.resize(width, height);
             this.app.view.style.width = width + "px";
             this.app.view.style.height = height + "px";
+            this.eui.resize(width, height);
+            this.eui.setting("style", { width, height });
         },
 
         /**
@@ -317,8 +308,10 @@ export default /** @mixes mainEditorExtension */{
          * + 绘图时画个矩形在那个位置
          */
         onmousedown: function (e) {
-            var loc = this.eToLoc(e);
-            var pos = this.locToPos(loc, true);
+            const pos = this.eToPos(e);
+            console.log(pos);
+            this.$trigger("clickPos", pos);
+            return false;
             if (!selectBox.isSelected()) {
                 editor_mode.onmode('nextChange');
                 editor_mode.onmode('loc');
@@ -348,6 +341,7 @@ export default /** @mixes mainEditorExtension */{
          * + 绘图模式时找到与队列尾相邻的鼠标方向的点画个矩形
          */
         mousemove: function (e) {
+            return;
             if (this.mode == 'paint') {
                 if (this.startPos == null) return;
                 //tip.whichShow(1);

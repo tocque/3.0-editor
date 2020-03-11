@@ -2,7 +2,7 @@
  * @file editor_multi.js 代码编辑器
  */
 import loader from "./vs/loader.js"
-import { decode64 } from "./editor_util.js"
+import { isset, decode64 } from "./editor_util.js"
 
 import listen from "./editor_listen.js"
 
@@ -24,7 +24,7 @@ const importDefaults = async function() {
         target: monaco.languages.typescript.ScriptTarget.ES6,
         allowNonTsExtensions: true
     })
-    let str = decode64(await fs.fetchBinary("./_server/vs/intellisence/runtime_api.js"));
+    let str = decode64(await fs.fetchBinary("./_server/vs/intellisence/runtime_api.ts"));
     monaco.languages.typescript.javascriptDefaults.addExtraLib(str, 'core.js')
 }
 
@@ -51,6 +51,7 @@ Vue.component('code-editor', {
         "active": { default: true },
         "text": { default: "text" },
         "nostatus": { default: false },
+        "shortcut": { default: () => [] },
     },
     data() {
         return {
@@ -71,12 +72,13 @@ Vue.component('code-editor', {
         });
         this.multi.onDidChangeModelContent(this.onedit.bind(this));
         this.multi.onDidChangeCursorPosition(this.oncursor.bind(this));
-
-        listen.regShortcut("s.ctrl", {
-            action: this.save.bind(this),
-            condition: () => this.active,
-            prevent: true,
-        })
+        if (this.shortcut.includes("save")) {
+            listen.regShortcut("s.ctrl", {
+                action: this.save.bind(this),
+                condition: () => this.active,
+                prevent: true,
+            })
+        }
     },
     methods: {
         setValue(value) {

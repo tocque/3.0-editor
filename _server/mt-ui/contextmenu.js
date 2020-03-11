@@ -1,4 +1,4 @@
-import { pos, exec } from "../editor_util.js";
+import { Pos, exec } from "../editor_util.js";
 import listen from "../editor_listen.js"
 
 let __currentContextMenu__ = null;
@@ -26,7 +26,7 @@ Vue.component('contextMenu', {
     data: function() {
         return {
             active: false,
-            pos: new pos(),
+            pos: new Pos(),
             items: []
         }
     },

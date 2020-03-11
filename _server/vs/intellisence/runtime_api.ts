@@ -91,7 +91,7 @@ const core = new class core {
      * @param {String} itemId 物品ID
      * @param {Number} [itemNum] 物品数量, 默认值为1
      */
-    getItem(itemId, itemNum) {}
+    removeItem(itemId, itemNum) {}
 
     /**
      * 持有某个物品的数量
@@ -107,7 +107,7 @@ const core = new class core {
      * @param {String} itemId 物品ID
      * @returns {Boolean}
      */
-    itemCount(itemId) {}
+    hasItem(itemId) {}
 
     /**
      * 获得某个装备位的当前装备

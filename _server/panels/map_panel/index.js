@@ -21,13 +21,15 @@ export default {
     label: "地图",
     template: /* HTML */`
     <div id="mapPanel">
-        <mt-side class="left transition" :tucked.sync="leftCollapsed">
+        <mt-side class="left transition" :tucked.sync="leftCollapsed" ref="side">
             <map-explorer active></map-explorer>
             <map-data></map-data>
-            <pos-data></pos-data>
+            <pos-data ref="posData"></pos-data>
         </mt-side>
         <div class="mid" :class="{ expend: leftCollapsed }">
-            <tiled-editor ref="tiledEditor" @showBlock="showBlock"></tiled-editor>
+            <tiled-editor ref="tiledEditor" @showBlock="showBlock"
+                @editPos="editPos"
+            ></tiled-editor>
         </div>
         <status-item v-show="active">{{ currentMapid }}</status-item>
     </div>`,
@@ -49,6 +51,11 @@ export default {
             currentMap: null,
         }
     },
+    provide() {
+        return {
+            getCurrentMap: this.getCurrentMap
+        }
+    },
     created() {
         listen.regShortcut("b.ctrl", {
             action: () => { this.leftCollapsed = !this.leftCollapsed },
@@ -67,9 +74,16 @@ export default {
         this.active = false;
     },
     methods: {
+        getCurrentMap() {
+            return this.currentMap;
+        },
         showBlock() {
 
-        }
+        },
+        editPos(pos) {
+            this.$refs.posData.update(pos);
+            this.$refs.side.openPane("posData");
+        },
     },
     watch: {
         currentMapid(newValue, oldValue) {

@@ -4,7 +4,7 @@
  * 原则上其他部分获取游戏信息均需要通过此处, 若玩家自行修改游戏, 对应获取信息的更改也均在此处调整
  */
 
-import { ftools, jsFile, config } from "./editor_file.js";
+import { ftools, JsFile, Config } from "./editor_file.js";
 import { createGuid } from "./editor_util.js";
 
 import * as _map from "./game/map.js";
@@ -12,7 +12,7 @@ import * as _data from "./game/data.js";
 import * as _plugin from "./game/plugin.js";
 import * as _resource from "./game/resource.js";
 
-class map extends jsFile {
+class map extends JsFile {
     constructor(mapid, data) {
         super(`./project/floors/${mapid}.js`, data, `main.floors.${mapid}=\n`, {
             stringifier: function(data) {
@@ -37,7 +37,7 @@ class map extends jsFile {
 export default new class gameRuntime {
 
     /** 原始游戏数据 */ oriData = {};
-    /** @type {Object<jsFile>} 包装的游戏数据类 */ gameData = {};
+    /** @type {Object<JsFile>} 包装的游戏数据类 */ gameData = {};
 
     /** @type {Object<Promise>} 生命周期钩子 */ hooks = {};
     /** @type {Object<Function>} 生命周期钩子的resolve */ __resolves__ = {}
@@ -136,7 +136,7 @@ export default new class gameRuntime {
         for (let n in pureData) {
             const name = pureData[n];
             this.oriData[n] = this.runtime[name];
-            this.gameData[n] = new jsFile(`./project/${n}.js`, this.runtime[name], `var ${name} = \n`, {
+            this.gameData[n] = new JsFile(`./project/${n}.js`, this.runtime[name], `var ${name} = \n`, {
                 stringifier: ['maps', 'enemys'].some(e => e === n) ? listFormat : normalFormat,
             });
         }

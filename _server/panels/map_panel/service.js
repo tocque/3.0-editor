@@ -1,12 +1,12 @@
-import { ftools, jsFile } from "../../editor_file.js";
+import { ftools, JsFile } from "../../editor_file.js";
 
 export const mapStore = new Vuex.Store({
     state: {
-        currentMapid: ''
+        currentMapid: '',
     },
     mutations: {
-        openMap(state, newMap) {
-            state.currentMapid = newMap;
+        openMap(state, newMapid) {
+            state.currentMapid = newMapid;
         }
     }
 })

@@ -396,11 +396,20 @@
 .side-pane {
     background-color: @c-left;
     .header {
-        font-weight: inherit;
-        font-size: 14px;
-        color: @c-header;
         margin: 8px 10px;
-        line-height: 36px;
+        display: flex;
+        .title {
+            font-weight: inherit;
+            font-size: 14px;
+            color: @c-header;
+            line-height: 36px;
+            margin: 0;
+        }
+        .headerContent {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+        }
     }
 }
 

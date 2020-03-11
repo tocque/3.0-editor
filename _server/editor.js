@@ -31,10 +31,10 @@ class editor {
         [
             this.userdata, this.extensions, this.towerInfo, this.gameInfo
         ] = await Promise.all([
-            new file.config("./_server/config.json"), 
-            new file.config("./_server/extensions.json"),
-            new file.config("./work.h5mota"),
-            new file.config("./_server/game/gameInfo.json"),
+            new file.Config("./_server/config.json"), 
+            new file.Config("./_server/extensions.json"),
+            new file.Config("./work.h5mota"),
+            new file.Config("./_server/game/gameInfo.json"),
         ]);
         await game.load();
         this.window = await import('./editor_window.js');

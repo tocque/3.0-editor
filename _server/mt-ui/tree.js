@@ -2,7 +2,7 @@ let __wrongMark__ = false;
 
 const controlNode = {
     template: /* HTML */`
-    <div class="control-node" :title="comment._data+comment.field">
+    <div class="control-node" :title="comment._data+data.field">
         <span class="comment">{{ data.comment._name }}</span>
         <div class="control-input">
             <mt-switch v-if="comment._type == 'checkbox'" v-model="value"></mt-switch>
@@ -29,6 +29,9 @@ const controlNode = {
     created: function() {
         this.comment = this.data.comment;
         this.value = this.data.data;
+        if (this.comment._type == 'color' && this.value) {
+            this.value = this.value.join(',');
+        }
         if (this.comment._type == 'select') {
             if (this.comment._options.values instanceof Function) {
                 this.options = this.comment._options.values();

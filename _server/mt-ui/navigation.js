@@ -112,6 +112,11 @@ export const MtSide = {
         toggle(code) {
             if (!isset(code)) code = !this.tucked;
             this.$emit("update:tucked", code);
+        },
+        openPane(pane) {
+            if (this.chosen.id == pane) return;
+            const panel = this.panels.find((panel) => panel.id == pane);
+            this.$refs.switcher.switchTab(panel, true);
         }
     }
 };
@@ -129,7 +134,10 @@ export const MtSidePane = {
             class: ['side-pane', ctx.props.pane, ...c],
             attrs: ctx.props
         }, [
-            h('h3', { class: "header" }, ctx.props.label),
+            h('div', {class: "header"}, [
+                h('h4', { class: "title" }, ctx.props.label),
+                h('div', { class:"headerContent" }, ctx.slots().header)
+            ]),
             h('div', { class: "content" }, ctx.slots().default)
         ])
     },

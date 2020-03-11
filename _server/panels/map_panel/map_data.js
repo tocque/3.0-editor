@@ -16,6 +16,7 @@ export default {
     created() {
 
     },
+    inject: ["getCurrentMap"],
     methods: {
         changeFloorId: function () {
             var floorId = this.changeToId;
@@ -61,8 +62,8 @@ export default {
         }
     },
     watch: {
-        currentMapid(newValue, oldValue) {
-            this.$refs.floorTable.update(game.getMaps()[newValue].data);
+        currentMapid() {
+            this.$refs.floorTable.update(this.getCurrentMap().data);
         }
     },
 }

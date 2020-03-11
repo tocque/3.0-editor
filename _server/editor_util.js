@@ -235,13 +235,13 @@
         return newObj;
     }
 
-    export const pos = class pos {
+    export class Pos {
         constructor(x, y) {
-            if (typeof x == typeof('')) {
+            if (typeof x == 'string') {
                 x = x.split(y);
                 this.x = x[0], this.y = x[1];
             }
-            else if (x instanceof pos) this.x = x.x, this.y = x.y;
+            else if (x instanceof Pos) this.x = x.x, this.y = x.y;
             else this.x = x || 0, this.y = y || 0;
         }
 
@@ -251,16 +251,17 @@
          * @param {Number} [ysize] 网格高度, 若不填则视为与宽度相同
          */
         gridding(xsize, ysize = xsize) {
-            return new pos(parseInt(this.x/xsize), parseInt(this.y/ysize));
+            return new Pos(parseInt(this.x/xsize), parseInt(this.y/ysize));
         }
 
         set(x, y) {
+            if (x instanceof Pos) y = x.y, x = x.x;
             this.x = x, this.y = y;
         }
 
         add(x, y) {
             if (!isset(y)) y = x;
-            return new pos(this.x + x, this.y + y);
+            return new Pos(this.x + x, this.y + y);
         }
 
         format(separator) {
@@ -268,11 +269,68 @@
         }
 
         copy() {
-            return new pos(this.x, this.y);
+            return new Pos(this.x, this.y);
         }
 
         equal(p) {
             return this.x === p.x && this.y === p.y;
+        }
+    }
+
+    export class CommandStack {
+    
+        stack = []
+        pointer = -1
+        commands = {};
+    
+        /**
+         * 命令栈
+         * @param {Number} size 命令栈的大小, 默认为20 
+         */
+        constructor(size = 20) {
+            this.size = size;
+        }
+    
+        /**
+         * 注册命令
+         * @param {String} type 类型 
+         * @param {Function} redo 
+         * @param {Function} undo 
+         */
+        register(type, redo, undo) {
+            this.commands[type] = { redo, undo }
+        }
+    
+        push(type, data) {
+            if (this.pointer < this.stack.length-1) {
+                this.stack.splice(this.pointer+1);
+                this.pointer = this.stack.length;
+            } else if (this.stack.length >= this.size) this.stack.shift();
+            else this.pointer++;
+            this.commands[type].redo(data);
+            this.stack.push({type, data});
+        }
+    
+        hasBack() { return this.pointer >= 0; }
+    
+        undo() {
+            if (~this.pointer) return false;
+            const command = this.stack[this.pointer--];
+            this.commands[command.type].redo(command.data);
+            return true;
+        }
+    
+        hasNext() { return this.pointer < this.stack.length-1; }
+    
+        redo() {
+            if (this.pointer >= this.stack.length-1) return false;
+            const command = this.stack[++this.pointer];
+            this.commands[command.type].redo(command.data);
+            return true;
+        }
+    
+        clear() {
+            this.stack = [], this.pointer = -1;
         }
     }
 

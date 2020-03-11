@@ -2,7 +2,8 @@
  * @file game/map.js 游戏地图相关的接口
  */
 import game from "../editor_game.js";
-import editor_blockly from "../editor_blockly.js";
+import { clone } from "../editor_util.js";
+import locComment from "../comments/loc.comment.js";
 
 /**
  * 由mapStruct数组构造mapTree
@@ -45,12 +46,32 @@ export const getMapTree = function() {
     return output;
 }
 
+/**
+ * 获取地图
+ * @param {String} mapid 地图ID 
+ */
 export const getMap = function(mapid) {
-    return game.maps[mapid];
+    return clone(game.maps[mapid]);
 }
 
 export const getIcons = function() {
     return game.oriData.icons;
+}
+
+/**
+ * 
+ * @param {pos} pos 
+ * @param {String|Object} floor 地图
+ */
+export const getPosInfo = function(pos, floor) {
+    const fields = Object.keys(locComment);
+    this.block = core.clone(this.$host.blockAt(pos));
+    this.events = {};
+    this.pos = pos.copy();
+    let events = this.events;
+    fields.forEach((v) => {
+        events[v] = core.clone(editor.currentFloorData[v][pos.format(",")]);
+    })
 }
 
 ////////////////////////// setter //////////////////////////

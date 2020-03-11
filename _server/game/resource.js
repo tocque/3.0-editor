@@ -36,6 +36,10 @@ class Dir {
         return this.suffixReg.test(filename);
     }
 
+    getRegName(filename) {
+        return filename.slice(0, filename.lastIndexOf("."));
+    }
+
     outputInfo() {
         return {
             label: this.label,
@@ -127,7 +131,7 @@ export const getImage = function(dirname, name) {
  */
 export const regFile = async function(dirname, filename) {
     const dir = dirs.get(dirname);
-    if (dir.isAccepted(filename)) return;
+    if (!dir.isAccepted(filename)) return;
     const list = dir.getList();
     const regName = dir.getRegName(filename);
     if (list.includes(regName)) return;

@@ -24,7 +24,7 @@ export default {
                 @switch="switchTab" @close="closeTab"
             ></mt-view>
             <code-editor v-show="viewer=='script'" ref="editor"
-                :active="viewer=='script'"
+                :active="viewer=='script'" :shortcut="['save']"
                 lang="javascript" @save="saveScript"
             ></code-editor>
             <keep-alive>
@@ -58,9 +58,8 @@ export default {
             this.tab = tab;
             this.viewer = tab.type;
             if (this.viewer == "script") {
-                const refs = this.$refs;
                 this.$nextTick(() => {
-                    refs.editor.load(tab);
+                    this.$refs.editor.load(tab);
                 });
             }
         },
