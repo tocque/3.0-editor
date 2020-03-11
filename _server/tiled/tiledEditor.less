@@ -1,25 +1,96 @@
 @import "../css/editor_skin.less";
 
+@w-paint-box: 360px;
+@h-dock: 135px;
+
 .tileEditor {
     height: 100%;
     width: 100%;
-    background: #0E0E0E;
-    .__topbar {
+    background: #0e0e0e;
+    &>.topbar {
         position: absolute;
         left: 0px;
-        right: 360px;
+        right: @w-paint-box;
         height: 35px;
-        .__toolBar {
+        .__toolGroup {
             .active i.codicon {
                 color: @c-text-hl;
             } 
         }
     }
+    .__dock {
+        position: absolute;
+        bottom: 0;
+        right: @w-paint-box;
+        left: 0;
+        height: @h-dock;
+        border-top: 1px solid #666666;
+        &.tucked {
+            height: 35px;
+            .__content {
+                display: none;
+            }
+        }
+        .__title {
+            display: flex;
+            height: 35px;
+            .__item {
+                a {
+                    font-size: 14px;
+                    padding: 6px 0;
+                    line-height: 34px;
+                    color: @c-text;
+                }
+                &.active {
+                    a {
+                        border-bottom: 1px solid white;
+                    }
+                    color: @c-text-hl;
+                }
+                &:first-child {
+                    padding-left: 12px;
+                }
+            }
+            .__toolbar {
+                padding: 0 10px;
+                display: flex;
+                align-items: center;
+                margin-left: auto;
+                i.codicon {
+                    width: 20px;
+                    height: 20px;
+                    font-size: 20px;
+                    cursor: pointer;
+                }
+            }
+            .__content {
+                height: -webkit-fill-available;
+            }
+        }
+    }
+    .mapEdit {
+        position: absolute;
+        top: 35px;
+        right: @w-paint-box;
+        left: 0;
+        bottom: @h-dock;
+        overflow: hidden;
+    }
 }
 
 .markedContainer {
-    position: absolute;
-    top: 35px;
+    &.expend {
+        bottom: 35px;
+    }
+    .anchor {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 20px;
+        height: 20px;
+        background: #0E0E0E;
+        z-index: 10;
+    }
     .colMark, .rowMark {
         position: absolute;
         display: flex;
@@ -36,7 +107,6 @@
             }
         }
     }
-
     .colMark {
         top: 5px;
         left: 20px;
@@ -50,7 +120,6 @@
             }
         }
     }
-
     .rowMark {
         top: 20px;
         left: 5px;
@@ -64,30 +133,39 @@
             }
         }
     }
-
     .__inner {
         position: absolute;
         top: 20px;
         left: 20px;
+        right: 0;
+        bottom: 0;
+        overflow: auto;
     }
 }
 
-.__dock {
-    .__title {
-
-    }
+.lastUsedBlocks {
+    height: -webkit-fill-available;
 }
 
 .paintBox {
     background-color: #444;
     box-shadow: -3px 0px 3px #111;
-    width: 360px;
+    width: @w-paint-box;
     position: absolute;
     right: 0;
     top: 0;
     bottom: 0;
-    overflow: auto;
+    .__topbar {
+        background-color: #333;
+        display: flex;
+    }
     .tiledImages {
+        top: 30px;
+        position: absolute;
+        overflow: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
         display: flex;
         align-items: end;
     }
