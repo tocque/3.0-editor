@@ -42,13 +42,13 @@ export default {
                     <mt-icon icon="item.icon"></mt-icon>
                     <span>{{ item.name }}</span>
                     <mt-btn v-if="dir.editable" mini
-                        @click="addin(item)"
+                        @click.stop="addin(item)"
                     >修改</mt-btn>
                     <mt-btn v-if="!dir.const && item.added" class="__delete" mini
-                        @click="unaddFile(item)"
+                        @click.stop="unaddFile(item)"
                     >移除</mt-btn>
                     <mt-btn v-else-if="!dir.const" class="__add" mini
-                        @click="addFile(item)"
+                        @click.stop="addFile(item)"
                     >添加</mt-btn>
                 </li>
             </ul>
@@ -103,16 +103,15 @@ export default {
         },
         async addFile(item) {
             try {
-                await game.resource.regFile(dir.name, item.name);
+                await game.resource.regFile(this.dir.name, item.name);
                 item.added = true;
-            } catch {}
+            } catch (e) { console.log(e) }
         },
         async unaddFile(item) {
             try {
-                await game.resource.unRegFile(dir.name, item.name);
-                item.added = true;
+                await game.resource.unRegFile(this.dir.name, item.name);
+                item.added = false;
             } catch {}
-            item.added = false;
         },
         choseFile(file) {
             this.optType = "preview";

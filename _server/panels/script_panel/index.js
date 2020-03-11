@@ -20,8 +20,9 @@ export default {
             <plugin-lib @openTab="openTab"></plugin-lib>
         </mt-side>
         <div class="mid" :class="{ expend: leftCollapsed }">
-            <mt-view v-show="viewer" ref="view" @switch="switchTab" @close="closeTab">
-            </mt-view>
+            <mt-view v-show="viewer" ref="view" canClose
+                @switch="switchTab" @close="closeTab"
+            ></mt-view>
             <code-editor v-show="viewer=='script'" ref="editor"
                 :active="viewer=='script'"
                 lang="javascript" @save="saveScript"

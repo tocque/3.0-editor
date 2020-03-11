@@ -24,6 +24,7 @@ export default {
         <mt-side class="left transition" :tucked.sync="leftCollapsed">
             <map-explorer active></map-explorer>
             <map-data></map-data>
+            <pos-data></pos-data>
         </mt-side>
         <div class="mid" :class="{ expend: leftCollapsed }">
             <tiled-editor ref="tiledEditor" @showBlock="showBlock"></tiled-editor>

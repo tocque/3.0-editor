@@ -50,7 +50,7 @@ class TileImage {
         this.datasource = datasource;
         this.ctx.canvas.addEventListener("click", (e) => {
             const [w, h] = this.getGrid();
-            onclick(Math.floor(e.layerX) / w, Math.floor(e.layerY / h));
+            onclick(Math.floor(e.layerX / w), Math.floor(e.layerY / h));
         });
         if (config.drawRect) {
             // this.ctx.onRect(fn, this.getGrid());
@@ -62,7 +62,7 @@ class TileImage {
         let grid = config.grid || [1, 1];
         if (!Array.isArray(grid)) grid = [grid, 1];
         if (config.folded) grid = [1, 1];
-        return [config.width * grid[0] || 32, h = config.height * grid[1] || 32];
+        return [config.width * grid[0] || 32, config.height * grid[1] || 32];
     }
 
     update(folded, perCol) {
@@ -73,8 +73,8 @@ class TileImage {
         let w = config.width || 32, h = config.height || 32;
         const offset = config.offset || 0;
 
-        if (folded) config.folded = folded;
-        if (perCol) config.perCol = perCol;
+        if (isset(folded)) config.folded = folded;
+        if (isset(perCol)) config.perCol = perCol;
         // 计算宽高
         
         let oriCol, oriRow;
@@ -87,8 +87,10 @@ class TileImage {
         let col = oriCol, row = oriRow + offset;
         if (config.folded && !config.nowrap) {
             grid = [1, 1];
-            col = Math.ceil(row / config.perCol);
-            row = config.perCol;
+            if (row > config.perCol) {
+                col = Math.ceil(row / config.perCol);
+                row = config.perCol;
+            }
         }
 
         w *= grid[0], h *= grid[1];
@@ -114,10 +116,16 @@ class TileImage {
 export default {
     template: /* HTML */`
     <div class="paintBox">
-        <div ref="ctxContainer" class="tiledImages" @mousedown="ondown"></div>
-        <button class="expandBtn" @click="toggleFold">{{ folded ? "展开素材区" : "折叠素材区" }}</button>
+        <div class="__topbar">
+            <ul class="__class">
+                <li>地图元件</li>
+                <li>事件元件</li>
+            </ul>
+            <button class="expandBtn" @click="toggleFold">{{ folded ? "展开素材区" : "折叠素材区" }}</button>
+        </div>
+        <div ref="ctxContainer" class="tiledImages"></div>
     </div>`,
-    data: function() {
+    data() {
         return {
             scrollBarHeight :0,
             folded: false,
@@ -125,14 +133,14 @@ export default {
             selected: false,
         }
     },
-    created: function() {
+    created() {
         this.selection = {},
         this.icons = game.map.getIcons();
         this.folded = editor.userdata.get('folded', false);
         this.foldPerCol = editor.userdata.get('foldPerCol', 50);
         //oncontextmenu = function (e) { e.preventDefault() }
     },
-    mounted: function() {
+    mounted() {
         this.tileImages = this.initTileImages();
         this.setTileFold(this.folded, this.perCol);
     },
@@ -141,6 +149,7 @@ export default {
             if (this.folded) {
                 if (confirm("你想要展开素材吗？\n展开模式下将显示全素材内容。")) {
                     editor.userdata.set('folded', false);
+                    this.folded = false;
                     this.setTileFold(false);
                 }
             } else {
@@ -148,10 +157,10 @@ export default {
                 if (perCol > 0) {
                     editor.userdata.get('foldPerCol', perCol);
                     editor.userdata.set('folded', true);
-                    this.setTileFold(true, 50);
+                    this.folded = true;
+                    this.setTileFold(true, perCol);
                 }
             }
-            this.folded = !this.folded;
         },
 
         initTileImages(images) {
@@ -178,8 +187,8 @@ export default {
          * @param {Number} [perCol] 每列个数
          */
         setTileFold(folded, perCol) {
-            if (!isset(folded)) folded = this.folded;
-            if (!perCol) perCol = this.foldPerCol;
+            folded = folded ?? this.folded;
+            perCol = perCol ?? this.foldPerCol;
             for (let t of this.tileImages) {
                 t.update(folded, perCol);
             }

@@ -1,20 +1,15 @@
 export default {
     template: /* HTML */`
-    <div id="left2" class='leftTab'><!-- loc -->
-        <h3 class="leftTabHeader">
-            地图选点&nbsp;&nbsp;
-            <button onclick="editor.mode.onmode('save')">保存</button>&nbsp;&nbsp;
-            <button onclick="editor.uifunctions.addAutoEvent()">添加自动事件页</button>&nbsp;&nbsp;
-            <button onclick="editor_multi.editCommentJs('loc')">配置表格</button>
-        </h3>
+    <mt-side-pane pane="posData" icon="debug-step-into" label="地图选点">
         <div class="leftTabContent">
             <p style="margin-left: 15px">{{ pos.x + ',' + pos.y }}</p>
-            <control-list ref="locTable" mode="loc"></control-list>
+            <control-list ref="locTable" :data="data" comment="loc"></control-list>
         </div>
-    </div>`,
+    </mt-side-pane>`,
     data: function() {
         return {
-            pos: {x: 0, y: 0}
+            pos: { x: 0, y: 0 },
+            data: null,
         }
     },
     methods: {

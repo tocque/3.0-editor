@@ -56,6 +56,11 @@
             "type": "image"
         },
         {
+            "label": "精灵",
+            "path": "sprites",
+            "type": "image"
+        },
+        {
             "label": "图片",
             "path": "images",
             "type": "image",
