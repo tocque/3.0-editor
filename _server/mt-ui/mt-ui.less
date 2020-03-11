@@ -119,11 +119,12 @@
 .contextmenu {
     user-select: none;
     z-index: 1000;
-    position: absolute;
+    position: fixed;
     padding: 5px 0px;
     background-color: @c-bg-pop;
     box-shadow: 0px 3px 3px #111;
     white-space: nowrap;
+    animation: fadeIn 83ms linear;
     li {
         padding: 5px 25px;
         color: darkgrey;

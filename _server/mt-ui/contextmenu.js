@@ -1,6 +1,13 @@
+import { pos, exec } from "../editor_util.js";
+import listen from "../editor_listen.js"
+
+let __currentContextMenu__ = null;
+
 document.body.addEventListener("click", function(e) {
-    let menu = Vue.prototype.__currentContextMenu__;
-    if (menu && editor.listen.getEventPath(e).indexOf(menu.$el) === -1) menu.close();
+    if (__currentContextMenu__ && 
+        !listen.getEventPath(e).includes(__currentContextMenu__.$el)) {
+        __currentContextMenu__.close();
+    }
 });
 
 Vue.component('contextMenu', {
@@ -15,33 +22,32 @@ Vue.component('contextMenu', {
         </ul>
     </div>
     `,
-    props: ["bindTo"],
+    props: ["bindTo", "addinParam"],
     data: function() {
         return {
             active: false,
-            pos: new editor.util.pos(),
-            items: [],
-            event: null,
+            pos: new pos(),
+            items: []
         }
     },
-    mounted: function() {
+    created() {
+        this.itemcnt = 0;
+        this.event = null;
+        this.addin = null;
+    },
+    mounted() {
         this.bindElm = document.querySelector(this.bindTo) || this.$parent.$el;
         this.bindElm.addEventListener("contextmenu", this.open.bind(this));
     },
     computed: {
         menuitems() {
-            var host = this.$parent, event = this.event;
-            return this.items.filter((item) => {
-                if (item.condition instanceof Function) {
-                    return item.condition(event, host);
-                } else return true;
-            }).map((item) => {
-                return {
-                    text: item.text instanceof Function ? item.text(event, host) : item.text,
-                    vaildate: !item.vaildate || item.vaildate(),
+            const args = [this.event, this.$parent, this.addin];
+            return this.items.filter((item) => exec(item.condition, ...args) ?? true)
+                .map((item) => ({
+                    text: exec(item.text, ...args) ?? item.text,
+                    vaildate: exec(item.vaildate, ...args) ?? true,
                     action: item.action,
-                }
-            });
+                }));
         }
     },
     methods: {
@@ -49,33 +55,33 @@ Vue.component('contextMenu', {
          * @param {MouseEvent} e 
          */
         open: function(e) {
-            if (Vue.prototype.__currentContextMenu__) {
-                Vue.prototype.__currentContextMenu__.close();
+            if (__currentContextMenu__) {
+                __currentContextMenu__.close();
             }
-            Vue.prototype.__currentContextMenu__ = this;
-            this.pos.add(editor.util.get)
-            this.pos.x = e.layerX, this.pos.y = e.layerY;
-            console.log(this.pos);
+            __currentContextMenu__ = this;
+            this.pos.set(e.clientX, e.clientY);
             this.event = e;
+            this.addin = this.addinParam(e, this.pos);
             this.$emit("beforeOpen", e);
             this.active = true;
             e.preventDefault();
         },
         close: function() {
-            Vue.prototype.__currentContextMenu__ = null;
+            __currentContextMenu__ = null;
             this.active = false;
         },
         inject: function(item, props) {
             if (item instanceof Array) {
                 for (let _item of item) {
-                    this.inject(Object.assign(props || {}, _item));
+                    this.inject(Object.assign({}, props, _item));
                 }
             } else {
+                item.id = this.itemcnt;
                 this.items.push(item);
             }
         },
         execAction(item) {
-            if (item.vaildate) item.action(event, this.$parent);
+            if (item.vaildate) item.action(event, this.$parent, this.addin);
         }
     }
 })
