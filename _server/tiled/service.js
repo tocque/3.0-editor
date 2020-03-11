@@ -1,4 +1,7 @@
-editor.service.register('tiledEditor', 'Clipboard', {
+import { isset } from "../editor_util.js";
+import serviceManager from "../editor_service.js";
+
+serviceManager.register('tiledEditor', 'Clipboard', {
     data: {
         block: null,
         events: null,
@@ -8,18 +11,19 @@ editor.service.register('tiledEditor', 'Clipboard', {
         h.$refs.contextmenu.inject([
             {
                 text: "复制事件",
-                action: (e, h) => this.store(h.pos),
+                action: (e, h, pos) => this.store(pos),
             },
             {
                 text: "剪切事件",
-                action: (e, h) => {
-                    this.store(h.pos);
-                    h.clearPos(h.pos);
+                action: (e, h, pos) => {
+                    this.store(pos);
+                    h.clearPos(pos);
                 }
             },
             {
-                text: (e, h) => `粘贴事件(${this.pos.x}, ${this.pos.y})到此处`,
-                vaildate: (e, h) => !this.pos.equal(h.pos) && this.clipboard,
+                condition: () => isset(console.log(this), this.pos),
+                text: (e, h) => `粘贴事件(${this.pos.format(", ")})到此处`,
+                vaildate: (e, h, pos) => !this.pos.equal(pos) && this.clipboard,
                 action: function (e, h) {
                     editor.savePreMap();
                     editor_mode.onmode('');
@@ -36,9 +40,10 @@ editor.service.register('tiledEditor', 'Clipboard', {
                 },
             },
             {
-                text: (e, h) => `交换事件${h.pos.format(",")}与此事件的位置`,
+                condition: () => h.pos,
+                text: (e, h) => `交换事件(${h.pos.format(", ")})与此事件的位置`,
             },
-        ], 'group');
+        ], { group: "clipboard@1" });
     },
     methods: {
         store(pos) {

@@ -42,10 +42,10 @@ const layerDict = {
     "bgmap": "背景层",
 }
 
-export default {
+export default /** @mixes mainEditorExtension */{
     template: /* HTML */`
     <div class="tileEditor">
-        <div class="__topbar">
+        <div class="topbar">
             <mt-view ref="layer">
                 <template slot="tools">
                     <div title="锁定模式" @click="switchLock">
@@ -65,20 +65,23 @@ export default {
                 </template>
             </mt-view>
         </div>
-        <marked-container :size="mapSize" class="mapEdit">
+        <marked-container :size="mapSize" class="mapEdit" :class="{ expend: dockTucked }">
             <canvas 
                 class='gameCanvas' ref="eui" 
                 width='416' height='416' 
                 style='z-index:100'
+                @mousedown="onmousedown"
                 @mousemove="mousemove"
                 @dblclick="selectIcon"
             ></canvas>
         </marked-container>
-        <div class="__dock" role="complementary">
+        <div class="__dock" role="complementary" :class="{ tucked: dockTucked }">
             <div class="__title">
-                <div class="__item active">最近使用图块</div>
-                <div class="__toolBar">
-                    <mt-icon icon="unfold"></mt-icon>
+                <div class="__item active"><a>最近使用图块</a></div>
+                <div class="__toolbar">
+                    <mt-icon :icon="dockTucked ? 'chevron-up' : 'chevron-down'" 
+                        @click="toggleDock" :title="dockTucked ? '折叠' : '展开'" 
+                    ></mt-icon>
                 </div>
             </div>
             <div class="__content">
@@ -86,7 +89,10 @@ export default {
             </div>
         </div>
         <paint-box></paint-box>
-        <context-menu ref="contextmenu" @beforeOpen="$trigger('beforeConextMenu')"></context-menu>
+        <context-menu ref="contextmenu" :addinParam="eToPos"
+            @beforeOpen="$trigger('beforeConextMenu')"
+        ></context-menu>
+        <status-item v-if="$parent.active">{{ sys_mainEditor__.mode?.name }}</status-item>
     </div>`,
     extends: serviceManager.mainEditorExtension,
     data: function() {
@@ -108,6 +114,7 @@ export default {
                 height: 416,
             },
             mapSize: [0, 0],
+            dockTucked: false,
         }
     },
     created() {
@@ -126,9 +133,8 @@ export default {
         this.$refs.contextmenu.inject([
             {
                 text: (e, h) => `编辑此点(${h.eToPos(e).format(",")})`,
-                action(e, h) {
+                action(e, h, pos) {
                     h.$changeMode("editEvent");
-                    const pos = h.eToPos(e);
                     h.drawPosSelection(pos);
                     h.$emit("editEvent", pos);
                 },
@@ -139,15 +145,18 @@ export default {
             },
             {
                 text: "仅清空此点事件", 
-                action: (e, h) => {h.clearPos(false)}
+                action: (e, h, pos) => {h.clearPos(pos, false)}
             },
             {
                 text: "清空此点及事件", 
-                action: (e, h) => {h.clearPos(true)}
+                action: (e, h, pos) => {h.clearPos(pos, true)}
             },
         ]);
         this.$registerMode("event", {
             name: "事件编辑",
+            event: {
+                click:
+            }
         });
         this.$work("tiledEditor", "event");
         this.__resolver__();
@@ -186,16 +195,10 @@ export default {
 
         /**
          * 由点击事件获得地图位置
-         * @param {Boolean} addViewportOffset 是否加上大地图的偏置
          */
-        eToPos: function (e, addViewportOffset) {
-            let loc = editor.listen.eToLoc(e, [this.dom.mid, this.dom.mapEdit]);
-            var offsetX = 0, offsetY = 0, size = editor.isMobile ? (32 * innerWidth * 0.96 / core.__PIXELS__) : 32;
-            if (addViewportOffset) {
-                offsetX = core.bigmap.offsetX / 32;
-                offsetY = core.bigmap.offsetY / 32;
-            }
-            return loc.gridding(size).add(offsetX, offsetY);
+        eToPos: function (e) {
+            const size = editor.isMobile ? (32 * innerWidth * 0.96 / core.__PIXELS__) : 32;
+            return new pos(e.layerX, e.layerY).gridding(size);
         },
 
         //////////// 绘制函数 ////////////
@@ -313,11 +316,9 @@ export default {
          * + 非绘图时选中
          * + 绘图时画个矩形在那个位置
          */
-        map_ondown: function (e) {
+        onmousedown: function (e) {
             var loc = this.eToLoc(e);
             var pos = this.locToPos(loc, true);
-            if (e.button == 2) {
-            }
             if (!selectBox.isSelected()) {
                 editor_mode.onmode('nextChange');
                 editor_mode.onmode('loc');
@@ -517,7 +518,9 @@ export default {
             });
         },
 
-
+        toggleDock() {
+            this.dockTucked = !this.dockTucked;
+        },
 
         /////////////////////////////////////////////////////////////////////////////
         

@@ -1,24 +1,63 @@
-export default new class serviceManager {
+import { exec } from "./editor_util.js"
+
+class Service {
+
+    /** 指向宿主环境 */$host;
+    __props__ = {};
+
+    /**
+     * @callback ServiceMounted
+     * @param host 服务的宿主
+     * 
+     * @typedef {Object} ServiceConfig
+     * @property {Object} [data] 服务的数据
+     * @property {ServiceMounted} [mounted] 当服务被挂载时的调用方法
+     * @property {Object} [methods] 服务的方法
+     * 
+     * @param {ServiceConfig} config 
+     */
+    constructor(config) {
+        console.log(config);
+        Object.entries(config).forEach(([key, value]) => {
+            switch(key) {
+                case "methods": {
+                    for (let m in value) {
+                        this[m] = value[m].bind(this);
+                    }
+                } break;
+                case "data": {
+                    for (let m in value) {
+                        this[m] = value[m];
+                    }
+                } break;
+                case "mounted": {
+                    this.__props__.mount = value.bind(this);
+                } break;
+                default: this[key] = value;
+            }
+        });
+    }
+
+    $mount($host) {
+        this.$host = $host
+        exec(this.__props__.mount, $host);
+    }
+}
+
+const serviceManager =  new class ServiceManager {
     services = {};
     hasReceived = {};
 
-    _service = class service {
-
-        $host
-
-        constructor(config) {
-            Object.assign(this, config.data);
-            for (let m in config.methods) {
-                this[m] = config.methods[m].bind(this);
-            }
-            if (config.mount) this.$mount = config.mount.bind(this);
-        }
-    }
-
-    register(mountTo, config) {
-        if (!(mountTo in this.services)) this.services[mountTo] = [];
-        var service = new this._service(config);
-        this.services[mountTo].push(service);
+    /**
+     * 注册一个服务
+     * @param {String} mountTo 被注册到的
+     * @param {String} serviceName 服务名称
+     * @param {ServiceConfig} config 服务配置
+     */
+    register(mountTo, serviceName, config) {
+        const service = new Service(config);
+        if (!(mountTo in this.services)) this.services[mountTo] = [service];
+        else this.services[mountTo].push(service);
         if (this.hasReceived[mountTo]) this.mountTo(this.hasReceived[mountTo], service);
     }
 
@@ -37,8 +76,7 @@ export default new class serviceManager {
         if (service.$mount) service.$mount(editor);
     }
 
-
-    /**面板主要编辑器的方法 */
+    /** @mixin mainEditorExtension 面板主要编辑器的方法 */
     mainEditorExtension = {
         data() {
             return {
@@ -59,36 +97,37 @@ export default new class serviceManager {
                 this.sys_mainEditor__.modes[name] = config;
             },
             $changeMode(newMode) {
-                let me = this.sys_mainEditor__;
+                const me = this.sys_mainEditor__;
                 if (me.modes[newMode].__props__.task) {
                     me.taskStack.push(me.modeStack);
                 }
-                editor.util.exec(me.modes[mode].unactive);
-                editor.util.exec(me.modes[newMode].active);
+                exec(me.modes[mode].unactive);
+                exec(me.modes[newMode].active);
                 this.$emit("onmode", { editor: this, newMode });
-                me.mode = newMode;
+                me.mode = me.modes[mode];
             },
             /**
              * @param {String} name 主编辑器名称
              * @param {String} mode 初始状态名称
              */
             $work(name, mode) {
-                let me = this.sys_mainEditor__;
+                const me = this.sys_mainEditor__;
                 this.$changeMode.finish = () => {
                     this.$changeMode(me.modeStack.pop());
                 };
                 me.name = name;
-                editor.service.receive(this, name);
+                serviceManager.receive(this, name);
                 if (mode.task) console.warn("初始状态不能是task");
-                editor.util.exec(me.modes[mode].active);
+                exec(me.modes[mode].active);
                 this.$emit("onmode", { editor: this, mode });
-                me.mode = mode;
+                me.mode = me.modes[mode];
             },
             $trigger(type, event) {
-                let me = this.sys_mainEditor__;
-                editor.util.exec(me.modes[me.mode].event[type], event);
+                const me = this.sys_mainEditor__;
+                exec(me.mode.event[type], event);
             }
         }
     }
-    
 }
+
+export default serviceManager;

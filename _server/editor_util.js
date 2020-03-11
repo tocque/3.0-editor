@@ -245,9 +245,17 @@
             else this.x = x || 0, this.y = y || 0;
         }
 
-        gridding(xsize, ysize) {
-            if (!isset(ysize)) ysize = xsize;
+        /**
+         * 将坐标转为网格坐标
+         * @param {Number} xsize 网格宽度 
+         * @param {Number} [ysize] 网格高度, 若不填则视为与宽度相同
+         */
+        gridding(xsize, ysize = xsize) {
             return new pos(parseInt(this.x/xsize), parseInt(this.y/ysize));
+        }
+
+        set(x, y) {
+            this.x = x, this.y = y;
         }
 
         add(x, y) {
