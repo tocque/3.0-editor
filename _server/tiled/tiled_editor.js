@@ -2,8 +2,9 @@
  * @file tiled/tiled_editor.js
  */
 import game from "../editor_game.js";
-import { Pos, CommandStack } from "../editor_util.js";
+import { Pos, CommandStack, exec, batchMixin } from "../editor_util.js";
 import { importCSS } from "../editor_ui.js";
+import listen from "../editor_listen.js";
 import { $ } from "../mt-ui/canvas.js";
 
 import paintBox from "./paint_box.js";
@@ -31,35 +32,48 @@ const brushs = [
     },
     {
         name: "fill",
-        icon: "paint-bucket",
-        title:"油漆桶"
+        icon: "paintcan",
+        title:"填充"
     },
 ]
 
 const layerDict = {
-    "fgmap": "前景层",
-    "map": "事件层",
-    "bgmap": "背景层",
+    "fgmap": {
+        name: "前景层",
+        alpha: [0.3, 0.3, 1],
+    },
+    "map": {
+        name: "事件层",
+        alpha: [1, 1, 1],
+    },
+    "bgmap": {
+        name: "背景层",
+        alpha: [1, 0.3, 0.3],
+    }
 }
 
 export default /** @mixes mainEditorExtension */{
     template: /* HTML */`
     <div class="tileEditor">
         <div class="topbar">
-            <mt-view ref="layer">
+            <mt-view ref="layer" @switch="changeLayer">
                 <template slot="tools">
-                    <div title="锁定模式" @click="switchLock">
+                    <div title="锁定模式" @click="switchLock" class="icon-btn">
                         <mt-icon :icon="lockMode ? 'lock' : 'unlock'"></mt-icon>
                     </div>
                     <span class="__toolGroup">
                         <div v-for="(brush, index) of brushs" :key="index"
-                            :class="{ active: brushMod == brush.name }"
+                            class="icon-btn"
+                            :class="{ active: brushMod == brush.name && 
+                                sys_mainEditor__.mode?.name == 'paint'}"
                             :title="brush.title" @click="changeBrush(brush.name)"
                         >
                             <mt-icon :icon="brush.icon"></mt-icon>
                         </div>
                     </span>
-                    <div title="保存地图 (ctrl+s)" @click="saveFloor">
+                    <div title="保存地图 (ctrl+s)" @click="saveFloor" class="icon-btn"
+                        :class="editted ? 'active' : 'unactive'"
+                    >
                         <mt-icon icon="save"></mt-icon>
                     </div>
                 </template>
@@ -71,7 +85,8 @@ export default /** @mixes mainEditorExtension */{
                 width='416' height='416' 
                 style='z-index:100'
                 @mousedown="onmousedown"
-                @mousemove="mousemove"
+                @mousemove="onmousemove"
+                @mouseup="onmouseup"
                 @dblclick="selectIcon"
             ></canvas>
         </marked-container>
@@ -80,7 +95,7 @@ export default /** @mixes mainEditorExtension */{
                 <div class="__item active"><a>最近使用图块</a></div>
                 <div class="__toolbar">
                     <mt-icon :icon="dockTucked ? 'chevron-up' : 'chevron-down'" 
-                        @click="toggleDock" :title="dockTucked ? '折叠' : '展开'" 
+                        @click="toggleDock" :title="dockTucked ? '展开' : '折叠'" 
                     ></mt-icon>
                 </div>
             </div>
@@ -88,13 +103,14 @@ export default /** @mixes mainEditorExtension */{
                 <last-used-blocks></last-used-blocks>
             </div>
         </div>
-        <paint-box></paint-box>
+        <paint-box ref="paintBox" @select="onselectBlock"></paint-box>
         <context-menu ref="contextmenu" :addinParam="eToPos"
             @beforeOpen="$trigger('beforeConextMenu')"
         ></context-menu>
-        <status-item v-if="$parent.active">{{ sys_mainEditor__.mode?.name }}</status-item>
+        <status-item v-if="$parent.active">{{ sys_mainEditor__.mode?.label }}</status-item>
     </div>`,
     extends: serviceManager.mainEditorExtension,
+    props: ["map"],
     data: function() {
         return {
             pos: new Pos,
@@ -105,10 +121,13 @@ export default /** @mixes mainEditorExtension */{
             lockMode: false,
             mapSize: [0, 0],
             dockTucked: false,
+            mapid: "",
+            selectedBlock: {},
+            editted: false,
         }
     },
     created() {
-        this.commandStack = new CommandStack(20);
+        this.commandStack = new CommandStack(30);
         this.ready = new Promise((res, rej) => {
             this.__resolver__ = () => res(this);
         })
@@ -119,18 +138,31 @@ export default /** @mixes mainEditorExtension */{
         this.gameCanvas = this.app.view;
         this.$refs.eui.parentElement.insertBefore(this.app.view, this.$refs.eui);
         this.eui = $(this.$refs.eui);
+        this.previewer = null;
         this.$refs.contextmenu.inject([
             {
-                text: (e, h) => `编辑此点(${h.eToPos(e).format(",")})`,
+                text: (e, h, pos) => `编辑此点(${pos.format(",")})`,
                 action(e, h, pos) {
-                    h.$changeMode("editEvent");
-                    h.drawPosSelection(pos);
-                    h.$emit("editEvent", pos);
+                    h.$changeMode("event");
+                    // h.drawPosSelection(pos);
+                    h.$emit("selectPos", pos);
                 },
             },
             {
                 text: "在素材区选中此图块", 
-                action: (e, h) => {editor.setSelectBoxFromInfo(editor[h.layerMod][editor.pos.y][editor.pos.x]);}
+                action: (e, h, pos) => {
+                    this.$refs.paintBox.selectById(h.getLayer().blockAt(pos));
+                }
+            },
+            {
+                text: "撤销", 
+                validate: (e, h) => h.commandStack.hasBack(),
+                action: (e, h) => {h.undo()}
+            },
+            {
+                text: "重做", 
+                validate: (e, h) => h.commandStack.hasNext(),
+                action: (e, h) => {h.redo()}
             },
             {
                 text: "仅清空此点事件", 
@@ -141,13 +173,19 @@ export default /** @mixes mainEditorExtension */{
                 action: (e, h, pos) => {h.clearPos(pos, true)}
             },
         ]);
+        listen.regShortcut(batchMixin({
+            "z.ctrl": { action: () => this.undo() },
+            "y.ctrl": { action: () => this.redo() },
+        }, { condition: () => this.$parent.active }));
+        this.commandStack.register("setBlock", );
         this.$registerMode("event", {
-            name: "事件编辑",
+            label: "事件编辑",
             event: {
-                clickPos: (pos) => this.$emit("editPos", pos),
+                ondown: (pos) => this.$emit("selectPos", pos),
             }
         });
         this.$work("tiledEditor", "event");
+        this.registerBadge();
         this.__resolver__();
     },
     methods: {
@@ -155,11 +193,14 @@ export default /** @mixes mainEditorExtension */{
         openMap(floorId) {
             const width = game.maps[floorId].access("width");
             const height = game.maps[floorId].access("height");
+            this.mapid = floorId;
             this.resize(width, height);
             this.mapSize = [width, height];
-            game.map.changeFloor(floorId);
+            game.map.changeFloor(floorId).then(() => {
+                this.updateMap();
+            });
             const layers = ["bgmap", "map", "fgmap"].map((e) => {
-                return { type: "tile", id: e, label: layerDict[e] }
+                return { type: "tile", id: e, label: layerDict[e].name }
             })
             this.$refs.layer.init(layers);
             this.$refs.layer.openTabByKey("tilemap");
@@ -174,13 +215,62 @@ export default /** @mixes mainEditorExtension */{
 
         changeBrush(mode) {
             this.brushMod = mode;
+            // this.$changeMode("paint");
+        },
+
+        changeLayer(layer) {
+            this.layerMod = layer.id;
+            ["bg", "event", "fg"].forEach((e, i) => {
+                this.app.layersTable[e].alpha = layerDict[layer.id].alpha[i];
+            })
+        },
+
+        do(command, data) {
+            this.commandStack.push(command, data);
+            this.updateMap();
+        },
+
+        redo() {
+            if (!this.commandStack.hasNext()) return false;
+            this.commandStack.redo();
+            this.updateMap();
+        },
+
+        undo() {
+            if (!this.commandStack.hasBack()) return false;
+            console.log(this.commandStack);
+            this.commandStack.undo();
+            this.updateMap();
+        },
+
+        updateMap() {
+            if (this.previewer) {
+                const map = Object.assign({}, this.map);
+                game.map.updateMap(this.previewer(map));
+            } else game.map.updateMap(this.map);
+        },
+
+        setPreviewer(previewer) {
+            this.previewer = previewer;
+        },
+
+        clearPreviewer() {
+            this.previewer = null;
         },
 
         //////////// 工具函数 ////////////
 
-        blockAt(pos, layer) {
-            return editor[layer||"map"][pos.x][pos.y] || {};
+        blockAt(pos, layer = "map") {
+            return this.map[layer]?.[pos.y]?.[pos.x] || 0;
         },
+
+        setBlock(pos, number, layer = "map") {
+            if (game.map.isEmpty(this.map[layer])) {
+                this.map[layer] = game.map.createEmetyArray(this.map.height, this.map.width);
+            }
+            this.map[layer][pos.y][pos.x] = number;
+        },
+
 
         /**
          * 由点击事件获得地图位置
@@ -200,6 +290,10 @@ export default /** @mixes mainEditorExtension */{
         },
 
         registerBadge() {
+
+        },
+
+        updateBadges() {
 
         },
 
@@ -278,10 +372,8 @@ export default /** @mixes mainEditorExtension */{
          * 双击地图可以选中素材
          */
         selectIcon: function (e) {
-            if (this.bindSpecialDoor.loc != null) return;
-            var loc = this.eToLoc(e);
-            var pos = this.locToPos(loc, true);
-            editor.setSelectBoxFromInfo(editor[editor.layerMod][pos.y][pos.x]);
+            const pos = this.eToPos(e);
+            // editor.setSelectBoxFromInfo(editor[editor.layerMod][pos.y][pos.x]);
             return;
         },
 
@@ -306,11 +398,12 @@ export default /** @mixes mainEditorExtension */{
          * + 右键进入菜单
          * + 非绘图时选中
          * + 绘图时画个矩形在那个位置
+         * @param {MouseEvent} e
          */
-        onmousedown: function (e) {
+        onmousedown(e) {
+            if (e.button == 2) return;
             const pos = this.eToPos(e);
-            console.log(pos);
-            this.$trigger("clickPos", pos);
+            this.$trigger("ondown", pos);
             return false;
             if (!selectBox.isSelected()) {
                 editor_mode.onmode('nextChange');
@@ -324,15 +417,6 @@ export default /** @mixes mainEditorExtension */{
                 if (editor.isMobile) editor.uifunctions.showMidMenu(e.clientX, e.clientY);
                 return false;
             }
-
-            this.holdingPath = 1;
-            this.mouseOut = true;
-            setTimeout(editor.uifunctions.clearMapStepStatus);
-            this.dom.euiCtx.clearRect(0, 0, core.__PIXELS__, core.__PIXELS__);
-            this.stepPostfix = [];
-            this.stepPostfix.push(pos);
-            if (editor.brushMod == 'line') editor.uifunctions.fillPos(pos);
-            return false;
         },
 
         /**
@@ -340,71 +424,73 @@ export default /** @mixes mainEditorExtension */{
          * + 非绘图模式时维护起止位置并画箭头
          * + 绘图模式时找到与队列尾相邻的鼠标方向的点画个矩形
          */
-        mousemove: function (e) {
+        onmousemove: function (e) {
+            const pos = this.eToPos(e);
+            this.$trigger("onmove", pos);
             return;
-            if (this.mode == 'paint') {
-                if (this.startPos == null) return;
-                //tip.whichShow(1);
-                var loc = this.eToLoc(e);
-                var pos = this.locToPos(loc, true);
-                if (this.endPos != null && this.endPos.x == pos.x && this.endPos.y == pos.y) return;
-                if (this.endPos != null) {
-                    this.dom.euiCtx.clearRect(Math.min(32 * this.startPos.x - core.bigmap.offsetX, 32 * this.endPos.x - core.bigmap.offsetX),
-                        Math.min(32 * this.startPos.y - core.bigmap.offsetY, 32 * this.endPos.y - core.bigmap.offsetY),
-                        (Math.abs(this.startPos.x - this.endPos.x) + 1) * 32, (Math.abs(this.startPos.y - this.endPos.y) + 1) * 32)
-                }
-                this.endPos = pos;
-                if (this.startPos != null) {
-                    if (this.startPos.x != this.endPos.x || this.startPos.y != this.endPos.y) {
-                        core.drawArrow('eui',
-                            32 * this.startPos.x + 16 - core.bigmap.offsetX, 32 * this.startPos.y + 16 - core.bigmap.offsetY,
-                            32 * this.endPos.x + 16 - core.bigmap.offsetX, 32 * this.endPos.y + 16 - core.bigmap.offsetY);
-                    }
-                }
-                // editor_mode.onmode('nextChange');
-                // editor_mode.onmode('loc');
-                //editor_mode.loc();
-                //tip.whichShow(1);
-                // tip.showHelp(6);
-                return false;
-            }
+            // if (this.mode == 'paint') {
+            //     if (this.startPos == null) return;
+            //     //tip.whichShow(1);
+            //     var loc = this.eToLoc(e);
+            //     var pos = this.locToPos(loc, true);
+            //     if (this.endPos != null && this.endPos.x == pos.x && this.endPos.y == pos.y) return;
+            //     if (this.endPos != null) {
+            //         this.dom.euiCtx.clearRect(Math.min(32 * this.startPos.x - core.bigmap.offsetX, 32 * this.endPos.x - core.bigmap.offsetX),
+            //             Math.min(32 * this.startPos.y - core.bigmap.offsetY, 32 * this.endPos.y - core.bigmap.offsetY),
+            //             (Math.abs(this.startPos.x - this.endPos.x) + 1) * 32, (Math.abs(this.startPos.y - this.endPos.y) + 1) * 32)
+            //     }
+            //     this.endPos = pos;
+            //     if (this.startPos != null) {
+            //         if (this.startPos.x != this.endPos.x || this.startPos.y != this.endPos.y) {
+            //             core.drawArrow('eui',
+            //                 32 * this.startPos.x + 16 - core.bigmap.offsetX, 32 * this.startPos.y + 16 - core.bigmap.offsetY,
+            //                 32 * this.endPos.x + 16 - core.bigmap.offsetX, 32 * this.endPos.y + 16 - core.bigmap.offsetY);
+            //         }
+            //     }
+            //     // editor_mode.onmode('nextChange');
+            //     // editor_mode.onmode('loc');
+            //     //editor_mode.loc();
+            //     //tip.whichShow(1);
+            //     // tip.showHelp(6);
+            //     return false;
+            // }
 
-            if (this.holdingPath == 0) {
-                return false;
-            }
-            this.mouseOut = true;
-            var loc = this.eToLoc(e);
-            var pos = this.locToPos(loc, true);
-            var pos0 = this.stepPostfix[this.stepPostfix.length - 1]
-            var directionDistance = [pos.y - pos0.y, pos0.x - pos.x, pos0.y - pos.y, pos.x - pos0.x]
-            var max = 0, index = 4;
-            for (var i = 0; i < 4; i++) {
-                if (directionDistance[i] > max) {
-                    index = i;
-                    max = directionDistance[i];
-                }
-            }
-            var pos = [{ 'x': 0, 'y': 1 }, { 'x': -1, 'y': 0 }, { 'x': 0, 'y': -1 }, { 'x': 1, 'y': 0 }, false][index]
-            if (pos) {
-                pos.x += pos0.x;
-                pos.y += pos0.y;
-                if (editor.brushMod == 'line') editor.uifunctions.fillPos(pos);
-                else {
-                    var x0 = this.stepPostfix[0].x;
-                    var y0 = this.stepPostfix[0].y;
-                    var x1 = pos.x;
-                    var y1 = pos.y;
-                    if (x0 > x1) { x0 ^= x1; x1 ^= x0; x0 ^= x1; }//swap
-                    if (y0 > y1) { y0 ^= y1; y1 ^= y0; y0 ^= y1; }//swap
-                    // draw rect
-                    this.dom.euiCtx.clearRect(0, 0, this.dom.euiCtx.canvas.width, this.dom.euiCtx.canvas.height);
-                    this.dom.euiCtx.fillStyle = 'rgba(0, 127, 255, 0.4)';
-                    this.dom.euiCtx.fillRect(32 * x0 - core.bigmap.offsetX, 32 * y0 - core.bigmap.offsetY,
-                        32 * (x1 - x0) + 32, 32 * (y1 - y0) + 32);
-                }
-                this.stepPostfix.push(pos);
-            }
-            return false;
+            // if (this.holdingPath == 0) {
+            //     return false;
+            // }
+            // this.mouseOut = true;
+            // var loc = this.eToLoc(e);
+            // var pos = this.locToPos(loc, true);
+            // var pos0 = this.stepPostfix[this.stepPostfix.length - 1]
+            // var directionDistance = [pos.y - pos0.y, pos0.x - pos.x, pos0.y - pos.y, pos.x - pos0.x]
+            // var max = 0, index = 4;
+            // for (var i = 0; i < 4; i++) {
+            //     if (directionDistance[i] > max) {
+            //         index = i;
+            //         max = directionDistance[i];
+            //     }
+            // }
+            // var pos = [{ 'x': 0, 'y': 1 }, { 'x': -1, 'y': 0 }, { 'x': 0, 'y': -1 }, { 'x': 1, 'y': 0 }, false][index]
+            // if (pos) {
+            //     pos.x += pos0.x;
+            //     pos.y += pos0.y;
+            //     if (editor.brushMod == 'line') editor.uifunctions.fillPos(pos);
+            //     else {
+            //         var x0 = this.stepPostfix[0].x;
+            //         var y0 = this.stepPostfix[0].y;
+            //         var x1 = pos.x;
+            //         var y1 = pos.y;
+            //         if (x0 > x1) { x0 ^= x1; x1 ^= x0; x0 ^= x1; }//swap
+            //         if (y0 > y1) { y0 ^= y1; y1 ^= y0; y0 ^= y1; }//swap
+            //         // draw rect
+            //         this.dom.euiCtx.clearRect(0, 0, this.dom.euiCtx.canvas.width, this.dom.euiCtx.canvas.height);
+            //         this.dom.euiCtx.fillStyle = 'rgba(0, 127, 255, 0.4)';
+            //         this.dom.euiCtx.fillRect(32 * x0 - core.bigmap.offsetX, 32 * y0 - core.bigmap.offsetY,
+            //             32 * (x1 - x0) + 32, 32 * (y1 - y0) + 32);
+            //     }
+            //     this.stepPostfix.push(pos);
+            // }
+            // return false;
         },
 
         /**
@@ -412,7 +498,10 @@ export default /** @mixes mainEditorExtension */{
          * + 非绘图模式时, 交换首末点的内容
          * + 绘图模式时, 根据画线/画矩形/画tileset 做对应的绘制
          */
-        map_onup: function (e) {
+        onmouseup: function (e) {
+            const pos = this.eToPos(e);
+            this.$trigger("onup", pos);
+            return;
             if (!selectBox.isSelected()) {
                 //tip.whichShow(1);
                 // editor.movePos(this.startPos, this.endPos);
@@ -500,6 +589,12 @@ export default /** @mixes mainEditorExtension */{
         //     });
         // }
 
+        onselectBlock(block) {
+            if (block == "empty") return;
+            this.$emit("selectBlock", block);
+            this.selectedBlock = block;
+            this.$changeMode("paint");
+        },
 
         saveFloor: function () {
             editor_mode.onmode('');
@@ -630,19 +725,6 @@ export default /** @mixes mainEditorExtension */{
             });
         },
 
-    },
-    watch: {
-        layerMod: function (newValue) {
-            if (newValue == 'map') {
-                [this.dom.bgc, this.dom.evc, this.dom.ev2c].forEach(function (x) {
-                    x.style.opacity = 1;
-                });
-            } else {
-                [this.dom.bgc, this.dom.evc, this.dom.ev2c].forEach(function (x) {
-                    x.style.opacity = 0.3;
-                });
-            }
-        }
     },
     components,
 }
