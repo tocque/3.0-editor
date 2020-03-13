@@ -1,24 +1,63 @@
 let __wrongMark__ = false;
 
+const controllers = {
+    "checkbox": { tag: "mt-switch" },
+    "const": { tag: "span", class: "const", nomodel: true },
+    "select": { 
+        tag: "select", 
+        child: /* HTML */`
+        <option v-for="(option, i) of options" :key="i" :value="option"
+        >{{ option }}</option>`
+    },
+    "color": { tag: "el-color-picker", attr: { ":show-alpha": "comment._alpha"} },
+    "text": { tag: "input", attr: { "type": "text" } },
+    "number": { tag: "input", attr: { "type": "number" } },
+    "event": { 
+        tag: "mt-btn", 
+        child: `{{ value ? '编辑' : '添加' }}`, 
+        attr: { "mini": "", "@click": "editEvent" },
+        nomodel: true,
+        methods: {
+            editEvent() {
+                const text = this.value ? JSON.stringify(this.value) : '';
+                this.openBlockly(text, this.comment._event).then((e) => {
+                    console.log(e);
+                })
+            }
+        }
+    },
+    "table": {
+        tag: "mt-table",
+        attr: { ":comment": "comment" }
+    }
+}
+
+const parseNode = function(type, { tag, child, nomodel, attr, class:cls }) {
+    if (attr) {
+        attr = Object.entries(attr).map(([k, v]) => `${k}="${v}"`).join(' ');
+    } else attr = '';
+    return `<${tag} v-if="comment._type=='${type}'" class="${cls || ''}" 
+        ${attr} ${nomodel ? '':'v-model="value"'}>${child || ''}</${tag}>`;
+}
+
+const { template, methods } = Object.entries(controllers)
+    .reduce(({ template, methods }, [type, config]) => {
+        template.push(parseNode(type, config));
+        if (config.methods) {
+            methods = Object.assign({}, methods, config.methods);
+        }
+        return { template, methods };
+    }, { template: [], methods: {} });
+
 const controlNode = {
     template: /* HTML */`
     <div class="control-node" :title="comment._data+data.field">
-        <span class="comment">{{ data.comment._name }}</span>
+        <span class="comment">{{ comment._name }}</span>
         <div class="control-input">
-            <mt-switch v-if="comment._type == 'checkbox'" v-model="value"></mt-switch>
-            <span class="const" v-if="comment._type == 'const'">{{ value }}</span>
-            <select v-if="comment._type == 'select'" v-model="value">
-                <option v-for="(option, i) of options" :key="i"
-                    :value="option"
-                >{{ option }}</option>
-            </select>
-            <el-color-picker v-if="comment._type == 'color'"
-                :show-alpha="comment._alpha" v-model="value"
-            ></el-color-picker>
-            <input type="text" v-if="comment._type == 'text'" v-model="value"></mt-switch>
-            <input type="number" v-if="comment._type == 'number'" v-model="value"></mt-switch>
+            ${ template.join('') }
         </div>
     </div>`,
+    inject: ["openBlockly"],
     props: ["node", "data"],
     data: function() {
         return {
@@ -33,9 +72,9 @@ const controlNode = {
             this.value = this.value.join(',');
         }
         if (this.comment._type == 'select') {
-            if (this.comment._options.values instanceof Function) {
-                this.options = this.comment._options.values();
-            } else this.options = this.comment._options.values;
+            if (this.comment._options instanceof Function) {
+                this.options = this.comment._options();
+            } else this.options = this.comment._options;
         }
     },
     methods: {
@@ -72,7 +111,8 @@ const controlNode = {
                 return cobj._range(thiseval);
             }
             return true;
-        }
+        },
+        ...methods
     }
 };
 
@@ -108,11 +148,9 @@ let defaultcobj = {
  *     cfield="['_data']['a']['_data']['b']"
  *     vobj=obj['a']['b']
  *     cobj=commentObj['_data']['a']['_data']['b']
- * 返回结果
- *     返回对象树根节点
  * @param {Object} data 数据 
  * @param {Object} comment 注释文件
- * @returns {Object}
+ * @returns {Object} 对象树根节点
  */
 export const buildTree = function(data, comment) {
     let root = { field: "", data, comment }
@@ -121,11 +159,11 @@ export const buildTree = function(data, comment) {
      * 每一项若未定义,就从defaultcobj中取
      * 当其是函数不是具体值时,把args = {
      *     field: field, cfield: cfield, vobj: vobj, cobj: cobj
-     * }代入算出该值
+     * } 代入算出该值
      * @param {*} parent 父结点
      * @param {*} pcomment 父结点注释域标记的子节点
      * @param {*} cfield 节点数据域
-     * @param {*} key 节点属性名
+     * @param {String} key 节点属性名
      */
     const createNode = function(parent, pcomment, cfield, key) {
         let node = {
@@ -137,7 +175,7 @@ export const buildTree = function(data, comment) {
         if (pcomment) {
             // cobj存在时直接取
             if (pcomment[key]) comment = pcomment[key];
-            // 当其函数时代入参数算出cobj,
+            // 当其为函数时代入参数算出cobj,
             else if (pcomment instanceof Function) comment = pcomment(key);
             // 不存在时只取defaultcobj
         }
@@ -149,7 +187,7 @@ export const buildTree = function(data, comment) {
         for (let key in node.comment) {
             if (key === '_data') continue;
             if (node.comment[key] instanceof Function) {
-                node.comment[key] = node.comment[key](args);
+                node.comment[key] = node.comment[key](args, data);
             }
         }
         node.data = args.vobj;
@@ -164,7 +202,7 @@ export const buildTree = function(data, comment) {
         parent.children = [];
         let keysInOrder = {};
         const voidMark = {};
-        const cchildren = (parent.comment || {})['_data'];
+        const cchildren = parent.comment?.['_data'];
         // 1. 按照pcobj排序生成
         for (let ii in cchildren) {
             keysInOrder[ii] = voidMark;
@@ -185,7 +223,7 @@ export const buildTree = function(data, comment) {
                 parent.data[key] = null;
             }
             const cfield = pcfield + `['_data']['${key}']`;
-            let node = createNode(parent, cchildren, cfield, key)
+            const node = createNode(parent, cchildren, cfield, key)
             parent.data[key] = node.data;
             // 标记为_hide的属性不展示
             if (node.comment._hide) continue;
@@ -219,8 +257,13 @@ Vue.component("control-list", {
     },
     async created() {
         this.afterLoad = 'on';
-        this.commentObj = await this.loadComment(this.comment);
+        if (typeof this.comment == 'string') {
+            if (this.comment != '') {
+                this.commentObj = await this.loadComment(this.comment);
+            }
+        } else this.commentObj = this.comment;
         if (this.afterLoad != 'on') this.update(this.afterLoad);
+        else this.afterLoad = 'off'
     },
     methods: {
         async loadComment(comment) {
@@ -264,12 +307,15 @@ Vue.component("control-list", {
             }[mode])();
         },
 
-        update(data) {
+        update(data, comment) {
+            if (comment && this.commentObj != comment) {
+                this.commentObj = comment;
+            }
             if (this.afterLoad == 'on') {
                 this.afterLoad = data;
-            } else {
-                this.tree = this.buildTree(data, this.commentObj).children;
+                return;
             }
+            this.tree = this.buildTree(data, this.commentObj).children;
         }
     },
     components: {
