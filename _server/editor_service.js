@@ -17,7 +17,6 @@ class Service {
      * @param {ServiceConfig} config 
      */
     constructor(config) {
-        console.log(config);
         Object.entries(config).forEach(([key, value]) => {
             switch(key) {
                 case "methods": {
@@ -92,19 +91,21 @@ const serviceManager =  new class ServiceManager {
         methods: {
             $registerMode(name, config) {
                 config = Object.assign({
+                    name,
                     event: {}
                 }, config);
                 this.sys_mainEditor__.modes[name] = config;
             },
             $changeMode(newMode) {
                 const me = this.sys_mainEditor__;
-                if (me.modes[newMode].__props__.task) {
+                if (me.mode.name == newMode) return;
+                if (me.modes[newMode].task) {
                     me.taskStack.push(me.modeStack);
                 }
-                exec(me.modes[mode].unactive);
+                exec(me.mode.unactive);
                 exec(me.modes[newMode].active);
                 this.$emit("onmode", { editor: this, newMode });
-                me.mode = me.modes[mode];
+                me.mode = me.modes[newMode];
             },
             /**
              * @param {String} name 主编辑器名称
@@ -124,6 +125,7 @@ const serviceManager =  new class ServiceManager {
             },
             $trigger(type, event) {
                 const me = this.sys_mainEditor__;
+                if (!me.name) return;
                 exec(me.mode.event[type], event);
             }
         }
