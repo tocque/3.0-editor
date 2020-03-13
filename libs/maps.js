@@ -98,8 +98,7 @@ maps.prototype.initBlock = function (x, y, id, addInfo, eventFloor) {
     var block = {'x': x, 'y': y, 'id': id};
     if (disable != null) block.disable = disable;
 
-    if (id == 17) block.event = {"cls": "terrains", "id": "airwall", "noPass": true};
-    else if (id in this.blocksInfo) block.event = JSON.parse(JSON.stringify(this.blocksInfo[id]));
+    if (id in this.blocksInfo) block.event = JSON.parse(JSON.stringify(this.blocksInfo[id]));
     else if (core.icons.getTilesetOffset(id)) block.event = {"cls": "tileset", "id": "X" + id, "noPass": true};
     else block.event = {'cls': 'terrains', 'id': 'none', 'noPass': false};
 
@@ -374,7 +373,7 @@ maps.prototype._getBgFgMapArray = function (name, floorId, noCache) {
 
     var arr = core.clone(core.floors[floorId][name + "map"] || []);
     if (main.mode == 'editor') // && !(uievent && uievent.isOpen))
-        arr = core.clone(editor[name + "map"]) || arr;
+        arr = core.clone(editor.game.map[name + "map"]) || arr;
     for (var x = 0; x < width; x++) {
         for (var y = 0; y < height; y++) {
             arr[y] = arr[y] || [];
