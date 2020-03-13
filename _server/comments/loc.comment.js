@@ -11,20 +11,20 @@ export default {
         "autoEvent": {
             "_type": "object",
             "_leaf": false,
+            "_name": "自动事件",
             "_action": function (args) {
                 args.vobj = args.vobj || {};
                 for(var ii = 0; ii < 2; ii++) {
                     args.vobj[ii] = args.vobj[ii] || null;
                 }
             },
-            "_data": function (key) {
-                return {
-                    "_leaf": true,
-                    "_type": "event",
-                    "_event": "autoEvent",
-                    "_data": "自动事件页"
-                }
-            }
+            "_data": (key) => ({
+                "_leaf": true,
+                "_type": "event",
+                "_event": "autoEvent",
+                "_name": "自动事件页",
+                "_data": "自动事件页"
+            })
         },
         "changeFloor": {
             "_leaf": true,

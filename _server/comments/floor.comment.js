@@ -105,11 +105,7 @@ export default {
             "_leaf": true,
             "_type": "select",
             "_name": "地面图块",
-            "_options": {
-                "values": function() {
-                    return Object.keys(editor.game.main.core.icons.icons.terrains);
-                }
-            },
+            "_options": () => Object.keys(editor.game.oriData.icons.terrains),
             "_data": "默认地面的图块ID，此项修改后需要刷新才能看到效果。"
         },
         "images": {
@@ -135,11 +131,7 @@ export default {
         "bgm": {
             "_leaf": true,
             "_type": "select",
-            "_options": {
-                "values": function() {
-                    return [null].concat(Object.keys(editor.game.main.core.material.bgms));
-                }
-            },
+            "_options": () => [null].concat(Object.keys(editor.game.oriData.data.main.bgms)),
             "_name": "BGM",
             "_data": "到达该层后默认播放的BGM。本项可忽略，或者为一个定义过的背景音乐如\"bgm.mp3\"。"
         },

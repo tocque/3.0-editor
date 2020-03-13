@@ -22,6 +22,9 @@ export default {
 				"autotiles": {
 					"_hide": true,
 				},
+				"sprites": {
+					"_hide": true,
+				},
 				"animates": {
 					"_hide": true,
 				},
@@ -36,24 +39,28 @@ export default {
 					"_type": "table",
 					"_parse": "object",
 					"_items": ["string", "string"],
+					"_name": "文件名映射",
 					"_data": "文件名映射，目前仅对images, animates, bgms, sounds有效。\n例如定义 {\"精灵石.mp3\":\"jinglingshi.mp3\"} 就可以使用\ncore.playBgm(\"精灵石.mp3\") 或对应的事件来播放该bgm。"
 				},
 				"startBackground": {
 					"_leaf": true,
 					"_type": "image",
 					"_string": true,
+					"_name": "标题画面",
 					"_data": "标题界面的背景，建议使用jpg格式以压缩背景图空间"
 				},
 				"startLogoStyle": {
 					"_leaf": true,
 					"_type": "textarea",
 					"_string": true,
+					"_name": "标题样式",
 					"_data": "标题样式：可以改变颜色，也可以写\"display: none\"来隐藏标题"
 				},
 				"startButtonsStyle": {
 					"_leaf": true,
 					"_type": "textarea",
 					"_string": true,
+					"_name": "标题按钮样式",
 					"_data": "标题界面按钮的样式；caret-color指的是当前选中项的边框颜色"
 				},
 				"levelChoose": {
@@ -61,6 +68,7 @@ export default {
 					"_type": "table",
 					"_parse": "array",
 					"_items": ["string", "string"],
+					"_name": "难度",
 					"_data": "难度选择：每个数组的第一个是其在标题界面显示的难度，第二个是在游戏内部传输的字符串，会显示在状态栏，修改此处后需要在project/functions中作相应更改。\n如果需直接开始游戏将下面的startDirectly开关打开即可。"
 				},
 				"equipName": {
@@ -68,6 +76,7 @@ export default {
 					"_type": "table",
 					"_parse": "array",
 					"_items": "string",
+					"_name": "装备位",
 					"_range": "(thiseval instanceof Array && thiseval.length<=6)||thiseval==null",
 					"_data": "装备位名称，为不超过6个的数组，此项的顺序与equiptype数值关联；例如可写[\"武器\",\"防具\",\"首饰\"]等等。"
 				},
@@ -75,60 +84,70 @@ export default {
 					"_leaf": true,
 					"_type": "music",
 					"_string": true,
+					"_name": "标题bgm",
 					"_data": "在标题界面应该播放的bgm内容"
 				},
 				"statusLeftBackground": {
 					"_leaf": true,
 					"_type": "textarea",
 					"_string": true,
+					"_name": "横屏状态栏样式",
 					"_data": "横屏时左侧状态栏的背景样式，可以定义背景图、平铺方式等。\n具体请网上搜索\"css background\"了解写法。\n如果弄一张图片作为背景图，推荐写法：\n\"url(project/images/XXX.png) 0 0/100% 100% no-repeat\"\n图片最好进行一些压缩等操作节省流量。"
 				},
 				"statusTopBackground": {
 					"_leaf": true,
 					"_type": "textarea",
 					"_string": true,
+					"_name": "竖屏上方状态栏样式",
 					"_data": "竖屏时上方状态栏的背景样式，可以定义背景图、平铺方式等。\n具体请网上搜索\"css background\"了解写法。\n如果弄一张图片作为背景图，推荐写法：\n\"url(project/images/XXX.png) 0 0/100% 100% no-repeat\"\n图片最好进行一些压缩等操作节省流量。"
 				},
 				"toolsBackground": {
 					"_leaf": true,
 					"_type": "textarea",
 					"_string": true,
+					"_name": "竖屏下方状态栏样式",
 					"_data": "竖屏时下方道具栏的背景样式，可以定义背景图、平铺方式等。\n具体请网上搜索\"css background\"了解写法。\n如果弄一张图片作为背景图，推荐写法：\n\"url(project/images/XXX.png) 0 0/100% 100% no-repeat\"\n图片最好进行一些压缩等操作节省流量。"
 				},
 				"borderColor": {
 					"_leaf": true,
 					"_type": "text",
 					"_string": true,
+					"_name": "边框颜色",
 					"_data": "边框颜色，包括游戏边界的边框和对话框边框等。"
 				},
 				"statusBarColor": {
 					"_leaf": true,
 					"_type": "text",
 					"_string": true,
+					"_name": "文字颜色",
 					"_data": "状态栏的文字颜色，默认是白色"
 				},
 				"hardLabelColor": {
 					"_leaf": true,
 					"_type": "text",
 					"_string": true,
+					"_name": "难度颜色",
 					"_data": "难度显示的颜色，默认是红色"
 				},
 				"floorChangingBackground": {
 					"_leaf": true,
 					"_type": "textarea",
 					"_string": true,
+					"_name": "楼层转换样式",
 					"_data": "楼层转换界面的背景样式；可以使用纯色（默认值black），也可以使用图片（参见状态栏的图片写法）"
 				},
 				"floorChangingTextColor": {
 					"_leaf": true,
 					"_type": "text",
 					"_string": true,
+					"_name": "楼层转换文字样式",
 					"_data": "楼层转换界面的文字颜色，默认是白色"
 				},
 				"font": {
 					"_leaf": true,
 					"_type": "text",
 					"_string": true,
+					"_name": "字体",
 					"_data": "游戏中使用的字体，默认是Verdana"
 				}
 			}
@@ -161,11 +180,7 @@ export default {
 				"floorId": {
 					"_leaf": true,
 					"_type": "select",
-					"_options": {
-						"values": function() {
-							return editor.game.data.floorIds;
-						}
-					},
+					"_options": () => editor.game.map.getMapList(),
 					"_name": "初始楼层",
 					"_range": "editor.game.getMapList().indexOf(thiseval)!==-1",
 					"_data": "初始楼层的ID"
@@ -255,9 +270,10 @@ export default {
 						},
 						"items": {
 							"_name": "初始道具",
+							"_leaf": true,
 							"_type": "table",
 							"_parse": "object",
-							"_items": ["string", "number"],
+							"_items": ["number"],
 							"_data": "初始持有的物品",
 						},
 						"loc": {
@@ -269,14 +285,12 @@ export default {
 									"_name": "勇士初始方向",
 									"_type": "select",
 									"_data": "勇士初始方向",
-									"_options": {
-										"values": [
-											"up",
-											"down",
-											"left",
-											"right"
-										]
-									},
+									"_options": [
+										"up",
+										"down",
+										"left",
+										"right"
+									],
 								},
 								"x": {
 									"_leaf": true,
@@ -310,6 +324,7 @@ export default {
 					"_leaf": true,
 					"_type": "event",
 					"_event": "firstArrive",
+					"_name": "标题界面事件化",
 					"_range": "thiseval==null || thiseval instanceof Array",
 					"_data": "标题界面事件化，可以使用事件流的形式来绘制开始界面等。\n需要开启startUsingCanvas这个开关。\n详见文档-个性化-标题界面事件化。"
 				},
@@ -317,6 +332,7 @@ export default {
 					"_leaf": true,
 					"_type": "event",
 					"_event": "firstArrive",
+					"_name": "初始剧情",
 					"_range": "thiseval==null || thiseval instanceof Array",
 					"_data": "游戏开始前剧情，可以执行任意自定义事件。\n双击进入事件编辑器。\n如果无剧情直接留一个空数组即可。"
 				},
@@ -324,6 +340,7 @@ export default {
 					"_leaf": true,
 					"_type": "event",
 					"_event": "shop",
+					"_name": "全局商店",
 					"_range": "thiseval instanceof Array",
 					"_data": "全局商店，是一个数组，可以双击进入事件编辑器。"
 				},
@@ -331,6 +348,7 @@ export default {
 					"_leaf": true,
 					"_type": "event",
 					"_event": "level",
+					"_name": "等级体系",
 					"_range": "thiseval==null || thiseval instanceof Array",
 					"_data": "经验升级所需要的数值，是一个数组，可以双击进行编辑。 \n 第一项为初始等级，仅title生效 \n 每一个里面可以含有三个参数 need, title, action \n need为所需要的经验数值，可以是个表达式。请确保need依次递增 \n title为该等级的名称，也可以省略代表使用系统默认值；本项将显示在状态栏中 \n action为本次升级所执行的事件，可由若干项组成"
 				}
@@ -440,7 +458,15 @@ export default {
 					"_type": "number",
 					"_name": "楼层切换时间",
 					"_data": "默认楼层切换时间"
-				}
+				},
+				"statusCanvasRowsOnMobile": {
+					"_leaf": true,
+					"_type": "number",
+					"_min": 1,
+					"_max": 4,
+					"_name": "竖屏状态栏行数",
+					"_data": "竖屏模式下，顶端状态栏canvas化后的行数。\n此项将决定竖屏的状态栏高度，如果设置则不小于1且不大于4。\n仅在statusCanvas开启时才有效"
+				},
 			}
 		},
 		"flags": {
@@ -683,13 +709,6 @@ export default {
 					"_bool": "bool",
 					"_name": "状态栏canvas化",
 					"_data": "是否状态栏canvas化，即手动自定义绘制状态栏。\n如果此项开启，则可在脚本编辑的drawStatusBar中自定义绘制菜单栏。"
-				},
-				"statusCanvasRowsOnMobile": {
-					"_leaf": true,
-					"_type": "textarea",
-					"_range": "thiseval==null || (thiseval>0 && thiseval<=4)",
-					"_name": "竖屏状态栏行数",
-					"_data": "竖屏模式下，顶端状态栏canvas化后的行数。\n此项将决定竖屏的状态栏高度，如果设置则不小于1且不大于4。\n仅在statusCanvas开启时才有效"
 				},
 				"displayEnemyDamage": {
 					"_leaf": true,
