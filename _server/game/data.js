@@ -2,8 +2,20 @@
  * @file game/data.js 游戏数据相关的接口
  */
 import game from "../editor_game.js";
-import { Converter } from "../blockly/Converter.bundle.min.js";
-import { clone } from "../editor_util.js";
+import { isset, clone } from "../editor_util.js";
+import itemComment from "../comments/item.comment.js";
+import enemyComment from "../comments/enemy.comment.js";
+import blockComment from "../comments/block.comment.js";
+
+/**
+ * @typedef {Object} Enemy
+ * @property {String} name 名称
+ */
+
+
+export const init = function() {
+     
+}
 
 ////////////////////////// getter //////////////////////////
 
@@ -30,12 +42,61 @@ export const getStartpos = function(option) {
 }
 
 /** 
- * 获取工程名称
- * @returns {String}
+ * 获取公共事件列表
+ * @returns
  */
 export const getCommonEvents = function() {
     return game.oriData.events.commonEvent;
 }
+
+/**
+ * @param {String} id
+ * @returns {[Enemy, Object]}
+ */
+export const getEnemyInfo = function(id) {
+    const enemy = Object.assign({}, game.oriData.enemys[id]);
+    Object.keys(enemyComment._data).forEach((v) => {
+        if (!isset(enemy[v])) enemy[v] = null;
+    });
+    return [enemy, enemyComment];
+}
+
+export const getItemInfo = function(id) {
+    const item = {};
+    Object.keys(itemComment._data).forEach((v) => {
+        if (isset(game.oriData.items[v][id]) && v !== 'items')
+            item[v] = editor.core.items[v][id];
+        else
+            item[v] = null;
+    });
+    item['items'] = (() => {
+        const locObj = Object.assign({}, game.oriData.items.items[id]);
+        Object.keys(itemComment._data.items._data).forEach((v) => {
+            if (!isset(locObj[v])) locObj[v] = null;
+        });
+        return locObj;
+    })();
+    return [item, itemComment];
+}
+
+export const getBlockInfo = function(idnum) {
+    const sourceobj = game.oriData.maps[idnum];
+    // tileset默认生成空块
+    if(!isset(sourceobj) && idnum >= game.oriData.icons.tilesetStartOffset) {
+        sourceobj = { "cls": "tileset", "id": "X"+idnum, "noPass": true }
+    }
+    const block = Object.assign({}, sourceobj);
+    Object.keys(blockComment._data).forEach((v) => {
+        if (!isset(sourceobj[v])) block[v] = null;
+    });
+    block.idnum = idnum;
+    return [block, blockComment];
+}
+
+export const getTowerData = function() {
+    return clone(game.oriData.data);
+}
+
 
 ////////////////////////// setter //////////////////////////
 

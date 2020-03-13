@@ -67,9 +67,8 @@ export default new class gameRuntime {
 
         // 设置钩子对应事件
         this.hooks.dataLoad.then(() => {
-            this.resource.init();
-            // ["map", "data", "plugin", "resource"].forEach(e => this[e].init(e));
             this.wrapData();
+            ["map", "data", "plugin", "resource"].forEach(e => this[e].init(e));
         })
 
         this.hooks.libLoad.then(() => {
@@ -193,8 +192,12 @@ export default new class gameRuntime {
         return this.scenes[name];
     }
 
-    apply(func, ...rest) {
-        return this.core[func].apply(this.core, rest);
+    apply(funcname, ...rest) {
+        funcname = funcname.split(".");
+        const func = this.core[funcname[0]];
+        if (funcname.length == 2) {
+            return func[funcname[1]].apply(func, rest);
+        } else return func.apply(this.core, rest);
     }
 
     //////// 获取游戏信息的方法 ////////
