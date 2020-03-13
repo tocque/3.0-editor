@@ -7,12 +7,11 @@ export default {
         <template #header>
             <span class="pos-indicator">({{ pos.x + ', ' + pos.y }})</span>
         </template>
-        <control-list ref="locTable" :data="data" comment="loc"></control-list>
+        <control-list ref="locTable" comment="loc"></control-list>
     </mt-side-pane>`,
     data: function() {
         return {
-            pos: new Pos(),
-            data: null,
+            pos: new Pos()
         }
     },
     computed: Vuex.mapState({
@@ -22,8 +21,8 @@ export default {
     methods: {
         update: function(pos) {
             this.pos.set(pos);
-            const posInfo = game.map.getPosInfo(this.getCurrentMap(), pos);
-            this.$refs.locTable.update(posInfo);
+            const posInfo = game.map.getPosInfo(pos, this.getCurrentMap());
+            this.$refs.locTable.update(posInfo.events);
         }
     },
     watch: {

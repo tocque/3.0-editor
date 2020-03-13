@@ -3,7 +3,7 @@ import game from "../../editor_game.js";
 export default {
     template: /* HTML */`
     <mt-side-pane pane="mapData" icon="list-unordered" label="楼层属性">
-        <control-list ref="floorTable" :data="data" comment="floor"></control-list>
+        <control-list ref="floorTable" comment="floor"></control-list>
     </mt-side-pane>`,
     computed: Vuex.mapState({
         currentMapid: 'currentMapid',
@@ -63,7 +63,7 @@ export default {
     },
     watch: {
         currentMapid() {
-            this.$refs.floorTable.update(this.getCurrentMap().data);
+            this.$refs.floorTable.update(this.getCurrentMap());
         }
     },
 }

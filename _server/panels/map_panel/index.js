@@ -25,10 +25,11 @@ export default {
             <map-explorer active></map-explorer>
             <map-data></map-data>
             <pos-data ref="posData"></pos-data>
+            <block-data ref="blockData"></block-data>
         </mt-side>
         <div class="mid" :class="{ expend: leftCollapsed }">
-            <tiled-editor ref="tiledEditor" @showBlock="showBlock"
-                @editPos="editPos"
+            <tiled-editor ref="tiledEditor" :map="currentMap"
+                @selectPos="editPos" @selectBlock="editBlock"
             ></tiled-editor>
         </div>
         <status-item v-show="active">{{ currentMapid }}</status-item>
@@ -77,17 +78,17 @@ export default {
         getCurrentMap() {
             return this.currentMap;
         },
-        showBlock() {
-
+        editBlock(block) {
+            this.$refs.blockData.update(block);
+            this.$refs.side.openPane("blockData");
         },
         editPos(pos) {
             this.$refs.posData.update(pos);
-            this.$refs.side.openPane("posData");
+            this.$refs.side.openPane("posData", true);
         },
     },
     watch: {
         currentMapid(newValue, oldValue) {
-            if (this.currentMap) this.currentMap.save();
             this.currentMap = game.map.getMap(newValue);
             this.$refs.tiledEditor.ready.then((e) => {
                 e.openMap(newValue);
