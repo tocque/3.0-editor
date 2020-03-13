@@ -1,5 +1,5 @@
 import { $ } from "../mt-ui/canvas.js"
-import { isset } from "../editor_util.js"
+import { isset, Pos } from "../editor_util.js"
 import game from "../editor_game.js"
 
 const imgNames = [
@@ -44,69 +44,92 @@ class TileImage {
      * @param {Function} onclick
      * @memberof tileImage
      */
-    constructor(datasource, config, onclick) {
+    constructor(datasource, config, onselect) {
         this.ctx = $({ style: { position: "relative" }});
+        config = Object.assign({
+            width: 32, height: 32, grid: [1, 1], offset: 0
+        }, config);
+        if (!Array.isArray(config.grid)) config.grid = [config.grid, 1];
         this.config = config;
         this.datasource = datasource;
-        this.ctx.canvas.addEventListener("click", (e) => {
-            const [w, h] = this.getGrid();
-            onclick(Math.floor(e.layerX / w), Math.floor(e.layerY / h));
-        });
         if (config.drawRect) {
-            // this.ctx.onRect(fn, this.getGrid());
+            this.setRectListener(onselect);
+        } else {
+            this.setClickListener(onselect);
         }
     }
 
     getGrid() {
         const config = this.config;
-        let grid = config.grid || [1, 1];
-        if (!Array.isArray(grid)) grid = [grid, 1];
-        if (config.folded) grid = [1, 1];
-        return [config.width * grid[0] || 32, config.height * grid[1] || 32];
+        const grid = config.folded ? [1, 1] : config.grid;
+        return [config.width * grid[0], config.height * grid[1]];
     }
 
-    update(folded, perCol) {
-        const config = this.config;
-        const image = this.datasource();
-        let grid = config.grid || [1, 1];
-        if (!Array.isArray(grid)) grid = [grid, 1];
-        let w = config.width || 32, h = config.height || 32;
-        const offset = config.offset || 0;
-
-        if (isset(folded)) config.folded = folded;
-        if (isset(perCol)) config.perCol = perCol;
-        // 计算宽高
-        
+    getSize() {
+        const config = this.config, image = this.image;
         let oriCol, oriRow;
         if (config.imageArray) {
             oriCol = 1, oriRow = image.length;
         } else {
-            oriCol = image.width / grid[0] / w;
-            oriRow = image.height / grid[1] / h;
+            oriCol = image.width / config.grid[0] / config.width;
+            oriRow = image.height / config.grid[1] / config.height;
         }
-        let col = oriCol, row = oriRow + offset;
+        let col = oriCol, row = oriRow + config.offset;
         if (config.folded && !config.nowrap) {
-            grid = [1, 1];
             if (row > config.perCol) {
                 col = Math.ceil(row / config.perCol);
                 row = config.perCol;
             }
         }
+        return [oriCol, oriRow, col, row]
+    }
 
-        w *= grid[0], h *= grid[1];
+    setClickListener(fn) {
+        const cv = this.ctx.canvas;
+        cv.addEventListener("click", (e) => {
+            const [w, h] = this.getGrid();
+            const pos = new Pos(e.layerX, e.layerY).gridding(w, h);
+            const grid = new Pos(this.config.width, this.config.height);
+            const [oriCol, oriRow, col, row] = this.getSize();
+            const colnow = Math.floor(pos.x / oriCol);
+            const index = (colnow * row + pos.y) * oriCol + pos.x % oriCol;
+            if (index >= oriCol * oriRow + this.config.offset) return;
+            fn(pos.mutli(w, h).add(cv.offsetLeft, cv.offsetTop), grid, index);
+        });
+    }
+
+    setRectListener(fn) {
+        const cv = this.ctx.canvas;
+        cv.addEventListener("mousedown", (e) => {
+            const [w, h] = this.getGrid();
+            const pos = new Pos(e.layerX, e.layerY).gridding(w, h).mutli(w, h)
+                .add(cv.offsetLeft, cv.offsetTop);
+            const grid = new Pos(this.config.width, this.config.height);
+            fn(pos, grid);
+        });
+    }
+
+    update(folded, perCol) {
+        const config = this.config;
+        if (isset(folded)) config.folded = folded;
+        if (isset(perCol)) config.perCol = perCol;
+        this.image = this.datasource();
+        const [w, h] = this.getGrid();
+        const [oriCol, oriRow, col, row] = this.getSize();
+
         this.ctx.resize(col*w, row*h);
         this.ctx.setting("style", { width: col*w, height: row*h });
 
         // 绘制
         if (config.imageArray) {
             for (let i = 0; i < oriRow; i++) {
-                this.ctx.ctx.drawImage(image[i], 0, 0, w, h, 0, i*h, w, h);
+                this.ctx.ctx.drawImage(this.image[i], 0, 0, w, h, 0, i*h, w, h);
             }
         } else {
             const total = oriCol * oriRow;
             for (let i = 0, cnt = 0; i < col; i++) {
-                const sh = Math.min(total-cnt, row)*h, sy = Math.max(offset-cnt, 0)*h;
-                this.ctx.ctx.drawImage(image, 0, cnt*h, oriCol*w, sh, i*w, sy, oriCol*w, sh);
+                const sh = Math.min(total-cnt, row)*h, sy = Math.max(config.offset-cnt, 0)*h;
+                this.ctx.ctx.drawImage(this.image, 0, cnt*h, oriCol*w, sh, i*w, sy, oriCol*w, sh);
                 cnt += row;
             }
         }
@@ -117,32 +140,48 @@ export default {
     template: /* HTML */`
     <div class="paintBox">
         <div class="__topbar">
-            <ul class="__class">
-                <li>地图元件</li>
-                <li>事件元件</li>
-            </ul>
-            <button class="expandBtn" @click="toggleFold">{{ folded ? "展开素材区" : "折叠素材区" }}</button>
+            <div class="icon-btn" @click="toggleFold" 
+                :title="folded ? '展开素材' : '折叠素材'"
+            >
+                <mt-icon :icon="folded ? 'unfold' : 'fold'"></mt-icon>
+            </div>
         </div>
-        <div ref="ctxContainer" class="tiledImages"></div>
+        <div ref="ctxContainer" class="tiledImages">
+            <div ref="selectBox" v-show="selected" class="selectBox"
+                :style="boxStyle"
+            ></div>
+        </div>
     </div>`,
+    computed: {
+        boxStyle() {
+            const pos = this.box.pos, grid = this.box.grid;
+            return {
+                left: pos.x + 'px', top: pos.y + 'px',
+                width: grid.x - 6 + 'px', height: grid.y - 6 + 'px'
+            }
+        }
+    },
     data() {
         return {
             scrollBarHeight :0,
             folded: false,
             foldPerCol: 50,
             selected: false,
+            box: {
+                pos: new Pos(),
+                grid: new Pos()
+            }
         }
     },
     created() {
         this.selection = {},
-        this.icons = game.map.getIcons();
         this.folded = editor.userdata.get('folded', false);
         this.foldPerCol = editor.userdata.get('foldPerCol', 50);
         //oncontextmenu = function (e) { e.preventDefault() }
     },
     mounted() {
         this.tileImages = this.initTileImages();
-        this.setTileFold(this.folded, this.perCol);
+        this.setTileFold(this.folded, this.foldPerCol);
     },
     methods: {
         toggleFold() {
@@ -163,22 +202,18 @@ export default {
             }
         },
 
-        initTileImages(images) {
-            const tileImages = [];
-            for (let c of imgNames) {
+        initTileImages() {
+            const createTileImage = (name) => {
+                const [type, img] = name.split(":");
                 const tileImage = new TileImage(() => {
-                    return game.resource.getImage(c);
-                }, tileConfigs[c] || {}, console.log);
-                this.$refs.ctxContainer.appendChild(tileImage.ctx.canvas);
-                tileImages.push(tileImage);
-            }
-            return tileImages.concat(game.resource.getList("tilesets").map((e) => {
-                const tileImage = new TileImage(() => {
-                    return game.resource.getImage("tilesets", e);
-                }, tileConfigs.tilesets, console.log);
+                    return game.resource.getImage(type, img);
+                }, tileConfigs[type] || {}, this.onselect.bind(this, name));
                 this.$refs.ctxContainer.appendChild(tileImage.ctx.canvas);
                 return tileImage;
-            }));
+            }
+            const tilesets = game.resource.getList("tilesets");
+            return imgNames.map((e) => createTileImage(e))
+                .concat(tilesets.map((e) => createTileImage("tilesets:"+e)));
         },
 
         /**
@@ -193,108 +228,32 @@ export default {
                 t.update(folded, perCol);
             }
         },
-        ondown: function (e) {
-            e.stopPropagation();
-            e.preventDefault();
-            if (!editor.isMobile && e.clientY >= this.$el.offsetHeight - editor.ui.values.scrollBarHeight) return;
-            var scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
-            var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-            var loc = {
-                'x': scrollLeft + e.clientX + this.$el.scrollLeft - right.offsetLeft - this.$el.offsetLeft,
-                'y': scrollTop + e.clientY + this.$el.scrollTop - right.offsetTop - this.$el.offsetTop,
-                'size': 32
-            };
-            editor.uivalues.tileSize = [1,1];
-            var pos = editor.uifunctions.locToPos(loc);
-            for (var spriter in editor.widthsX) {
-                if (pos.x >= editor.widthsX[spriter][1] && pos.x < editor.widthsX[spriter][2]) {
-                    var ysize = spriter.endsWith('48') ? 48 : 32;
-                    loc.ysize = ysize;
-                    pos.images = editor.widthsX[spriter][0];
-                    pos.y = ~~(loc.y / loc.ysize);
-                    if (!this.folded && core.tilesets.indexOf(pos.images) == -1) pos.x = editor.widthsX[spriter][1];
-                    var autotiles = core.material.images['autotile'];
-                    if (pos.images == 'autotile') {
-                        var imNames = Object.keys(autotiles);
-                        if ((pos.y + 1) * ysize > editor.widthsX[spriter][3])
-                            pos.y = ~~(editor.widthsX[spriter][3] / ysize) - 4;
-                        else {
-                            for (var i = 0; i < imNames.length; i++) {
-                                if (pos.y >= 4 * i && pos.y < 4 * (i + 1)) {
-                                    pos.images = imNames[i];
-                                    pos.y = 4 * i;
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        var height = editor.widthsX[spriter][3], col = height / ysize;
-                        if (this.folded && core.tilesets.indexOf(pos.images) == -1) {
-                            col = (pos.x == editor.widthsX[spriter][2] - 1) ? ((col - 1) % editor.uivalues.foldPerCol + 1) : editor.uivalues.foldPerCol;
-                        }
-                        if (spriter == 'terrains' && pos.x == editor.widthsX[spriter][1]) col += 2;
-                        pos.y = Math.min(pos.y, col - 1);
-                    }
-    
-                    this.selected = true;
-                    // console.log(pos,core.material.images[pos.images].height)
-                    this.selectionStyle.left = pos.x * 32 + 'px';
-                    this.selectionStyle.top = pos.y * ysize + 'px';
-                    this.selectionStyle.height = ysize - 6 + 'px';
-    
-                    if (pos.x == 0 && pos.y == 0) {
-                        // editor.info={idnum:0, id:'empty','images':'清除块', 'y':0};
-                        editor.info = 0;
-                    } else if (pos.x == 0 && pos.y == 1) {
-                        editor.info = editor.ids[editor.indexs[17]];
-                    } else {
-                        if (autotiles[pos.images]) editor.info = { 'images': pos.images, 'y': 0 };
-                        else if (core.tilesets.indexOf(pos.images) != -1) editor.info = { 'images': pos.images, 'y': pos.y, 'x': pos.x - editor.widthsX[spriter][1] };
-                        else {
-                            var y = pos.y;
-                            if (this.folded) {
-                                y += editor.uivalues.foldPerCol * (pos.x - editor.widthsX[spriter][1]);
-                            }
-                            if (pos.images == 'terrains' && pos.x == 0) y -= 2;
-                            editor.info = { 'images': pos.images, 'y': y }
-                        }
-    
-                        for (var ii = 0; ii < editor.ids.length; ii++) {
-                            if ((core.tilesets.indexOf(pos.images) != -1 && editor.info.images == editor.ids[ii].images
-                                && editor.info.y == editor.ids[ii].y && editor.info.x == editor.ids[ii].x)
-                                || (Object.prototype.hasOwnProperty.call(autotiles, pos.images) && editor.info.images == editor.ids[ii].id
-                                    && editor.info.y == editor.ids[ii].y)
-                                || (core.tilesets.indexOf(pos.images) == -1 && editor.info.images == editor.ids[ii].images
-                                    && editor.info.y == editor.ids[ii].y)
-                            ) {
-    
-                                editor.info = editor.ids[ii];
-                                break;
-                            }
-                        }
-    
-                        if (editor.info.isTile && e.button == 2) {
-                            var v = prompt("请输入该额外素材区域绑定宽高，以逗号分隔", "1,1");
-                            if (v != null && /^\d+,\d+$/.test(v)) {
-                                v = v.split(",");
-                                var x = parseInt(v[0]), y = parseInt(v[1]);
-                                var widthX = editor.widthsX[editor.info.images];
-                                if (x <= 0 || y <= 0 || editor.info.x + x > widthX[2] - widthX[1] || 32*(editor.info.y + y) > widthX[3]) {
-                                    alert("不合法的输入范围，已经越界");
-                                } else {
-                                    editor.uivalues.tileSize = [x, y];
-                                }
-                            }
-                        }
-    
-                    }
-                    tip.infos(JSON.parse(JSON.stringify(editor.info)));
-                    editor_mode.onmode('nextChange');
-                    editor_mode.onmode('enemyitem');
-                    editor.updateLastUsedMap();
-                    //editor_mode.enemyitem();
+        /**
+         * 选择素材的响应函数
+         * @param {String} from 来源的素材组
+         * @param {Pos} pos 选择素材的左上角位置
+         * @param {Pos} grid 选择素材的长宽
+         * @param {Number} index 点击素材的编号
+         */
+        onselect(from, pos, grid, index) {
+            this.selected = true;
+            this.box.pos.set(pos), this.box.grid.set(grid);
+            const [type, name] = from.split(":");
+            if (type == "tileset") {
+
+            } else {
+                if (type == "terrains") {
+                    if (index === 0) { // 特判清除块
+                        this.$emit("select", "empty");
+                        return;
+                    } else index--;
                 }
+                const block = game.map.getBlockByIcon(type, index);
+                this.$emit("select",  block);
             }
-        }
+        },
+        selectByIndex() {
+
+        },
     }
 }
