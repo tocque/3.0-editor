@@ -1,4 +1,8 @@
+/**
+ * @file widget.texteditor.js 文本编辑器
+ */
 import { isset } from "../../editor_util.js";
+import { mountCSS } from "../../editor_ui.js";
 
 export const condition = {
     'text_0_s': 'EvalString_0',
@@ -14,40 +18,68 @@ export const condition = {
     'drawTextContent_s': 'EvalString_0',
 }
 
-export class textEditor {
-    constructor() {
-        const _this = this;
-        this.vm = new Vue({
-            el: ".blocklyWidgetDiv",
-            template: /* HTML */`
-            <mt-window :active.sync="active" width="60%" closeBtn @close="cancal">
-                <simple-editor ref="text" lang="plaintext"></simple-editor>
+let vm;
+export const init = function() {
+    const mountPoint = document.createElement("div");
+    document.body.appendChild(mountPoint);
+    vm = new Vue({
+        el: mountPoint,
+        template: /* HTML */`
+        <mt-window class="widget-textEditor" title="文本编辑器"
+            :active.sync="active" width="60%" closeBtn @close="cancal"
+        >
+            <simple-editor ref="text" lang="motadialog"></simple-editor>
+            <div class="__foot">
                 <mt-btn @click="confirm">确认</mt-btn>
-            </mt-window>
-            `,
-            data: {
-                active: false,
+            </div>
+        </mt-window>
+        `,
+        data: {
+            active: false,
+        },
+        methods: {
+            show(text) {
+                this.active = true;
+                this.$refs.text.setValue(text);
+                return new Promise((res, rej) => this.res = res);
             },
-            methods: {
-                show(text) {
-                    this.$refs.text.setValue(text);
-                    return new Promise((res, rej) => this.res = res);
-                },
-                comfirm() {
-                    this.res(this.$refs.text.getValue());
-                },
-                cancal() {
-                    this.res(null);
-                }
+            confirm() {
+                this.active = false;
+                this.res(this.$refs.text.getValue());
+            },
+            cancal() {
+                this.active = false;
+                this.res(null);
+            },
+            setLang(lang) {
+                this.$refs.text.setLang(lang);
             }
-        })
-    }
-    open(block, field) {
-        const text = block.getFieldValue(field);
-        this.vm.show(text).then((newText) => {
-            if (isset(newText)) {
-                block.setFieldValue(newText.split('\n').join('\\n'), field);
-            }
-        });
-    }
+        }
+    })
 }
+
+/**
+ * 
+ * @param {*} block 
+ * @param {String} field 
+ */
+export const open = function(block, field) {
+    const text = block.getFieldValue(field).split('\\n').join('\n');
+    if (field.startsWith("Raw")) vm.setLang("javascript");
+    else vm.setLang("motadialog");
+    vm.show(text).then((newText) => {
+        if (isset(newText)) {
+            block.setFieldValue(newText.split('\n').join('\\n'), field);
+        }
+    });
+}
+
+mountCSS(/* CSS */`
+    .widget-textEditor {
+        top: 20%;
+        padding: 2px;
+    }
+    .widget-textEditor .simple-editor {
+        height: 240px;
+    }
+`);
