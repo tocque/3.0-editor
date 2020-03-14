@@ -1,9 +1,21 @@
 {
-    "mainEditor": [
-        "tiledEditor"
-    ],
+    "mainEditor": {
+        "tiledEditor": {
+            
+        },
+        "blockly": {
+            "widget": [
+                "texteditor"
+            ],
+            "service": [
+                "autocompletion",
+                "colorpicker"
+            ]
+        }
+    },
     "mainPanel": {
         "map_panel": "地图",
+        "data_panel": "数据",
         "resource_panel": "资源",
         "event_panel": "事件",
         "script_panel": "脚本"
