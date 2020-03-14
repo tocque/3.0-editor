@@ -228,8 +228,8 @@
 
     /** 向一个对象的所有键值对混入一个对象 */
     export const batchMixin = function(obj, m) {
-        let newObj = {};
-        for (let e in newObj) {
+        const newObj = {};
+        for (let e in obj) {
             newObj[e] = Object.assign({}, m, obj[e]);
         }
         return newObj;
@@ -249,6 +249,7 @@
          * 将坐标转为网格坐标
          * @param {Number} xsize 网格宽度 
          * @param {Number} [ysize] 网格高度, 若不填则视为与宽度相同
+         * @returns {Pos}
          */
         gridding(xsize, ysize = xsize) {
             return new Pos(parseInt(this.x/xsize), parseInt(this.y/ysize));
@@ -264,6 +265,15 @@
             return new Pos(this.x + x, this.y + y);
         }
 
+        mutli(x, y = x) {
+            return new Pos(this.x * x, this.y * y);
+        }
+
+        /**
+         *
+         * @param {String} separator
+         * @returns {String}
+         */
         format(separator) {
             return this.x + separator + this.y;
         }
@@ -272,8 +282,14 @@
             return new Pos(this.x, this.y);
         }
 
+        /** @param {Pos} p */
         equal(p) {
             return this.x === p.x && this.y === p.y;
+        }
+
+        in(x, y, w, h) {
+            return this.x >= x && this.x <= x+w 
+                && this.y >= y && this.y <= y+h;
         }
     }
 
@@ -307,16 +323,16 @@
                 this.pointer = this.stack.length;
             } else if (this.stack.length >= this.size) this.stack.shift();
             else this.pointer++;
-            this.commands[type].redo(data);
-            this.stack.push({type, data});
+            data = this.commands[type].redo(data, true);
+            this.stack.push({ type, data });
         }
     
         hasBack() { return this.pointer >= 0; }
     
         undo() {
-            if (~this.pointer) return false;
+            if (!~this.pointer) return false;
             const command = this.stack[this.pointer--];
-            this.commands[command.type].redo(command.data);
+            this.commands[command.type].undo(command.data);
             return true;
         }
     
