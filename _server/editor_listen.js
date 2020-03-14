@@ -1,4 +1,4 @@
-import { translateKeyCode } from "./editor_util.js"
+import { translateKeyCode, exec } from "./editor_util.js"
 
 export default new class inputManager {
     keyRules = {}
@@ -63,12 +63,12 @@ export default new class inputManager {
      */
     regShortcut(keyCode, shortcut) {
         if (!shortcut) {
-            for (var name in keyCode) {
+            for (let name in keyCode) {
                 this.regShortcut(name, keyCode[name]);
             }
         } else {
             let spec = "";
-            if (keyCode instanceof Number) {
+            if (typeof keyCode == "number") {
                 spec = "normal";
             }
             else {
@@ -84,7 +84,7 @@ export default new class inputManager {
                     console.error("键盘码解析错误\n"+e);
                 }
             }
-            if (!shortcut.condition) shortcut.condition = condition;
+            if (shortcut instanceof Function) shortcut = { action: shortcut }
             if (!shortcut.pirority) shortcut.pirority = 0;
             if (!this.keyRules[spec]) this.keyRules[spec] = [];
             if (!this.keyRules[spec][keyCode]) this.keyRules[spec][keyCode] = [shortcut];
@@ -102,11 +102,11 @@ export default new class inputManager {
         if (e.shiftKey) spec += "shift";
         if (!spec) spec = "normal";
         if (!this.keyRules[spec]) return;
-        let shortcuts = this.keyRules[spec][e.keyCode];
+        const shortcuts = this.keyRules[spec][e.keyCode];
         if (!shortcuts) return;
         let prevent = false;
         for (let shortcut of shortcuts) {
-            if (shortcut.condition()) {
+            if (exec(shortcut.condition) ?? true) {
                 shortcut.action();
                 if (shortcut.prevent) prevent = true;
             }
