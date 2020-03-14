@@ -3,7 +3,36 @@
  */
 import game from "../editor_game.js";
 import { isset, clone } from "../editor_util.js";
+import { ftools, JsFile } from "../editor_file.js";
 import locComment from "../comments/loc.comment.js";
+
+export class MapFile extends JsFile {
+    /**
+     * 地图文件的类
+     * @param {String} mapid
+     * @param {*} data
+     * @memberof MapFile
+     */
+    constructor(mapid, data) {
+        super(`./project/floors/${mapid}.js`, data, `main.floors.${mapid}=\n`, {
+            stringifier(data) {
+                const tempObj = Object.assign({}, data);
+                const tempMap = ['map', 'bgmap','fgmap'].map((key) => {
+                    const value = [key, createGuid(), tempObj[key]];
+                    tempObj[key] = value[1];
+                    return value;
+                });
+                const tempJson = JSON.stringify(tempObj, null, 4);
+                return tempMap.reduce((e, [k, g, v]) => {
+                    return e.replace(`"${g}"`, `[\n${ftools.formatMap(v, k != 'map')}\n]`)
+                }, tempJson);
+            }
+        });
+        this.addEmitter('afterSave', function(h, str) {
+            //editor.addUsedFlags(str);
+        });
+    }
+}
 
 export let fgmap = [], bgmap = [];
 /**
@@ -128,11 +157,39 @@ export const getPosInfo = function(pos, floor) {
     return { pos: pos.copy(), events }
 }
 
+export const checkMapInfo = function(map) {
+    if (game.main.floorIds.includes(map.floorId)) {
+        throw new Error("该楼层已存在！");
+    }
+    if (!(/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(map.floorId))) {
+        throw new Error("楼层名不合法！请使用字母、数字、下划线，且不能以数字开头！");
+    }
+    const min = game.core.__SIZE__;
+    if (!isset(width) || !isset(height) || width < min || height < game.min || width * height > 1000) {
+        throw new Error("新建地图的宽高都不得小于" + min + "，且宽高之积不能超过1000");
+    }
+}
+
 ////////////////////////// setter //////////////////////////
 
 export const setBlock = function(mapid, pos, blockid) {
 
 }
+
+/**
+ * 创建新地图
+ * @param {*} from 地图来源信息 
+ * @returns {Promise}
+ */
+export const createNewMap = function(from) {
+    const map = Object.assign({}, editor.gameInfo.get("defaultMap"), from);
+    checkMapInfo(map);
+    const mapFile = new MapFile(map.floorId, clone(map));
+    game.main.floorIds.push(map.floorId);
+    game.main.floors.push(mapFile.data);
+    game.maps[map.floorId] = mapFile;
+    return mapFile.save()
+} 
 
 ////////////////////////// wrapapi //////////////////////////
 

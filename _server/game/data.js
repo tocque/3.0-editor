@@ -65,7 +65,7 @@ export const getItemInfo = function(id) {
     const item = {};
     Object.keys(itemComment._data).forEach((v) => {
         if (isset(game.oriData.items[v][id]) && v !== 'items')
-            item[v] = editor.core.items[v][id];
+            item[v] = game.oriData.items[v][id];
         else
             item[v] = null;
     });
@@ -82,7 +82,7 @@ export const getItemInfo = function(id) {
 export const getBlockInfo = function(idnum) {
     const sourceobj = game.oriData.maps[idnum];
     // tileset默认生成空块
-    if(!isset(sourceobj) && idnum >= game.oriData.icons.tilesetStartOffset) {
+    if(!isset(sourceobj) && idnum >= game.core.icons.tilesetStartOffset) {
         sourceobj = { "cls": "tileset", "id": "X"+idnum, "noPass": true }
     }
     const block = Object.assign({}, sourceobj);

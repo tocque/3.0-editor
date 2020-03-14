@@ -7,32 +7,10 @@
 import { ftools, JsFile, Config } from "./editor_file.js";
 import { createGuid } from "./editor_util.js";
 
-import * as _map from "./game/map.js";
-import * as _data from "./game/data.js";
-import * as _plugin from "./game/plugin.js";
-import * as _resource from "./game/resource.js";
-
-class map extends JsFile {
-    constructor(mapid, data) {
-        super(`./project/floors/${mapid}.js`, data, `main.floors.${mapid}=\n`, {
-            stringifier: function(data) {
-                const tempObj = Object.assign({}, data);
-                const tempMap = ['map', 'bgmap','fgmap'].map((key) => {
-                    const value = [key, createGuid(), tempObj[key]];
-                    tempObj[key] = value[1];
-                    return value;
-                });
-                const tempJson = JSON.stringify(tempObj, null, 4);
-                return tempMap.reduce((e, [k, g, v]) => {
-                    return e.replace(`"${g}"`, `[\n${ftools.formatMap(v, k != 'map')}\n]`)
-                }, tempJson);
-            }
-        });
-        this.addEmitter('afterSave', function(h, str) {
-            //editor.addUsedFlags(str);
-        });
-    }
-}
+import * as map from "./game/map.js";
+import * as data from "./game/data.js";
+import * as plugin from "./game/plugin.js";
+import * as resource from "./game/resource.js";
 
 export default new class gameRuntime {
 
@@ -46,10 +24,12 @@ export default new class gameRuntime {
 
     scenes = {};
 
-    map = _map;
-    data = _data;
-    plugin = _plugin;
-    resource = _resource;
+    map = map;
+    data = data;
+    plugin = plugin;
+    resource = resource;
+
+    used_flags = {};
 
     /////// 初始化方法 ////////
 
@@ -145,7 +125,7 @@ export default new class gameRuntime {
         let maps = this.main.floors;
         const defaultMap = editor.gameInfo.get("defaultMap", {});
         for (let m in maps) {
-            this.maps[m] = new map(m, Object.assign({}, defaultMap, maps[m]));
+            this.maps[m] = new map.MapFile(m, Object.assign({}, defaultMap, maps[m]));
         }
     }
 
