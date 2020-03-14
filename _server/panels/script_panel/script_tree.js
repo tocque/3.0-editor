@@ -4,7 +4,7 @@ import { buildTree } from "../../mt-ui/tree.js";
 export default {
     template: /* HTML */`
     <mt-side-pane pane="scriptTree" icon="files" label="脚本浏览">
-        <el-tree :data="data" @node-click="handleNodeClick"
+        <el-tree :data="data" @node-click="handleNodeClick" class="workspace-tree"
             :basePadding="25" :indent="10" node-key="field" ref="tree"
         >
             <workspace-item 

@@ -5,13 +5,13 @@ export default {
     <mt-side-pane pane="pluginLib" icon="extensions" label="插件库">
         <mt-search placeholder="搜索插件"></mt-search>
         <div class="container">
-            <mt-list :items="pluginList" @chose="chose">
-                <template #item="{ item }">
-                    <h5>{{ item.name }}</h5>
-                    <p>{{ item.abstract }}</p>
-                    <span>{{ item.author }}</span>
+            <mt-tabs :tabs="pluginList" @switch="chose">
+                <template #tab="{ tab }">
+                    <h5>{{ tab.name }}</h5>
+                    <p>{{ tab.abstract }}</p>
+                    <span>{{ tab.author }}</span>
                 </template>
-            </mt-list>
+            </mt-tabs>
         </div>
     </mt-side-pane>
     `,
@@ -31,13 +31,13 @@ export default {
                     source: "插件库"
                 })).data);
         },
-        chose(info, index) {
+        chose(item) {
             this.$emit("openTab", {
                 type: "plugin",
-                info,
-                id: index,
+                info: item,
+                id: item.index,
                 icon: "plug",
-                label: "扩展: "+info.name,
+                label: "扩展: "+item.name,
             });
         },
     }
