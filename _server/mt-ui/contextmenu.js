@@ -8,7 +8,7 @@ document.body.addEventListener("click", function(e) {
         !listen.getEventPath(e).includes(__currentContextMenu__.$el)) {
         __currentContextMenu__.close();
     }
-});
+}, true);
 
 Vue.component('contextMenu', {
     template: /* HTML */`
@@ -16,7 +16,7 @@ Vue.component('contextMenu', {
         <ul>
             <li
                 v-for="(item, index) of menuitems" :key="index"
-                :class="{'disable': item.vaildate}"
+                :class="{ disable: !item.validate }"
                 @click="execAction(item)"
             >{{ item.text }}</li>
         </ul>
@@ -36,7 +36,7 @@ Vue.component('contextMenu', {
         this.addin = null;
     },
     mounted() {
-        this.bindElm = document.querySelector(this.bindTo) || this.$parent.$el;
+        this.bindElm = this.$parent.$el.querySelector(this.bindTo) || this.$parent.$el;
         this.bindElm.addEventListener("contextmenu", this.open.bind(this));
     },
     computed: {
@@ -45,7 +45,7 @@ Vue.component('contextMenu', {
             return this.items.filter((item) => exec(item.condition, ...args) ?? true)
                 .map((item) => ({
                     text: exec(item.text, ...args) ?? item.text,
-                    vaildate: exec(item.vaildate, ...args) ?? true,
+                    validate: exec(item.validate, ...args) ?? true,
                     action: item.action,
                 }));
         }
@@ -62,7 +62,7 @@ Vue.component('contextMenu', {
             this.pos.set(e.clientX, e.clientY);
             this.event = e;
             this.addin = this.addinParam(e, this.pos);
-            this.$emit("beforeOpen", e);
+            if (!this.$emit("beforeOpen", e)) return;
             this.active = true;
             e.preventDefault();
         },
@@ -81,7 +81,10 @@ Vue.component('contextMenu', {
             }
         },
         execAction(item) {
-            if (item.vaildate) item.action(event, this.$parent, this.addin);
+            if (item.validate) {
+                item.action(event, this.$parent, this.addin);
+                this.close();
+            }
         }
     }
 })

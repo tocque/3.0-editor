@@ -11,12 +11,13 @@ export const MtIcon = {
             maxHeight: size + 'px',
             fontSize: size + 'px'
         } : {};
-        let c = ctx.data.class;
-        c = c || [];
-        c = c instanceof Array ? c : [c];
-        ctx.data.class = ['mt-icon', 'codicon', 'codicon-'+ctx.props.icon, ...c];
-        ctx.data.style = Object.assign({}, ctx.data.style, style);
-        return h('i', ctx.data);
+        let c = ctx.data.class || [];
+        const sc = ctx.data.staticClass;
+        c = Array.isArray(c) ? c : [c];
+        ctx.class = ['mt-icon', 'codicon', 'codicon-'+ctx.props.icon, ...c, sc];
+        ctx.style = Object.assign({}, ctx.data.style, style);
+        ctx.on = ctx.data.on;
+        return h('i', ctx);
     },
     props: ["icon", "size"]
 }

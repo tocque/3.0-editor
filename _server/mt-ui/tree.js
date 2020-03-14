@@ -2,7 +2,7 @@ let __wrongMark__ = false;
 
 const controllers = {
     "checkbox": { tag: "mt-switch" },
-    "const": { tag: "span", class: "const", nomodel: true },
+    "const": { tag: "span", class: "const", nomodel: true, child: `{{ value }}` },
     "select": { 
         tag: "select", 
         child: /* HTML */`
@@ -26,9 +26,17 @@ const controllers = {
             }
         }
     },
-    "table": {
-        tag: "mt-table",
-        attr: { ":comment": "comment" }
+    "textarea": {
+        noTag: true,
+        methods: {       
+            resize() {
+                const elm = this.$refs.textarea;
+                elm.style.height = 'auto';
+                if (elm.scrollHeight > 10) {// 特判空内容
+                    elm.style.height = elm.scrollHeight+'px';
+                }
+            }
+        }
     }
 }
 
@@ -42,7 +50,9 @@ const parseNode = function(type, { tag, child, nomodel, attr, class:cls }) {
 
 const { template, methods } = Object.entries(controllers)
     .reduce(({ template, methods }, [type, config]) => {
-        template.push(parseNode(type, config));
+        if (!config.noTag) {
+            template.push(parseNode(type, config));
+        }
         if (config.methods) {
             methods = Object.assign({}, methods, config.methods);
         }
@@ -52,17 +62,33 @@ const { template, methods } = Object.entries(controllers)
 const controlNode = {
     template: /* HTML */`
     <div class="control-node" :title="comment._data+data.field">
-        <span class="comment">{{ comment._name }}</span>
-        <div class="control-input">
-            ${ template.join('') }
+        <div class="control-content">
+            <span class="comment">{{ comment._name }}</span>
+            <div class="control-input">
+                ${ template.join('') }
+                <mt-icon class="__table-icon" @click="() => fold = !fold"
+                    :icon="'chevron-'+ (fold ? 'down' : 'up')" v-if="showFold"
+                ></mt-icon>
+            </div>
         </div>
+        <mt-table v-if="comment._type == 'table'" :comment="comment" 
+        v-model="value" v-show="!fold"></mt-table>
+        <textarea v-if="comment._type == 'textarea'" class="mt-textarea"
+            v-model="value" v-show="!fold" @input="resize" ref="textarea"
+        ></textarea>
     </div>`,
     inject: ["openBlockly"],
     props: ["node", "data"],
+    computed: {
+        showFold() {
+            return ["table", "textarea"].includes(this.comment._type);
+        }
+    },
     data: function() {
         return {
             comment: '',
             value: '',
+            fold: false
         }
     },
     created: function() {
@@ -76,6 +102,9 @@ const controlNode = {
                 this.options = this.comment._options();
             } else this.options = this.comment._options;
         }
+    },
+    mounted: function() {
+        if (this.comment._type == 'textarea') this.resize();
     },
     methods: {
         onchange: function () {
@@ -112,7 +141,7 @@ const controlNode = {
             }
             return true;
         },
-        ...methods
+        ...methods,
     }
 };
 

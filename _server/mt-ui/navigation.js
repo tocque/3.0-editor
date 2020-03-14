@@ -9,8 +9,8 @@ export const MtTabs = {
         <ul class="mt-tabs">
             <li v-for="(tab, index) of tabs" :key="index"
                 :title="tab.label" @click="switchTab(tab)"
-                class="mt-tab" :class="{ active: chosen == tab.id }">
-                <slot name="tab" :tab="tab" :active="chosen == tab.id">{{ tab.label }}</slot>
+                class="mt-tab" :class="{ active: chosen == tab }">
+                <slot name="tab" :tab="tab" :active="chosen == tab">{{ tab.label }}</slot>
             </li>
             <slot name="default"></slot>
         </ul>
@@ -33,11 +33,11 @@ export const MtTabs = {
     },
     methods: {
         switchTab(tab, force) {
-            if (!force && isset(this.allowUnchose) && tab.id == this.chosen) {
+            if (!force && isset(this.allowUnchose) && tab == this.chosen) {
                 this.chosen = null;
                 this.$emit('switch', null);
             } else {
-                this.chosen = tab.id;
+                this.chosen = tab;
                 this.$emit('switch', tab);
             }
         },
@@ -113,8 +113,9 @@ export const MtSide = {
             if (!isset(code)) code = !this.tucked;
             this.$emit("update:tucked", code);
         },
-        openPane(pane) {
+        openPane(pane, force) {
             if (this.chosen.id == pane) return;
+            if (!force && this.tucked) return;
             const panel = this.panels.find((panel) => panel.id == pane);
             this.$refs.switcher.switchTab(panel, true);
         }

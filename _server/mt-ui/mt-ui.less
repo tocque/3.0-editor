@@ -5,10 +5,9 @@
     img {
         transform: translate(-1400px);
     }
-}
-
-.disable {
-    filter: drop-shadow(1400px 0 0 darkGray);
+    .disable {
+        filter: drop-shadow(1400px 0 0 darkGray);
+    }
 }
 
 .icon-f {
@@ -127,10 +126,13 @@
     animation: fadeIn 83ms linear;
     li {
         padding: 5px 25px;
-        color: darkgrey;
-        &:hover {
+        color: @c-text;
+        &:hover:not(.disable) {
             background-color: @c-item-focus;
             color: white;
+        }
+        &.disable {
+            color: @c-text-dis;
         }
     }
     hr {
@@ -230,6 +232,7 @@
     padding: 6px 12px;
     min-width: 100px;
     height: fit-content;
+    cursor: pointer;
     &+.mt-btn {
         margin-left: 15px;
     }
@@ -242,6 +245,11 @@
         padding: 3px 12px;
         min-width: 0;
     }
+}
+
+.mt-form-item {
+    display: flex;
+    align-items: baseline;
 }
 
 /* tree */
@@ -259,8 +267,9 @@
     .el-tree-node__content {
         color: @c-text;
         padding: 5px 10px;
-        cursor: pointer;
         user-select: none;
+        display: flex;
+        align-items: center;
         .el-tree-node__expand-icon {
             margin-left: -16px;
             &.expanded {
@@ -277,11 +286,18 @@
     .el-tree__drop-indicator {
         background-color: @c-item-hl;
     }
+    &.workspace-tree .el-tree-node__content {
+        cursor: pointer;
+    }
 }
 
 .control-node {
-    display: flex;
-    justify-content: space-between;
+    width: 100%;
+    .control-content {
+        display: flex;
+        justify-content: space-between;
+        width: -webkit-fill-available;
+    }
     select {
         width: 124px;
         background-color: #444;
@@ -296,9 +312,38 @@
         color: @c-text;
         max-width: 120px;
     }
+    input[type="number"] {
+        background-color: #444;
+        border: none;
+        padding: 2px;
+        color: @c-text;
+        max-width: 100px;
+    }
     span.const {
         font-weight: bold;
         padding: 0px 5px;
+    }
+    table {
+        font-size: 14px;
+        width: 100%;
+        margin-top: 2px;
+        border-top: 1px solid;
+        border-left: 1px solid;
+        td {
+            border-right: 1px solid;
+            border-bottom: 1px solid;
+            padding: 1px;
+        }
+    }
+    .mt-textarea {
+        font-size: 14px;
+        background: #444444;
+        resize: none;
+        width: 100%;
+        color: @c-text;
+    }
+    i.__table-icon {
+        cursor: pointer;
     }
 }
 
@@ -315,7 +360,7 @@
         width: 50px;
         background-color: @c-side;
         padding-block-start: 10px;
-        box-shadow: 3px 0px 3px;
+        box-shadow: 3px 0px 3px @c-shadow;
         li {
             cursor: pointer;
             width: 30px;
@@ -364,13 +409,6 @@
             &[active] {
                 display: block;
             }
-        }
-        ul {
-            margin: 15px 0px;
-        }
-        li {
-            padding: 4px 2px 4px 15px;
-            color: @c-text;
         }
     }
     .container {
@@ -476,14 +514,6 @@
         align-items: center;
         margin-left: auto;
         padding: 0px 2px;
-        i.codicon {
-            cursor: pointer;
-            width: 22px;
-            height: 22px;
-            font-size: 22px;
-            padding: 4px;
-            color: darkGray;
-        }
         .__toolGroup {
             display: flex;
             align-items: center;
@@ -515,18 +545,51 @@
     }
 }
 
+.mt-window {
+    position: absolute;
+    background: @c-bg-pop;
+    z-index: 30;
+    box-shadow: 0 0 3px 3px @c-shadow;
+    height: fit-content;
+    .__title {
+        display: flex;
+        .__control {
+            margin-left: auto;
+        }
+    }
+    .__foot {
+        display: flex;
+        justify-content: flex-end;
+        padding: 3px;
+        .mt-btn {
+            margin-right: 20px;
+        }
+    }
+}
+
 .__mask__ {
     height: 100%;
     width: 100%;
     position: fixed;
     top: 0;
     z-index: 20;
+    background: rgba(0,0,0,0.1);
 }
 
 /* others */
 
 .mt-icon {
     color: @c-icon;
+}
+
+.icon-btn {
+    cursor: pointer;
+    padding: 4px;
+    i.codicon {
+        width: 20px;
+        height: 20px;
+        font-size: 20px;
+    }
 }
 
 .el-color-picker {

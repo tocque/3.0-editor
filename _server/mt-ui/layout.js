@@ -46,18 +46,29 @@ export const MtContainer = {
 export const MtWindow = {
     name: "mt-window",
     template: /* HTML */`
-    <div class="mt-window">
+    <div class="mt-window" v-show="active" :style="outerStyle" role="dialog">
         <div class="__title">
-            <slot name="title"></slot>
+            <slot name="title">{{ title }}</slot>
             <div v-if="closeBtn != null" @click="close" class="__control">
-                <mt-icon icon="chrome-close"></mt-icon>
+                <mt-icon class="icon-btn" icon="chrome-close"></mt-icon>
             </div>
         </div>
-        <slot></slot>
+        <div class="__content">
+            <slot></slot>
+        </div>
         <div class="__mask__" ref="mask" v-if="mask != null" v-show="active"></div>
     </div>
     `,
-    props: ["closeBtn", "active", "mask"],
+    props: ["closeBtn", "active", "mask", "title", "width"],
+    computed: {
+        outerStyle() {
+            if (!this.width) return;
+            if (this.width.endsWith("%")) {
+                const i = (100 - parseInt(this.width.slice(0, -1))) / 2;
+                return { left: i+'%', right: i+'%' };
+            }
+        }
+    },
     mounted() {
         if (this.mask != null) document.body.appendChild(this.$refs.mask);
         document.body.appendChild(this.$el);

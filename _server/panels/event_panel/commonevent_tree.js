@@ -4,7 +4,7 @@ import { isset } from "../../editor_util.js";
 export default {
     template: /* HTML */`
     <mt-side-pane pane="commenteventTree" icon="files" label="公共事件">
-        <el-tree :data="data" @node-click="handleNodeClick"
+        <el-tree :data="data" @node-click="handleNodeClick" class="workspace-tree"
             :basePadding="25" :indent="10" node-key="field" ref="tree"
         >
             <workspace-item 
