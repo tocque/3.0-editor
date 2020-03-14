@@ -120,12 +120,12 @@ define(["require", "exports"], function (require, exports) {
                 [/[<>](?!@symbols)/, '@brackets'],
                 [/!(?=([^=]|$))/, 'delimiter'],
                 [/@symbols/, {
-                        cases: {
-                            '=>': 'keyword',
-                            '@operators': 'delimiter',
-                            '@default': ''
-                        }
-                    }],
+                    cases: {
+                        '=>': 'keyword',
+                        '@operators': 'delimiter',
+                        '@default': ''
+                    }
+                }],
                 // numbers
                 [/(@digits)[eE]([\-+]?(@digits))?/, 'number.float'],
                 [/(@digits)\.(@digits)([eE][\-+]?(@digits))?/, 'number.float'],
