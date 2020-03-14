@@ -13,6 +13,14 @@ export const importCSS = function(url) {
     document.head.appendChild(css);
 }
 
+/** 挂载CSS字串 @param {String} CSSText */
+export const mountCSS = function(CSSText) {
+    const style = document.createElement("style");
+    style.setAttribute("type", "text/css");
+    style.appendChild(document.createTextNode(CSSText));
+    document.head.appendChild(style);
+}
+
 export const getScrollBarHeight = function() {
     const outer = document.createElement("div");
     outer.style.visibility = "hidden";
