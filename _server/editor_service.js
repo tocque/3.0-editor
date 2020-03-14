@@ -130,6 +130,22 @@ const serviceManager =  new class ServiceManager {
             }
         }
     }
+
+    extenions = {}
+
+    loadExtensions() {
+        const info = editor.extenions.get("mainEditor");
+        for (let editor of info) {
+            this.extenions[editor] = {};
+            for (let dir of editor) {
+                const extenions = {};
+                for (let extenion of dir) {
+                    this.extenions[extenion] = import(`./extensions/${editor}/${dir}.${extension}.js`)
+                }
+                this.extenions[editor][dir] = extenions;
+            }
+        }
+    }
 }
 
 export default serviceManager;

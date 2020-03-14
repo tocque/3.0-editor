@@ -2,8 +2,9 @@
  * editor_blockly.js Blockly编辑器类
  */
 
-import { mountJs } from "./editor_util.js";
+import { mountJs, exec, isset } from "./editor_util.js";
 import { importCSS } from "./editor_ui.js";
+import serviceManager from "./editor_service.js";
 
  /** blockly钩子, 当blockly模块加载完毕时resolve */
 const blocklyHook = (new class BlocklyProxy {
@@ -128,8 +129,11 @@ const blocklyHook = (new class BlocklyProxy {
             //console.log(e);
             e.preventDefault();
             const hvScroll = e.shiftKey?'hScroll':'vScroll';
-            const mousewheelOffsetValue=20/380*workspace.scrollbar[hvScroll].handleLength_*3;
-            workspace.scrollbar[hvScroll].handlePosition_+=( ((e.deltaY||0)+(e.detail||0)) >0?mousewheelOffsetValue:-mousewheelOffsetValue);
+            const mousewheelOffsetValue = 20/380*workspace.scrollbar[hvScroll].handleLength_*3;
+            workspace.scrollbar[hvScroll].handlePosition_ += ( 
+                ((e.deltaY||0)+(e.detail||0)) > 0 ? mousewheelOffsetValue
+                    : -mousewheelOffsetValue
+            );
             workspace.scrollbar[hvScroll].onScroll_();
             workspace.setScale(workspace.scale);
         }
@@ -277,7 +281,7 @@ export default {
             </div>
         </template>
         <div ref="blocklyArea" class="blocklyArea"></div>
-        <code-editor ref="json" lang="json" nostatus></code-editor>
+        <simple-editor ref="json" lang="json"></simple-editor>
     </mt-window>
     `,
     data() {
@@ -296,8 +300,17 @@ export default {
         editor.window.openBlockly = this.import;
     },
     async mounted() {
-        this.workspace = (await blocklyHook).inject(this.$refs.blocklyArea, this);
+        // blockly加载时不能处于dislay: none的状态, 否则样式会变形
+        const blockly = await blocklyHook;
+        this.preshow();
+        this.$nextTick(() => {
+            this.workspace = blockly.inject(this.$refs.blocklyArea, this);
+            this.active = false;
+        })
         this.blocklyWidgetDiv = document.getElementsByClassName("blocklyWidgetDiv");
+        serviceManager.receiveExtensions("blockly.widget", (name, widget) => {
+            this.widgets[name] = widget;
+        });
     },
     methods: {
         /** 解析json */
@@ -314,16 +327,23 @@ export default {
          * @returns {Promise} 编辑结果, 若为null代表未编辑
          */
         import(text, type) {
-            this.text = text;
-            this.$refs.json.setValue(this.text);
-            this.entryType = type;
-            this.parse();
-            this.show();
+            this.preshow();
+            this.$nextTick(() => {
+                this.text = text;
+                this.$refs.json.setValue(this.text);
+                this.entryType = type;
+                this.parse();
+            })
             return new Promise((res, rej) => { this.res = res });
+        },
+
+        preshow() {
+            this.$el.visibility = "hidden";
+            this.active = true;
         },
     
         show() {
-            this.active = true;
+            this.$el.visibility = "";
         },
     
         hide() {
@@ -361,11 +381,20 @@ export default {
         },
 
         onUseBlock(blockId) {
-            this.addIntoLastUsedType(blockId);
+            const block = this.workspace.getBlockById(blockId);
+            this.addIntoLastUsedType(block);
         },
 
-        onDoubleClickBlock() {
-            console.log(arguments);
+        onDoubleClickBlock(blockId) {
+            const block = this.workspace.getBlockById(blockId);
+            for (let widget of this.widgets) {
+                let param;
+                if (window.condition instanceof Function) {
+                    param = widget.condition(block);
+                } else param = widget.condition[block.type] ?? false;
+                if (param == false) continue;
+                widget.open(block, param);
+            }
         },
 
         /** 检查入口方块 */
@@ -457,9 +486,8 @@ export default {
             }
         },
     
-        addIntoLastUsedType(blockId) {
-            var b = this.workspace.getBlockById(blockId);
-            if(!b)return;
+        addIntoLastUsedType(b) {
+            if(!b) return;
             var blockType = b.type;
             if(!blockType || blockType.indexOf("_s")!==blockType.length-2 || blockType==='pass_s')return;
             this.lastUsedType = this.lastUsedType.filter(function (v) {return v!==blockType;});
