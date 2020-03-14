@@ -2,7 +2,7 @@
  * @file game/map.js 游戏地图相关的接口
  */
 import game from "../editor_game.js";
-import { isset, clone } from "../editor_util.js";
+import { isset, clone, createGuid } from "../editor_util.js";
 import { ftools, JsFile } from "../editor_file.js";
 import locComment from "../comments/loc.comment.js";
 
@@ -174,6 +174,37 @@ export const checkMapInfo = function(map) {
 
 export const setBlock = function(mapid, pos, blockid) {
 
+}
+
+export const updateMapInfo = function(mapid, key, value) {
+    return game.maps[mapid].modify({ key, value })
+}
+
+export const forceUpdateMap = function(mapid, map) {
+    game.maps[mapid].data = map;
+    return game.maps[mapid].data.save();
+}
+
+export const updateMapArray = function(mapid, [bgmap, map, fgmap]) {
+    return game.maps[mapid].modify([
+        { key: '[bgmap]', value: bgmap },
+        { key: '[map]', value: map },
+        { key: '[fgmap]', value: fgmap },
+    ])
+}
+
+/**
+ * 
+ * @param {*} map 
+ * @param {Pos} pos 
+ * @param {String} field 
+ * @param {*} value 
+ */
+export const modifyPos = function(map, pos, field, value) {
+    const posstr = pos.format(",");
+    if (!map[field]) map[field] = {};
+    map[field][posstr] = clone(value);
+    return map;
 }
 
 /**

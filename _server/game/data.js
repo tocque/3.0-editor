@@ -53,7 +53,7 @@ export const getCommonEvents = function() {
  * @param {String} id
  * @returns {[Enemy, Object]}
  */
-export const getEnemyInfo = function(id) {
+export const getEnemyData = function(id) {
     const enemy = Object.assign({}, game.oriData.enemys[id]);
     Object.keys(enemyComment._data).forEach((v) => {
         if (!isset(enemy[v])) enemy[v] = null;
@@ -61,7 +61,7 @@ export const getEnemyInfo = function(id) {
     return [enemy, enemyComment];
 }
 
-export const getItemInfo = function(id) {
+export const getItemData = function(id) {
     const item = {};
     Object.keys(itemComment._data).forEach((v) => {
         if (isset(game.oriData.items[v][id]) && v !== 'items')
@@ -79,7 +79,7 @@ export const getItemInfo = function(id) {
     return [item, itemComment];
 }
 
-export const getBlockInfo = function(idnum) {
+export const getBlockData = function(idnum) {
     const sourceobj = game.oriData.maps[idnum];
     // tileset默认生成空块
     if(!isset(sourceobj) && idnum >= game.core.icons.tilesetStartOffset) {
@@ -100,5 +100,21 @@ export const getTowerData = function() {
 
 ////////////////////////// setter //////////////////////////
 
+export const updateTowerData = function(key, value) {
+    return game.gameData.data.modify({ key, value });
+}
+
+export const updateEnemyData = function(id, key, value) {
+    return game.gameData.enemys.modify({ key: `[${id}]${key}`, value });
+}
+
+export const updateItemData = function(id, key, value) {
+    return game.gameData.items.modify({ key: `[${id}]${key}`, value });
+}
+
+export const updateBlockData = function(id, key, value) {
+    const number = game.apply("getNumberById", id);
+    return game.gameData.maps.modify({ key: `[${number}]${key}`, value });
+}
 
 ////////////////////////// wrapapi //////////////////////////

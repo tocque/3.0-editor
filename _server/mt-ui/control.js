@@ -12,7 +12,7 @@ export const MtBtn = {
 export const MtSwitch = {
     name: "mt-switch",
     template: /* HTML */`
-    <div @click="$emit('toggle', !checked)" role="switch"
+    <div @click="$emit('change', !checked)" role="switch"
         class="mt-switch" :class="{ on: checked }"
     >
         <em>{{ checked ? 'T' : 'F' }}</em>
@@ -20,7 +20,7 @@ export const MtSwitch = {
     </div>`,
     model: {
         prop: 'checked',
-        event: 'toggle'
+        event: 'change'
     },
     props: {
         checked: Boolean

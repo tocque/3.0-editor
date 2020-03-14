@@ -8,7 +8,9 @@ export default {
             <div class="icon-btn" title="复制"><mt-icon icon="files"></mt-icon></div>
             <div class="icon-btn" title="粘贴"><mt-icon icon="clippy"></mt-icon></div>
         </template>
-        <control-list v-show="info.id" ref="blockTable" comment="enemy"></control-list>
+        <control-list v-show="info.id" ref="blockTable" 
+            comment="enemy" @changeNode.native="onchange"
+        ></control-list>
         <div class='newIdIdnum' v-show="info.type && !info.id"><!-- id and idnum -->
             <input placeholder="新id（唯一标识符）"/>
             <input placeholder="新idnum（10000以内数字）"/>
@@ -35,18 +37,26 @@ export default {
             }
             let data, comment;
             if (["enemys", "enemy48"].includes(block.cls)) {
-                [data, comment] = game.data.getEnemyInfo(block.id);
+                [data, comment] = game.data.getEnemyData(block.id);
                 this.info.type = "enemy";
             } else if (["items"].includes(block.cls)) {
-                [data, comment] = game.data.getItemInfo(block.id);
+                [data, comment] = game.data.getItemData(block.id);
                 this.info.type = "item";
             } else {
-                [data, comment] = game.data.getBlockInfo(block.number);
+                [data, comment] = game.data.getBlockData(block.number);
                 this.info.type = "mapBlock";
             }
             // this.pos.set(pos);
             // const posInfo = game.map.getPosInfo(pos, this.getCurrentMap());
             this.$refs.blockTable.update(data, comment);
+        },
+        onchange({ detail: { field, value } }) {
+            const func = {
+                enemy: game.data.updateEnemyData,
+                item: game.data.updateItemData,
+                mapBlock: game.data.updateBlockData,
+            }[this.info.type];
+            func(this.info.id, field, value);
         }
     },
 }

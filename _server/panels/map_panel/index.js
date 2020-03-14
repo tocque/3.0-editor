@@ -16,6 +16,7 @@ let components = {
 }
 
 import { mapStore } from "./service.js";
+import { isset } from "../../editor_util.js";
 
 export default {
     label: "地图",
@@ -29,7 +30,7 @@ export default {
         </mt-side>
         <div class="mid" :class="{ expend: leftCollapsed }">
             <tiled-editor ref="tiledEditor" :map="currentMap"
-                @selectPos="editPos" @selectBlock="editBlock"
+                @selectPos="editPos" @selectBlock="editBlock" @save="updateMapArray"
             ></tiled-editor>
         </div>
         <status-item v-show="active">{{ currentMapid }}</status-item>
@@ -54,7 +55,8 @@ export default {
     },
     provide() {
         return {
-            getCurrentMap: this.getCurrentMap
+            getCurrentMap: this.getCurrentMap,
+            updateMap: this.updateMap,
         }
     },
     created() {
@@ -86,6 +88,20 @@ export default {
             this.$refs.posData.update(pos);
             this.$refs.side.openPane("posData", true);
         },
+        updateMap(map) {
+            if (!isset(map)) map = game.map.getMap(this.currentMapid); 
+            else {
+                this.currentMap = map;
+                game.map.forceUpdateMap(map).then(() => {
+                    this.currentMap = game.map.getMap(this.currentMapid);
+                });
+            }
+        },
+        updateMapArray(mapArray) {
+            game.map.updateMapArray(this.currentMapid, mapArray).then(() => {
+                this.currentMap = game.map.getMap(this.currentMapid);
+            });
+        }
     },
     watch: {
         currentMapid(newValue, oldValue) {

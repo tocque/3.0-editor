@@ -13,16 +13,24 @@ export default {
     template: /* HTML */`
     <div id="dataPanel">
         <mt-side-pane label="全局数据">
-            <control-list ref="main"></control-list>
+            <control-list 
+                ref="main" @changeNode.native="onchange('main', $event)"
+            ></control-list>
         </mt-side-pane>
         <mt-side-pane label="初始数据">
-            <control-list ref="firstData"></control-list>
+            <control-list 
+                ref="firstData" @changeNode.native="onchange('firstData', $event)"
+            ></control-list>
         </mt-side-pane>
         <mt-side-pane label="全局变量">
-            <control-list ref="values"></control-list>
+            <control-list 
+                ref="values" @changeNode.native="onchange('values', $event)"
+            ></control-list>
         </mt-side-pane>
         <mt-side-pane label="全局开关">
-            <control-list ref="flags"></control-list>
+            <control-list 
+                ref="flags" @changeNode.native="onchange('flags', $event)"
+            ></control-list>
         </mt-side-pane>
     </div>
     `,
@@ -43,10 +51,12 @@ export default {
     methods: {
         update() {
             const data = game.data.getTowerData();
-            console.log(this.$refs);
             ["main", "firstData", "values", "flags"].forEach((e) => {
                 this.$refs[e].update(data[e], dataComment._data[e])
             })
+        },
+        onchange(type, { detail: { field, value } }) {
+            game.data.updateTowerData(`[${type}]${field}`, value);
         }
     },
     components,
