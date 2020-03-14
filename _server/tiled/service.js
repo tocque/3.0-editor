@@ -208,63 +208,54 @@ class Rectangle {
 }
 
 class Fill {
+    dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]];
     constructor(h) {
         this.$host = h;
         h.commandStack.register("fill", (data, createRes) => {
             const layer = data.layer;
             if (createRes) {
-                data.preData = [];
-                const i = new Pos(data.start);
-                for (; i.y < data.end.y; i.y++) {
-                    data.preData[i.y] = [];
-                    for (; i.x < data.end.x; i.x++) {
-                        data.preData.push(h.blockAt(i, layer));
-                        h.setBlock(i, data.block, layer);
+                data.preBlock = h.blockAt(data.start, layer);
+                data.fillArea = [];
+                const vis = {};
+                /**
+                 * dfs查找可以填充的块
+                 * @param {Pos} now
+                 * @param {Number} start
+                 * @returns {Array<Pos>}
+                 */
+                const dfs = (now) => {
+                    if (!now.in(0, 0, h.map.width-1, h.map.height-1)) return;
+                    if (h.blockAt(now, layer) != data.preBlock) return;
+                    if (vis[now.format(",")]) return;
+                    data.fillArea.push(now);
+                    vis[now.format(",")] = true;
+                    for (let dir of this.dirs) {
+                        dfs(new Pos(now.x+dir[0], now.y+dir[1]));
                     }
                 }
-                console.log(data);
-                return data;
-            } else {
-                for (let i = data.start.y; i < data.end.y; i++) {
-                    for (let j = data.start.x; j < data.end.x; j++) {
-                        h.setBlock(new Pos(j, i), data.block, layer);
-                    }
-                }
+                dfs(data.start);
             }
-        }, (data) => {
-            data.route.forEach((pos, i) => {
-                h.setBlock(pos, data.preData[i], layer);
+            data.fillArea.forEach((pos) => {
+                h.setBlock(pos, data.block, layer);
+            })
+            if (createRes) return data;
+        }, ({ fillArea, preBlock, layer }) => {
+            fillArea.forEach((pos) => {
+                h.setBlock(pos, preBlock, layer);
             })
         });
     }
+    // 填充模式下, 按下鼠标即填充完毕
     start(pos) {
-        this.startPos = this.nowPos = pos;
-        this.$host.setPreviewer(this.preview.bind(this));
-        this.$host.updateMap();
-    }
-    clear() {
-        this.$host.clearPreviewer();
-        this.startPos = null;
-        this.nowPos = null;
-    }
-    move(pos) {
-        this.nowPos = pos;
-        this.$host.updateMap();
-    }
-    draw(pos) {
-        this.$host.clearPreviewer();
-        const [start, end] = this.getLTRB(this.startPos, pos);
-        this.$host.do("rectangle", {
-            start, end,
-            block: this.$host.selectedBlock.number,
-            layer: this.$host.layerMod
+        const block = this.$host.selectedBlock.number, layer = this.$host.layerMod;
+        if (block == this.$host.blockAt(pos, layer)) return;
+        this.$host.do("fill", {
+            start: pos, block, layer
         });
     }
-    getLTRB({ x: sx, y: sy }, { x: dx, y: dy }) {
-        if (sx > dx) [sx, dx] = [dx, sx];
-        if (sy > dy) [sy, dy] = [dy, sy];
-        return [new Pos(sx, sy), new Pos(dx, dy)];
-    }
+    clear() {}
+    move() {}
+    draw() {}
 }
 
 serviceManager.register('tiledEditor', 'paint', {
