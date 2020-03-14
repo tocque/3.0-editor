@@ -59,10 +59,14 @@ const window = {
             .map(e => ({ id: e[0], label: e[1].label })));
     },
     methods: {
-        print(str, type) {
+        print(str = "", type = "") {
             this.message = str;
-            if (!type) type = "normal";
             this.messageType = type;
+            if (type !== "") {
+                setTimeout(() => {
+                    if (this.message == str) this.print("", "");
+                }, 5000);
+            }
         },
         clear(value) {
             var tips = [
