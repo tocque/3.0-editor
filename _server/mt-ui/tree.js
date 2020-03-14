@@ -1,15 +1,34 @@
 let __wrongMark__ = false;
 
 const controllers = {
-    "checkbox": { tag: "mt-switch" },
+    "checkbox": { tag: "mt-switch", validate: (v) => typeof v == 'boolean' },
     "const": { tag: "span", class: "const", nomodel: true, child: `{{ value }}` },
     "select": { 
         tag: "select", 
         child: /* HTML */`
         <option v-for="(option, i) of options" :key="i" :value="option"
-        >{{ option }}</option>`
+        >{{ option }}</option>`,
+        validate: (node, value) => { // 验证时更新选项
+            if (node.comment._options instanceof Function) {
+                node.options = node.comment._options();
+            }
+            return node.options.includes(value);
+        },
+        init: (node, data, comment) => {
+            if (comment._options instanceof Function) {
+                node.options = comment._options();
+            } else node.options = comment._options;
+            return data;
+        }
     },
-    "color": { tag: "el-color-picker", attr: { ":show-alpha": "comment._alpha"} },
+    "color": { 
+        tag: "el-color-picker", 
+        attr: { ":show-alpha": "comment._alpha"} ,
+        init: (node, data) => {
+            if (Array.isArray(data)) return data.join(',');
+            else return data;
+        }
+    },
     "text": { tag: "input", attr: { "type": "text" } },
     "number": { tag: "input", attr: { "type": "number" } },
     "event": { 
@@ -21,10 +40,13 @@ const controllers = {
             editEvent() {
                 const text = this.value ? JSON.stringify(this.value) : '';
                 this.openBlockly(text, this.comment._event).then((e) => {
-                    console.log(e);
+                    if (e) this.onchange();
                 })
             }
         }
+    },
+    "table": {
+        noTag: true,
     },
     "textarea": {
         noTag: true,
@@ -36,7 +58,19 @@ const controllers = {
                     elm.style.height = elm.scrollHeight+'px';
                 }
             }
+        },
+        init: (node, data) => {
+            return JSON.stringify(data);
         }
+    },
+    "image": {
+        noTag: true,
+    },
+    "music": {
+        noTag: true,
+    },
+    "object": {
+        noTag: true,
     }
 }
 
@@ -44,8 +78,10 @@ const parseNode = function(type, { tag, child, nomodel, attr, class:cls }) {
     if (attr) {
         attr = Object.entries(attr).map(([k, v]) => `${k}="${v}"`).join(' ');
     } else attr = '';
-    return `<${tag} v-if="comment._type=='${type}'" class="${cls || ''}" 
-        ${attr} ${nomodel ? '':'v-model="value"'}>${child || ''}</${tag}>`;
+    return `
+    <${tag} v-if="comment._type=='${type}'" class="${cls || ''}" 
+        ${attr} ${nomodel ? '':'v-model="value" @change="onchange"'}
+    >${child || ''}</${tag}>`;
 }
 
 const { template, methods } = Object.entries(controllers)
@@ -75,6 +111,7 @@ const controlNode = {
         v-model="value" v-show="!fold"></mt-table>
         <textarea v-if="comment._type == 'textarea'" class="mt-textarea"
             v-model="value" v-show="!fold" @input="resize" ref="textarea"
+            @change="onchange"
         ></textarea>
     </div>`,
     inject: ["openBlockly"],
@@ -93,51 +130,50 @@ const controlNode = {
     },
     created: function() {
         this.comment = this.data.comment;
-        this.value = this.data.data;
-        if (this.comment._type == 'color' && this.value) {
-            this.value = this.value.join(',');
-        }
-        if (this.comment._type == 'select') {
-            if (this.comment._options instanceof Function) {
-                this.options = this.comment._options();
-            } else this.options = this.comment._options;
+        if (controllers[this.comment._type].init) {
+            this.value = controllers[this.comment._type].init(this, this.data.data, this.comment);
+        } else {
+            this.value = this.data.data;
         }
     },
     mounted: function() {
         if (this.comment._type == 'textarea') this.resize();
     },
     methods: {
-        onchange: function () {
-            editor_mode.onmode(this.$parent.mode);
-            var thiseval = null;
+        onchange() {
+            const field = this.data.field;
+            let thiseval = null, value = this.value;
             try {
-                if (value == '') value = 'null';
+                if (value === '') value = 'null';
                 thiseval = JSON.parse(value);
             } catch (ee) {
-                printe(field + ' : ' + ee);
-                throw ee;
+                this.$print(field + ' : ' + ee, 'warn');
+                return;
             }
-            if (this.checkRange(this.node.cobj, thiseval)) {
-                editor_mode.addAction(['change', this.node.field, thiseval]);
-                editor_mode.onmode('save');//自动保存 删掉此行的话点保存按钮才会保存
-            } else {
-                printe(field + ' : 输入的值不合要求,请鼠标放置在注释上查看说明');
-            }
+            this.checkRange(this.comment, thiseval).then((res) => {
+                if (res) {
+                    this.$el.dispatchEvent(new CustomEvent("changeNode", {
+                        detail: { field, value: thiseval },
+                        bubbles: true,
+                    }));
+                } else {
+                    this.$print(field + ' : 输入的值不合要求,请鼠标放置在编辑项上查看说明', 'warn');
+                }
+            });
         },
         /**
          * 检查一个值是否允许被设置为当前输入
          * @param {Object} cobj 
          * @param {*} thiseval 
          */
-        checkRange: function (cobj, thiseval) {
-            if (cobj._options) {
-                return cobj._options.values.indexOf(thiseval) !== -1;
+        async checkRange(comment, thiseval) {
+            if (thiseval == null && comment._unrequired) return;
+            if (controllers[comment._type].validate) {
+                const res = controllers[comment._type].validate(thiseval, this)
+                if (res == false) return res;
             }
-            if (cobj._bool) {
-                return [true, false].indexOf(thiseval) !== -1;
-            }
-            if (cobj._range) {
-                return cobj._range(thiseval);
+            if (comment._range) {
+                return comment._range(thiseval);
             }
             return true;
         },
@@ -354,38 +390,6 @@ Vue.component("control-list", {
 
 let editor_table = function () {
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// HTML模板
-
-editor_table.prototype.select = function (value, values) {
-    let content = editor.table.option(value) +
-        values.map(function (v) {
-            return editor.table.option(v)
-        }).join('')
-    return /* html */`<select>\n${content}</select>\n`
-}
-editor_table.prototype.option = function (value) {
-    return /* html */`<option value='${JSON.stringify(value)}'>${JSON.stringify(value)}</option>\n`
-}
-editor_table.prototype.text = function (value) {
-    return /* html */`<input type='text' spellcheck='false' value='${JSON.stringify(value)}'/>\n`
-}
-editor_table.prototype.checkbox = function (value) {
-    return /* html */`<input type='checkbox' ${(value ? 'checked ' : '')}/>\n`
-}
-editor_table.prototype.textarea = function (value, indent) {
-    return /* html */`<textarea spellcheck='false'>${JSON.stringify(value, null, indent || 0)}</textarea>\n`
-}
-
-editor_table.prototype.title = function () {
-    return /* html */`\n<tr><td>条目</td><td>注释</td><td>值</td><td>操作</td></tr>\n`
-}
-
-editor_table.prototype.gap = function (field) {
-    return /* html */`<tr><td>----</td><td>----</td><td>${field}</td><td>----</td></tr>\n`
-}
-
 
 /////////////////////////////////////////////////////////////////////////////
 // 表格的用户交互

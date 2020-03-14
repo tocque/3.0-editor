@@ -91,14 +91,16 @@ export default {
             "_leaf": true,
             "_type": "text",
             "_name": "上楼点",
-            "_range": "thiseval==null||((thiseval instanceof Array) && thiseval.length==2)",
+			"_unrequired": true,
+            "_range": (v) => Array.isArray(v) && thiseval.length==2,
             "_data": "该层上楼点，如[2,3]。\n如果此项不为null，则楼层转换时的stair:upFloor，以及楼传器的落点会被替换成该点而不是该层的上楼梯。"
         },
         "downFloor": {
             "_leaf": true,
             "_type": "text",
             "_name": "下楼点",
-            "_range": "thiseval==null||((thiseval instanceof Array) && thiseval.length==2)",
+			"_unrequired": true,
+            "_range": (v) => Array.isArray(v) && thiseval.length==2,
             "_data": "该层下楼点，如[2,3]。\n如果此项不为null，则楼层转换时的stair:downFloor，以及楼传器的落点会被替换成该点而不是该层的下楼梯。"
         },
         "defaultGround": {

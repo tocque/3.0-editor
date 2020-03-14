@@ -60,9 +60,9 @@ export default {
 		"special": {
 			"_leaf": true,
 			"_type": "table",
-			"_parse": "array",
-            "_name": "特殊属性",
-			"_range": "thiseval==null || thiseval instanceof Array || (thiseval==~~thiseval && thiseval>=0)",
+			"_parse": "object",
+			"_name": "特殊属性",
+			"_items": ["number"],
 			"_data": "特殊属性\n\n0:无,1:先攻,2:魔攻,3:坚固,4:2连击,\n5:3连击,6:n连击,7:破甲,8:反击,9:净化,\n10:模仿,11:吸血,12:中毒,13:衰弱,14:诅咒,\n15:领域,16:夹击,17:仇恨,18:阻击,19:自爆,\n20:无敌,21:退化,22:固伤,23:重生,24:激光,25:光环\n\n多个属性例如用[1,4,11]表示先攻2连击吸血",
 			"_subcomment": {
 				"6": "无", 
@@ -83,9 +83,10 @@ export default {
 		},
 		"range": {
 			"_leaf": true,
-			"_type": "textarea",
-            "_name": "领域范围",
-			"_range": "(thiseval==~~thiseval && thiseval>0)||thiseval==null",
+			"_type": "number",
+			"_name": "领域范围",
+			"_min": 1,
+			"_unrequired": true,
 			"_data": "领域伤害的范围；不加默认为1"
 		},
 		"notBomb": {
@@ -98,7 +99,8 @@ export default {
 		"n": {
 			"_leaf": true,
 			"_type": "number",
-			"_range": "(thiseval==~~thiseval && thiseval>0)||thiseval==null",
+			"_unrequired": true,
+			"_min": 1,
             "_name": "连击数",
 			"_data": "多连击的连击数"
 		},
@@ -111,22 +113,22 @@ export default {
 		},
 		"atkValue": {
 			"_leaf": true,
-			"_type": "textarea",
-			"_range": "thiseval==~~thiseval||thiseval==null",
+			"_type": "number",
+			"_unrequired": true,
             "_name": "退化/光环攻击",
 			"_data": "退化时勇士下降的攻击力点数；光环怪增加攻击的比例"
 		},
 		"defValue": {
 			"_leaf": true,
-			"_type": "textarea",
-			"_range": "thiseval==~~thiseval||thiseval==null",
+			"_type": "number",
+			"_unrequired": true,
             "_name": "退化/光环防御",
 			"_data": "退化时勇士下降的防御力点数；光环怪增加防御的比例"
 		},
 		"damage": {
 			"_leaf": true,
-			"_type": "textarea",
-			"_range": "thiseval==~~thiseval||thiseval==null",
+			"_type": "number",
+			"_unrequired": true,
             "_name": "固定伤害",
 			"_data": "战前扣血的点数"
 		}
