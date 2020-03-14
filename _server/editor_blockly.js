@@ -25,7 +25,6 @@ const blocklyHook = (new class BlocklyProxy {
             this.config = config;
             window.MotaActionFunctions = parser.MotaActionFunctions;// 向全局暴露, 属于遗留问题
             MotaActionFunctions.disableReplace = !editor.userdata.get("disableBlocklyReplace", false);
-            const override = import('./blockly/override.js');
 
             const converter = new cv.Converter().init();
             converter.generBlocks(motaAction);
@@ -35,7 +34,9 @@ const blocklyHook = (new class BlocklyProxy {
 
             this.blocksIniter(MotaActionBlocks);
             this.blocks = this.config.blockList(this.parser);
-            await override;
+            serviceManager.receiveExtensions("blockly.service", (name, service) => {
+                service.init();
+            });
         } catch(e) {
             // 此时window可能未mount
             console.error(e);
@@ -307,9 +308,11 @@ export default {
             this.workspace = blockly.inject(this.$refs.blocklyArea, this);
             this.active = false;
         })
+        this.widgets = {};
         this.blocklyWidgetDiv = document.getElementsByClassName("blocklyWidgetDiv");
         serviceManager.receiveExtensions("blockly.widget", (name, widget) => {
             this.widgets[name] = widget;
+            widget.init();
         });
     },
     methods: {
@@ -387,7 +390,7 @@ export default {
 
         onDoubleClickBlock(blockId) {
             const block = this.workspace.getBlockById(blockId);
-            for (let widget of this.widgets) {
+            for (let widget of Object.values(this.widgets)) {
                 let param;
                 if (window.condition instanceof Function) {
                     param = widget.condition(block);

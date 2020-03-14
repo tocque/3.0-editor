@@ -131,20 +131,39 @@ const serviceManager =  new class ServiceManager {
         }
     }
 
-    extenions = {}
+    extensions = {}
 
-    loadExtensions() {
-        const info = editor.extenions.get("mainEditor");
-        for (let editor of info) {
-            this.extenions[editor] = {};
-            for (let dir of editor) {
-                const extenions = {};
-                for (let extenion of dir) {
-                    this.extenions[extenion] = import(`./extensions/${editor}/${dir}.${extension}.js`)
-                }
-                this.extenions[editor][dir] = extenions;
-            }
-        }
+    loadExtensions(info) {
+        Object.entries(info).forEach(([editor, imples]) => {
+            this.extensions[editor] = {};
+            Object.entries(imples).forEach(([imple, extensions]) => {
+                const dir = {}
+                extensions.forEach((extension) => {
+                    import(`./extensions/${editor}/${imple}.${extension}.js`).then((e) => {
+                        dir[extension] = e;
+                        const dirname = `${editor}.${imple}`
+                        if (this.hasReceiveExtensions[dirname]) {
+                            this.hasReceiveExtensions[dirname](extension, e);
+                        }
+                        console.log(`${dirname}: ${extension} ====> load`)
+                    })
+                })
+                this.extensions[editor][imple] = dir;
+            });
+        });
+    }
+
+    hasReceiveExtensions = {};
+    /**
+     * 
+     * @param {String} type 
+     * @param {Function} cb 
+     */
+    receiveExtensions(type, cb) {
+        this.hasReceiveExtensions[type] = cb;
+        const [editor, imple] = type.split(".");
+        const loaded = this.extensions?.[editor]?.[imple];
+        Object.entries(loaded ?? {}).forEach(([name, e]) => cb(name, e));
     }
 }
 

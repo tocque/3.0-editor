@@ -255,19 +255,6 @@
     };
 })(this);
 
-// Added
-jsColorPicker('input.color', {
-    customBG: '#222',
-    readOnly: false,
-    // patch: false,
-    init: function(elm, colors) { // colors is a different instance (not connected to colorPicker)
-        elm.style.backgroundColor = elm.value;
-        elm.style.color = colors.rgbaMixCustom.luminance > 0.22 ? '#222' : '#ddd';
-    },
-    appendTo: document.getElementById("colorPanel"),
-    size: 1,
-});
-
 function openColorFromButton() {
     delete window.jsColorPicker.confirm;
     triggerColorPicker('414px', '53px');
