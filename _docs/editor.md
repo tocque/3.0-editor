@@ -30,4 +30,4 @@
  color | 颜色 | _alpha: 是否可编辑透明度 | -
  resource | 资源 | _dir: 供选择的文件夹 | - 
  event | 事件 | _event: 事件入口 | - 
- table | 表格 | _parse: 数据类型, "object"或"array", _item: 每项的数据类型, 支持"string", "number", "boolean", 若为数组则写成数组形式, 例["string", "number"], "object"默认键的类型为string, 不必修改, _maxItem: 最大项数, _keys: 对于 "object" 类型, 规定键的来源, 填写该项后, 不可增删键 | -
+ table | 表格 | _parse: 数据类型, "object"或"array", _item: 每项的数据类型, 支持"string", "number", "boolean", 若为数组则写成数组形式, 例["string", "number"], "object"默认键的类型为string, 不必写入, _maxItem: 最大项数, _keys: 对于 "object" 类型, 规定键的来源, 填写该项后, 不可增删键 | -
