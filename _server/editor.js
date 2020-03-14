@@ -10,7 +10,8 @@ const libs = {
 };
 
 class editor {
-    version = "2.0";
+    version = "3.0 pre-alpha";
+    __VERSION_CODE__ = 0;
 
     /** vue监听字段 */proJectName = '';
 
@@ -31,14 +32,17 @@ class editor {
         [
             this.userdata, this.extensions, this.towerInfo, this.gameInfo
         ] = await Promise.all([
-            new file.Config("./_server/config.json"), 
+            new file.Config("./_server/userdata.json"), 
             new file.Config("./_server/extensions.json"),
             new file.Config("./work.h5mota"),
             new file.Config("./_server/game/gameInfo.json"),
         ]);
-        await game.load();
+        await Promise.all[
+            game.load(), 
+            service.loadExtensions(this.extensions.get("mainEditor", {}))
+        ];
         this.window = await import('./editor_window.js');
-        await game.hooks.imageLoad;
+        await game.hooks.initOver;
         this.window = this.window.default();
         return this;
     };
