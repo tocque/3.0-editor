@@ -176,5 +176,8 @@ export default {
         "autoEvent": {
             "_hide": true,
         },
+        "cannotMove": {
+            "_hide": true,
+        }
     },
 }

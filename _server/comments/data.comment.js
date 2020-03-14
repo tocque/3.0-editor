@@ -38,7 +38,7 @@ export default {
 					"_leaf": true,
 					"_type": "table",
 					"_parse": "object",
-					"_items": ["string", "string"],
+					"_items": "string",
 					"_name": "文件名映射",
 					"_data": "文件名映射，目前仅对images, animates, bgms, sounds有效。\n例如定义 {\"精灵石.mp3\":\"jinglingshi.mp3\"} 就可以使用\ncore.playBgm(\"精灵石.mp3\") 或对应的事件来播放该bgm。"
 				},

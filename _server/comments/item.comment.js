@@ -9,6 +9,7 @@ export default {
     "_data": {
         "items": {
             "_type": "object",
+            "_name": "物品属性",
             "_data": {
                 "cls": {
                     "_leaf": true,
