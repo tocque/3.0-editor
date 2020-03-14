@@ -8,11 +8,8 @@
     top: 4%;
     left: 2%;
     z-index: -1;
-    visibility: hidden;
-    box-shadow: 3px 3px 3px;
     &.show {
         z-index: 30;
-        visibility: visible;
     }
     .__title {
         display: flex;
@@ -49,7 +46,7 @@
     &.show .widget {
         z-index: 201;
     }
-    .blocklyArea, .code-editor {
+    .blocklyArea, .simple-editor {
         position: absolute;
         top: 40px;
         bottom: 0;
@@ -58,9 +55,12 @@
         left: 0;
         right: 45%;
     }
-    .code-editor {
+    .simple-editor {
         left: 55%;
         right: 0;
         height: auto;
+    }
+    .blocklyToolboxDiv {
+        color: #1E1E1E;
     }
 }
