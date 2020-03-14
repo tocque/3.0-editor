@@ -347,21 +347,3 @@ export const blockList = function() {
 //     "drawArrow_s", "fillPolygon_s", "strokePolygon_s", "fillCircle_s", "strokeCircle_s",
 //     "drawImage_s", "drawImage_1_s", "drawIcon_s", "drawBackground_s", "drawSelector_s", "drawSelector_1_s"
 // ];
-
-// export let textStringDict = {
-//     'text_0_s': 'EvalString_0',
-//     'text_1_s': 'EvalString_2',
-//     'autoText_s': 'EvalString_2',
-//     'scrollText_s': 'EvalString_0',
-//     'comment_s': 'EvalString_0',
-//     'choices_s': 'EvalString_0',
-//     'showTextImage_s': 'EvalString_0',
-//     'function_s': 'RawEvalString_0',
-//     'shopsub': 'EvalString_3',
-//     'confirm_s': 'EvalString_0',
-//     'drawTextContent_s': 'EvalString_0',
-// }
-
-// export const widgets = [
-//     "colorpicker", "posselector", "texteditor", "uipreviewer", "audioselector", "imageselector"
-// ]
