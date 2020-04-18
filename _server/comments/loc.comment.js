@@ -57,7 +57,8 @@ export default {
         "cannotMove": {
             "_leaf": true,
             "_type": "textarea",
-            "_range": "thiseval==null||(thiseval instanceof Array)",
+            "_unrequired": true,
+            "_range": (v) => v instanceof Array,
             "_name": "通行性设置",
             "_data": "该点不可通行的方向 \n 可以在这里定义该点不能前往哪个方向，可以达到悬崖之类的效果\n例如 [\"up\", \"left\"] 代表该点不能往上和左走"
         },

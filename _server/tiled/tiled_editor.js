@@ -71,7 +71,7 @@ export default /** @mixes mainEditorExtension */{
                             <mt-icon :icon="brush.icon"></mt-icon>
                         </div>
                     </span>
-                    <div title="保存地图 (ctrl+s)" @click="saveFloor" class="icon-btn"
+                    <div title="保存地图 (ctrl+s)" @click="saveMap" class="icon-btn"
                         :class="editted ? 'active' : 'unactive'"
                     >
                         <mt-icon icon="save"></mt-icon>
@@ -105,7 +105,7 @@ export default /** @mixes mainEditorExtension */{
         </div>
         <paint-box ref="paintBox" @select="onselectBlock"></paint-box>
         <context-menu ref="contextmenu" :addinParam="eToPos"
-            @beforeOpen="$trigger('beforeConextMenu')"
+            @beforeOpen="$trigger('beforeConextMenu')" bindTo=".uiCanvas"
         ></context-menu>
         <status-item v-if="$parent.active">{{ sys_mainEditor__.mode?.label }}</status-item>
     </div>`,
@@ -176,6 +176,7 @@ export default /** @mixes mainEditorExtension */{
         listen.regShortcut(batchMixin({
             "z.ctrl": { action: () => this.undo() },
             "y.ctrl": { action: () => this.redo() },
+            "s.ctrl": { action: () => this.saveMap() },
         }, { condition: () => this.$parent.active }));
         this.commandStack.register("setBlock", );
         this.$registerMode("event", {
@@ -596,15 +597,8 @@ export default /** @mixes mainEditorExtension */{
             this.$changeMode("paint");
         },
 
-        saveFloor: function () {
-            editor_mode.onmode('');
-            editor.file.saveFloorFile(function (err) {
-                if (err) {
-                    editor.window.$print(err, 'error');
-                    throw (err)
-                };
-                editor.window.$print('保存成功');
-            });
+        saveMap() {
+            this.$emit("save", [this.map.bgmap, this.map.map, this.map.fgmap]);
         },
 
         toggleDock() {

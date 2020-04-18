@@ -7,7 +7,9 @@ export default {
         <template #header>
             <span class="pos-indicator">({{ pos.x + ', ' + pos.y }})</span>
         </template>
-        <control-list ref="locTable" comment="loc"></control-list>
+        <control-list ref="locTable" comment="loc" 
+            @changeNode.native="onchange"
+        ></control-list>
     </mt-side-pane>`,
     data: function() {
         return {
@@ -17,12 +19,17 @@ export default {
     computed: Vuex.mapState({
         currentMapid: 'currentMapid',
     }),
-    inject: ["getCurrentMap"],
+    inject: ["getCurrentMap", "updateMap"],
     methods: {
-        update: function(pos) {
+        update(pos) {
             this.pos.set(pos);
             const posInfo = game.map.getPosInfo(pos, this.getCurrentMap());
             this.$refs.locTable.update(posInfo.events);
+        },
+        /**@param {CustomEvent} e */
+        onchange({ detail: { field, value } }) {
+            const map = game.map.modifyPos(this.getCurrentMap(), pos, field, value);
+            this.updateMap(map);
         }
     },
     watch: {

@@ -77,7 +77,8 @@ export default {
 					"_parse": "array",
 					"_items": "string",
 					"_name": "装备位",
-					"_range": "(thiseval instanceof Array && thiseval.length<=6)||thiseval==null",
+					"_maxitem": 6,
+					"_unrequired": true,
 					"_data": "装备位名称，为不超过6个的数组，此项的顺序与equiptype数值关联；例如可写[\"武器\",\"防具\",\"首饰\"]等等。"
 				},
 				"startBgm": {
@@ -167,7 +168,7 @@ export default {
 					"_type": "text",
 					"_string": true,
 					"_name": "游戏标识符",
-					"_range": "/^[a-zA-Z0-9_]{1,30}$/.test(thiseval)",
+					"_range": (v) => /^[a-zA-Z0-9_]{1,30}$/.test(v),
 					"_data": "游戏的唯一英文标识符。由英文、数字、下划线组成，不能超过30个字符。\n此项必须修改，其将直接影响到存档的定位！"
 				},
 				"version": {
@@ -182,7 +183,6 @@ export default {
 					"_type": "select",
 					"_options": () => editor.game.map.getMapList(),
 					"_name": "初始楼层",
-					"_range": "editor.game.getMapList().indexOf(thiseval)!==-1",
 					"_data": "初始楼层的ID"
 				},
 				"hero": {
@@ -265,7 +265,6 @@ export default {
 							"_type": "table",
 							"_parse": "array",
 							"_items": "string",
-							"_range": "thiseval instanceof Array",
 							"_data": "初始装上的装备，此处建议请直接留空数组"
 						},
 						"items": {
@@ -308,8 +307,9 @@ export default {
 						},
 						"flags": {
 							"_leaf": true,
-							"_type": "textarea",
-							"_range": "thiseval instanceof Object && !(thiseval instanceof Array)",
+							"_type": "table",
+							"_parse": "object",
+							"_items": "object",
 							"_data": "游戏过程中的变量或flags"
 						},
 						"steps": {
@@ -325,7 +325,7 @@ export default {
 					"_type": "event",
 					"_event": "firstArrive",
 					"_name": "标题界面事件化",
-					"_range": "thiseval==null || thiseval instanceof Array",
+					"_unrequired": true,
 					"_data": "标题界面事件化，可以使用事件流的形式来绘制开始界面等。\n需要开启startUsingCanvas这个开关。\n详见文档-个性化-标题界面事件化。"
 				},
 				"startText": {
@@ -333,7 +333,7 @@ export default {
 					"_type": "event",
 					"_event": "firstArrive",
 					"_name": "初始剧情",
-					"_range": "thiseval==null || thiseval instanceof Array",
+					"_unrequired": true,
 					"_data": "游戏开始前剧情，可以执行任意自定义事件。\n双击进入事件编辑器。\n如果无剧情直接留一个空数组即可。"
 				},
 				"shops": {
@@ -341,15 +341,15 @@ export default {
 					"_type": "event",
 					"_event": "shop",
 					"_name": "全局商店",
-					"_range": "thiseval instanceof Array",
+					"_unrequired": true,
 					"_data": "全局商店，是一个数组，可以双击进入事件编辑器。"
 				},
 				"levelUp": {
 					"_leaf": true,
 					"_type": "event",
 					"_event": "level",
-					"_name": "等级体系",
-					"_range": "thiseval==null || thiseval instanceof Array",
+					"_name": "等级设定",
+					"_unrequired": true,
 					"_data": "经验升级所需要的数值，是一个数组，可以双击进行编辑。 \n 第一项为初始等级，仅title生效 \n 每一个里面可以含有三个参数 need, title, action \n need为所需要的经验数值，可以是个表达式。请确保need依次递增 \n title为该等级的名称，也可以省略代表使用系统默认值；本项将显示在状态栏中 \n action为本次升级所执行的事件，可由若干项组成"
 				}
 			}

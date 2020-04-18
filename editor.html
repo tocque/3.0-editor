@@ -26,7 +26,7 @@
     </keep-alive>
     <footer id="statusBar">
         <ul ref="left" id="statusLeft">
-            <status-item left>{{ message }}</status-item>
+            <status-item left :class="messageType">{{ message }}</status-item>
         </ul>
         <ul ref="right" id="statusRight"></ul>
     </footer>

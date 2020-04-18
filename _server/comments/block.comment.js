@@ -9,14 +9,12 @@ export default {
         "id": {
             "_leaf": true,
             "_type": "const",
-            "_range": "false",
             "_name": "图块ID",
             "_data": "图块ID"
         },
         "idnum": {
             "_leaf": true,
             "_type": "const",
-            "_range": "false",
             "_name": "地图编号",
             "_data": "图块数字"
         },
@@ -69,14 +67,16 @@ export default {
         "cannotOut": {
             "_leaf": true,
             "_type": "textarea",
-            "_range": "thiseval==null||(thiseval instanceof Array)",
+            "_unrequired": true,
+            "_range": (v) => v instanceof Array,
             "_name": "不可出方向",
             "_data": "该图块的不可出方向\n可以在这里定义在该图块时不能前往哪个方向，可以达到悬崖之类的效果\n例如 [\"up\", \"left\"] 代表在该图块时不能往上和左走\n此值对背景层、事件层、前景层上的图块均有效"
         },
         "cannotIn": {
             "_leaf": true,
             "_type": "textarea",
-            "_range": "thiseval==null||(thiseval instanceof Array)",
+            "_unrequired": true,
+            "_range": (v) => v instanceof Array,
             "_name": "不可入方向",
             "_data": "该图块的不可入方向\n可以在这里定义不能朝哪个方向进入该图块，可以达到悬崖之类的效果\n例如 [\"down\"] 代表不能从该图块的上方点朝向下进入此图块\n此值对背景层、事件层、前景层上的图块均有效"
         },
@@ -90,7 +90,7 @@ export default {
         "animate": {
             "_leaf": true,
             "_type": "number",
-            "_range": "thiseval==~~thiseval||thiseval==null",
+            "_unrequired": true,
             "_name": "全局动画帧数",
             "_data": "该图块的全局动画帧数。\n如果此项为null，则对于除了npc48外，使用素材默认帧数；npc48默认是1帧（即静止）。"
         },

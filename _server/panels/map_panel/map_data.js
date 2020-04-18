@@ -3,7 +3,9 @@ import game from "../../editor_game.js";
 export default {
     template: /* HTML */`
     <mt-side-pane pane="mapData" icon="list-unordered" label="楼层属性">
-        <control-list ref="floorTable" comment="floor"></control-list>
+        <control-list ref="floorTable" comment="floor" 
+            @changeNode.native="onchange"
+        ></control-list>
     </mt-side-pane>`,
     computed: Vuex.mapState({
         currentMapid: 'currentMapid',
@@ -16,7 +18,7 @@ export default {
     created() {
 
     },
-    inject: ["getCurrentMap"],
+    inject: ["getCurrentMap", "updateMap"],
     methods: {
         changeFloorId: function () {
             var floorId = this.changeToId;
@@ -51,19 +53,18 @@ export default {
                 printe('请输入要修改到的floorId');
             }
         },
-        update: function() {
-            var objs = [];
-            editor.file.editFloor([], function (objs_) {
-                objs = objs_;
-                //console.log(objs_)
+        update() {
+            this.$refs.floorTable.update(this.getCurrentMap());
+        },
+        onchange({ detail: { field, value } }) {
+            game.map.updateMapInfo(field, value).then(() => {
+                this.updateMap();
             });
-            //只查询不修改时,内部实现不是异步的,所以可以这么写
-            this.$refs.floorTable.update(objs[0], objs[1]);
         }
     },
     watch: {
         currentMapid() {
-            this.$refs.floorTable.update(this.getCurrentMap());
+            this.update();
         }
     },
 }

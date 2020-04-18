@@ -137,6 +137,13 @@ export class JsFile {
         return data;
     }
 
+    queue = [];
+
+    /**
+     * 
+     * @param {*} commands 
+     * @returns {Promise}
+     */
     modify(commands) {
         if (!(commands instanceof Array)) commands = [commands];
         for (let command of commands) {
@@ -151,7 +158,11 @@ export class JsFile {
                 this.functionPool[data[key]] = value;
             } else data[key] = value;
         }
-        return this.save();
+        if (this.queue.length > 0) {
+            return new Promise((res, rej) => {
+                this.queue.push[res, rej];
+            })
+        } else return this.save();
     }
  
     /**
@@ -170,16 +181,25 @@ export class JsFile {
         }
     }
 
-    save() {
+    save(queuep = 0) {
         this.emit('beforeSave', this);
         const datastr = this.prefix + ftools.fixByPool(this.stringifier(this.data), this.functionPool);
         return new Promise((res, rej) => {
             fs.writeFile(this.src, encode64(datastr), 'base64', (err, data) => {
-                if (err) rej(err);
+                if (err) {
+                    if (queuep) {
+                        while(queuep--) this.queue.shift()[1](err);
+                    } else rej(err);
+                }
                 else {
                     this.emit('afterSave', this, datastr);
                     checkCompress();
-                    res(data);
+                    if (queuep) {
+                        while(queuep--) this.queue.shift()[0](data);
+                    } else res(data);
+                }
+                if (this.queue.length > 0) {
+                    this.save(this.queue.length);
                 }
             });
         });
