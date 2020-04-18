@@ -1,0 +1,44 @@
+:root {
+    /* 本文件为CSS文件的颜色变量
+
+    /* 布局底色 */
+    --c-top: #3C3C3C;
+    --c-side: #333333;
+    --c-left: #252525;
+    --c-main: #1E1E1E;
+    --c-bg-pop: #252525;
+    --c-bg-pop-hl: #353535;
+
+    /* 状态信息栏 */
+    --c-status: #007ACC;
+    --c-status-hl: #1F8AD2;
+
+    /* 项 */
+    --c-item-hv: #2A2D2E;
+    --c-item-hl: #373737;
+    --c-item-focus: #094771;
+    --c-chosen: white;
+    --c-unchosen: darkgrey;
+
+    /* 文本颜色 */
+    --c-text: #C7C7C7;
+    --c-text-hl: #FFFFFF;
+    --c-text-dis: #A3A3A3;
+    --c-header: #BBBBBB;
+    --c-link: #3794ff;
+
+    /* 按钮 */
+    --c-btn: #0E639C;
+    --c-btn-hv: #1177BB;
+    --c-close: rgba(232,17,35,.9);
+
+    /* 标签 */
+    --c-tab: #2D2D2D;
+    --c-tab-hl: #1E1E1E; 
+
+    /* 图标 */
+    --c-icon: #CCCCCC;
+
+    /* 阴影 */
+    --c-shadow: #000000;
+}

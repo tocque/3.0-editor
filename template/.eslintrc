@@ -1,0 +1,28 @@
+{
+	"root": true,
+	"env": {
+		"browser": true,
+		"es6": true
+	},
+	"rules": {
+		"no-console": 0,
+		"no-cond-assign": 0,
+	    "no-unused-vars": 1,
+        "no-prototype-builtins": 0,
+	},
+	"extends": [
+		"eslint:recommended"
+	],
+	"parser": "babel-eslint",
+	"parserOptions": {
+		"ecmaVersion": 2020,
+		"sourceType": "script"
+	},
+	"globals": {
+		"core": true,
+		"fs": true,
+		"main": true,
+		"axios": true,
+		"PIXI": true
+	}
+}

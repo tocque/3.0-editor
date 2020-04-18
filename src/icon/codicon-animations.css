@@ -1,0 +1,46 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+@keyframes codicon-spin {
+	100% {
+		transform:rotate(360deg);
+	}
+}
+
+.codicon-animation-spin {
+	animation: codicon-spin 1.5s linear infinite;
+}
+
+@keyframes codicon-shrink {
+	50% {
+		transform:scale(0.7);
+	}
+	100% {
+		transform:scale(1);
+	}
+}
+
+.codicon-animation-shrink {
+	animation: codicon-shrink 1.5s linear infinite;
+}
+
+@keyframes codicon-load {
+	0% {
+		content: "|";
+	}
+	25% {
+		content: "/";
+	}
+	50% {
+		content: "-";
+	}
+	75% {
+		content: "\\";
+	}
+}
+
+.codicon-animation-load:before {
+	animation: codicon-load 1.5s linear infinite;
+}

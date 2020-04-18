@@ -1,0 +1,37 @@
+{
+    "mainEditor": {
+        "tiledEditor": {},
+        "blockly": {
+            "widget": [
+                "texteditor"
+            ],
+            "service": [
+                "autocompletion",
+                "colorpicker"
+            ]
+        }
+    },
+    "mainPanel": {
+        "projectPanel": {
+            "label": "项目",
+            "start": true
+        },
+        "mapPanel": {
+            "label": "地图"
+        },
+        "dataPanel": {
+            "label": "数据"
+        },
+        "resourcePanel": {
+            "label": "资源"
+        },
+        "eventPanel": {
+            "label": "事件"
+        },
+        "scriptPanel": {
+            "label": "脚本"
+        }
+    },
+    "extensions": [],
+    "disableBlocklyReplace": true
+}

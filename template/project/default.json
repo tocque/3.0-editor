@@ -1,0 +1,51 @@
+{
+    "data": {
+
+    },
+    "events": {
+
+    },
+    "items": {
+
+    },
+    "icons": {
+
+    },
+    "maps": {
+        "floorId": "to be covered",
+        "title": "new floor",
+        "name": "new floor",
+        "width": 13,
+        "height": 13,
+        "canFlyTo": true,
+        "canUseQuickShop": true,
+        "cannotViewMap": false,
+        "cannotMoveDirectly": false,
+        "images": [],
+        "item_ratio": 1,
+        "underGround": false,
+        "defaultGround": "ground",
+        "bgm": null,
+        "upFloor": null,
+        "downFloor": null,
+        "color": null,
+        "weather": null,
+        "map": [],
+        "bgmap": [],
+        "fgmap": [],
+        "pgmap": [],
+        "firstArrive": [],
+        "eachArrive": [],
+        "parallelDo": "",
+        "events": {},
+        "changeFloor": {},
+        "afterBattle": {},
+        "afterGetItem": {},
+        "afterOpenDoor": {},
+        "autoEvent": {},
+        "cannotMove": {}
+    },
+    "floors": {
+
+    }
+}

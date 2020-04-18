@@ -1,0 +1,37 @@
+{
+	"root": true,
+	"env": {
+		"node": true,
+		"browser": true
+	},
+	"rules": {
+		"no-console": 0,
+		"no-cond-assign": 0,
+		"no-unused-vars": 1,
+		"no-prototype-builtins": 0
+	},
+	"extends": [
+		"eslint:recommended",
+		"plugin:vue/essential"
+	],
+	"parser": "vue-eslint-parser",
+	"parserOptions": {
+	    "parser": "babel-eslint",
+		"ecmaFeatures": {
+			"jsx": true
+		},
+		"ecmaVersion": 2020,
+		"sourceType": "module"
+	},
+	"globals": {
+		"Vuex": true,
+		"Vue": true,
+		"MotaActionFunctions": true,
+		"MotaActionBlocks": true,
+		"Blockly": true,
+		"goog": true,
+		"editor": true,
+		"OmitedError": false,
+		"monaco": false
+	}
+}

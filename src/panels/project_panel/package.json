@@ -1,0 +1,12 @@
+{
+  "name": "project_panel",
+  "version": "1.0.0",
+  "description": "project_panel in Null Pointer Solution for mota-js ",
+  "main": "index.js",
+  "css": "style.js",
+  "author": "",
+  "license": "BSD-2-Clause",
+  "meta-info": {
+    "label": "工程"
+  }
+}
